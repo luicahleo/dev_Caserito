@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CaseritoApp.SmokeLib\CaseritoApp.SmokeLib.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Domain\CaseritoApp.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
   </ItemGroup>
 
 </Project>
