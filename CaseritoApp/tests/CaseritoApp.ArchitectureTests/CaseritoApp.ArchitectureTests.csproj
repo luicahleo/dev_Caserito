@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CaseritoApp.SmokeLib\CaseritoApp.SmokeLib.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Domain\CaseritoApp.BuildingBlocks.Domain.csproj" />
   </ItemGroup>
 
 </Project>
