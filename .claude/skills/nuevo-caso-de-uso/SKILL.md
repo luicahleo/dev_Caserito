@@ -1,14 +1,35 @@
 ---
 name: nuevo-caso-de-uso
-description: (PENDIENTE — no usar aún) Generará un caso de uso (command/query + handler + validator + test) una vez decidido el patrón interno en Fase 0.
+description: Genera un caso de uso (command o query) de un bounded context de CaseritoApp siguiendo el patrón CQRS-lite (MediatR + Result + FluentValidation) y su test. Úsalo al añadir una operación a un contexto.
 ---
 
-# Nuevo caso de uso — PENDIENTE
+# Nuevo caso de uso
 
-Esta skill está intencionalmente incompleta. Su contenido depende del patrón
-interno de los bounded contexts (¿MediatR/CQRS?, Result pattern, FluentValidation),
-que se decide en la Fase 0 del plan de desarrollo.
+Genera un command o query en `CaseritoApp/src/<Ctx>/CaseritoApp.<Ctx>.Application`.
+Recibe: contexto `<Ctx>`, nombre del caso `<Caso>`, y si es command o query.
 
-**No la uses todavía.** Cuando se cierre esa decisión, completar aquí los pasos
-para generar: el command/query, su handler, el validator y el test asociado,
-siguiendo el patrón acordado.
+## Patrón (command con Result)
+
+`Application/<Area>/<Caso>Command.cs`:
+- `public sealed record <Caso>Command(...) : ICommand;` (o `ICommand<TResp>` si devuelve valor).
+- `internal sealed class <Caso>Handler : ICommandHandler<<Caso>Command> { ... devuelve Result.Exito()/Result.Fallo(error) ... }`
+- `public sealed class <Caso>Validator : AbstractValidator<<Caso>Command> { ... }`
+
+`ICommand`, `ICommandHandler`, `IQuery`, `IQueryHandler`, `Result` vienen de
+`CaseritoApp.BuildingBlocks.Application.Messaging` y `.Domain`.
+
+## Reglas
+
+- Errores esperados → `Result.Fallo(new Error("codigo", "mensaje"))`; nunca excepciones para flujo esperado.
+- Validación de entrada → un `AbstractValidator`; el `ValidationBehavior` la ejecuta.
+- Un handler no llama a otro contexto directamente; se comunica por Id o emitiendo un evento.
+- Nombres y comentarios en español; el handler `internal sealed`.
+
+## Test
+
+Añade en el proyecto de tests del contexto un test que ejerza el handler con un doble
+de sus dependencias, verificando el `Result` (éxito y fallo esperado).
+
+## Verificar
+
+Desde `CaseritoApp/`: `dotnet build CaseritoApp.sln && dotnet test CaseritoApp.sln` en verde.

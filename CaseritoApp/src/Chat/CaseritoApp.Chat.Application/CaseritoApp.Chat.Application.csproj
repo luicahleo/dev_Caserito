@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\CaseritoApp.Chat.Domain\CaseritoApp.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
