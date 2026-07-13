@@ -5,6 +5,12 @@ import react from '@vitejs/plugin-react';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/health': 'http://localhost:5245',
+      '/api': 'http://localhost:5245',
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
