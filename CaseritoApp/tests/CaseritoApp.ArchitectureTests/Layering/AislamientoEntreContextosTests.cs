@@ -14,7 +14,7 @@ public sealed class AislamientoEntreContextosTests
     {
         foreach (var ctx in _contextos)
         {
-            var otros = _contextos.Where(c => c != ctx).Select(c => $"CaseritoApp.{c}.").ToArray();
+            var otros = _contextos.Where(c => c != ctx).Select(c => $"CaseritoApp.{c}").ToArray();
             foreach (var capa in new[] { "Domain", "Application", "Infrastructure" })
             {
                 var ensamblado = Assembly.Load($"CaseritoApp.{ctx}.{capa}");
