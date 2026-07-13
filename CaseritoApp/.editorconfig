@@ -54,6 +54,14 @@ dotnet_naming_symbols.interfaces.applicable_kinds = interface
 dotnet_naming_style.prefijo_i.required_prefix = I
 dotnet_naming_style.prefijo_i.capitalization = pascal_case
 
+# Las constantes son PascalCase (regla previa, mayor precedencia que campos privados)
+dotnet_naming_rule.constantes_pascal_case.severity = warning
+dotnet_naming_rule.constantes_pascal_case.symbols = constantes
+dotnet_naming_rule.constantes_pascal_case.style = pascal_case
+dotnet_naming_symbols.constantes.applicable_kinds = field
+dotnet_naming_symbols.constantes.applicable_accessibilities = *
+dotnet_naming_symbols.constantes.required_modifiers = const
+
 dotnet_naming_rule.campos_privados_guion_bajo.severity = warning
 dotnet_naming_rule.campos_privados_guion_bajo.symbols = campos_privados
 dotnet_naming_rule.campos_privados_guion_bajo.style = guion_bajo_camel
