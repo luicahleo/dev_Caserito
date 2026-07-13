@@ -33,7 +33,16 @@ public sealed class ResultTests
     [Fact]
     public void ResultT_fallo_no_es_exito()
     {
-        var resultado = Result<int>.Fallo(new Error("x", "y"));
+        var error = new Error("x", "y");
+        var resultado = Result<int>.Fallo(error);
         Assert.False(resultado.EsExito);
+        Assert.Equal(error, resultado.Error);
+    }
+
+    [Fact]
+    public void ResultT_valor_lanza_cuando_es_fallo()
+    {
+        var resultado = Result<int>.Fallo(new Error("x", "y"));
+        Assert.Throws<InvalidOperationException>(() => resultado.Valor);
     }
 }
