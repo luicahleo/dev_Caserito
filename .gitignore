@@ -38,3 +38,14 @@ coverage*.info
 # OS
 .DS_Store
 Thumbs.db
+
+# Frontend (Node / Vite)
+node_modules/
+web/dist/
+web/dev-dist/
+*.local
+.eslintcache
+# Capacitor
+web/android/
+web/ios/
+.capacitor/
