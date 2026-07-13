@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Infrastructure\CaseritoApp.BuildingBlocks.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+  </ItemGroup>
+
+</Project>
