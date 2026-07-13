@@ -1,6 +1,5 @@
 using CaseritoApp.SmokeLib.Domain;
 using NetArchTest.Rules;
-using Xunit;
 
 namespace CaseritoApp.ArchitectureTests;
 

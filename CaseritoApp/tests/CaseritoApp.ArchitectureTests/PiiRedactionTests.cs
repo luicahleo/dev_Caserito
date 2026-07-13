@@ -1,5 +1,4 @@
 using CaseritoApp.SmokeLib.Logging;
-using Xunit;
 
 namespace CaseritoApp.ArchitectureTests;
 
