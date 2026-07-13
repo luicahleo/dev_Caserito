@@ -1,4 +1,4 @@
-using CaseritoApp.SmokeLib.Logging;
+using CaseritoApp.BuildingBlocks.Infrastructure.Logging;
 
 namespace CaseritoApp.ArchitectureTests;
 

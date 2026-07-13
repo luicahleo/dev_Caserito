@@ -1,4 +1,4 @@
-namespace CaseritoApp.SmokeLib.Logging;
+namespace CaseritoApp.BuildingBlocks.Infrastructure.Logging;
 
 /// <summary>
 /// Enmascara campos considerados PII sensible para que nunca aparezcan en logs.
