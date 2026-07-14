@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CaseritoApp.Identity.Infrastructure;
@@ -62,16 +63,24 @@ public static class DependencyInjection
     public static IServiceCollection AgregarAutenticacionJwt(
         this IServiceCollection servicios, IConfiguration config, IHostEnvironment entorno)
     {
-        servicios.Configure<OpcionesJwt>(config.GetSection(OpcionesJwt.Seccion));
         servicios.AddSingleton(TimeProvider.System);
         servicios.AddSingleton<IGeneradorTokensAcceso, GeneradorTokensAcceso>();
         servicios.AddScoped<IServicioRefreshTokens, ServicioRefreshTokens>();
 
         // Solo en Development/Testing se admite una clave efímera de repuesto; fuera de esos
         // entornos la ausencia de "Jwt:Key" es un error de configuración crítico y debe fallar
-        // rápido (fail-fast), en lugar de sustituir silenciosamente por una clave que haría
-        // rechazar todos los tokens con un 401 sin pista.
+        // rápido (fail-fast). La validación con ValidateOnStart corre al construir el host (no de
+        // forma perezosa en la primera request autenticada), así que un despliegue mal configurado
+        // ni siquiera arranca ni pasa health checks.
         var permiteClaveEfimera = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
+
+        servicios.AddOptions<OpcionesJwt>()
+            .Bind(config.GetSection(OpcionesJwt.Seccion))
+            .Validate(
+                o => permiteClaveEfimera
+                    || (!string.IsNullOrWhiteSpace(o.Key) && Encoding.UTF8.GetByteCount(o.Key) >= 32),
+                "Jwt:Key es obligatorio y debe tener al menos 32 bytes fuera de Development/Testing")
+            .ValidateOnStart();
 
         servicios.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
@@ -85,21 +94,20 @@ public static class DependencyInjection
 
                 var o = config.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
 
+                // La validación al arranque (ValidateOnStart, arriba) ya garantiza que fuera de
+                // Development/Testing "Jwt:Key" está presente y tiene al menos 32 bytes; aquí solo
+                // queda cubrir el caso dev/test sin clave configurada con una efímera de repuesto.
                 string claveTexto;
                 if (!string.IsNullOrWhiteSpace(o.Key))
                 {
                     claveTexto = o.Key;
                 }
-                else if (permiteClaveEfimera)
+                else
                 {
                     // Clave efímera solo para que la construcción de las opciones no falle en
                     // dev/test; nunca podrá validar tokens reales (se firman con la clave real
                     // provista por user-secrets/env, no con esta clave de repuesto).
                     claveTexto = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-                }
-                else
-                {
-                    throw new InvalidOperationException("Jwt:Key es obligatorio fuera de Development/Testing");
                 }
 
                 opt.TokenValidationParameters = new TokenValidationParameters

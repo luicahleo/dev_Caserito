@@ -92,6 +92,35 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         Assert.Equal(HttpStatusCode.Unauthorized, loginRespuesta.StatusCode);
     }
 
+    [Fact]
+    public async Task Login_establece_cookie_de_refresh_con_los_flags_esperados()
+    {
+        using var cliente = factory.CreateClient();
+        var email = $"auth-flow-cookie-{Guid.NewGuid():N}@caserito.test";
+        const string password = "Password123!";
+
+        var registroRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistroRequest(email, password, "Usuario de Prueba", "Lima"));
+        Assert.Equal(HttpStatusCode.OK, registroRespuesta.StatusCode);
+
+        var loginRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest(email, password));
+        Assert.Equal(HttpStatusCode.OK, loginRespuesta.StatusCode);
+
+        Assert.True(loginRespuesta.Headers.TryGetValues("Set-Cookie", out var valoresSetCookie));
+        var setCookieRefresh = valoresSetCookie!.FirstOrDefault(
+            v => v.StartsWith($"{NombreCookie}=", StringComparison.Ordinal));
+        Assert.NotNull(setCookieRefresh);
+
+        // En Testing la cookie no es Secure (ver OpcionesCookieRefresh: solo fuera de
+        // Development/Testing), así que ese flag no se exige aquí.
+        Assert.Contains("HttpOnly", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("SameSite=Strict", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Path=/api/auth", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static string? ExtraerCookie(HttpResponseMessage respuesta, string nombreCookie)
     {
         if (!respuesta.Headers.TryGetValues("Set-Cookie", out var valores))

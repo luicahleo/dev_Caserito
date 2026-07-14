@@ -89,15 +89,15 @@ Autenticación y autorización mediante **ASP.NET Core Identity** + **JWT** + **
 
 ### Identidad (ApplicationUser)
 
-- `ApplicationUser` en `Identity.Domain` (hereda `IdentityUser<Guid>`). Claims: `sub` (UserId), `email`, `name`.
+- `ApplicationUser` en `Identity.Infrastructure` (hereda `IdentityUser<Guid>`). Claims: `sub` (UserId), `email`, `name`.
 - BD: tablas de Identity bajo schema `identity` (migración `InicialIdentity`). Tabla `RefreshToken` (HashedToken, Expiry, RevokedAt) vinculada a usuario.
 
 ### Flujo de Auth
 
-1. **Register** (`POST /api/auth/register`): email/password → hash bcrypt en Identity, usuario creado, retorna vacío (201).
+1. **Register** (`POST /api/auth/register`): email/password → hash bcrypt en Identity, usuario creado, retorna vacío (200).
 2. **Login** (`POST /api/auth/login`): email/password → valida, genera `accessToken` (JWT corto, 15 min), siembra cookie de `refresh` (httpOnly, SameSite=Strict, Secure en prod/staging), retorna `{ accessToken }` (200).
 3. **Refresh** (`POST /api/auth/refresh`): valida cookie + token en BD, rota refresh (nuevo hash), retorna nuevo `accessToken` + reemplaza cookie (200). Detecta reuso: token no es salt de otro en BD → 401.
-4. **Logout** (`POST /api/auth/logout`): revoca refresh en BD (RevokedAt = now), limpia cookie (200).
+4. **Logout** (`POST /api/auth/logout`): revoca refresh en BD (RevokedAt = now), limpia cookie (204).
 
 ### JWT y Claims
 
@@ -107,16 +107,16 @@ Autenticación y autorización mediante **ASP.NET Core Identity** + **JWT** + **
 
 ### Refresh Token Rotation
 
-- Guardado hasheado en `RefreshToken.HashedToken` (mismo algo que password, ej. bcrypt).
+- Guardado hasheado en `RefreshToken.HashedToken` con SHA-256 (no bcrypt: es un token aleatorio de alta entropía, no una password de usuario).
 - Al refresh: si token existe, no está revocado, y no es salt de otro → nuevo hash, invalida anterior (OptionalExpiry o marca para pruning).
 - Cookie: `HttpOnly=true`, `SameSite=Strict` (CSRF), `Secure` en prod/staging, `Max-Age=7d` (7 días).
 
 ### Endpoints y Autorización
 
-- `/api/auth/register`: POST, anónimo, `(email: string, password: string) → 201 | 400 (valdación)`.
+- `/api/auth/register`: POST, anónimo, `(email: string, password: string) → 200 | 400 (valdación)`.
 - `/api/auth/login`: POST, anónimo, `(email, password) → { accessToken: string }` + cookie, `200 | 401 (credenciales)`.
 - `/api/auth/refresh`: POST, anónimo (cookie-driven), `() → { accessToken }` + cookie, `200 | 401 (token inválido/reuso)`.
-- `/api/auth/logout`: POST, anónimo (cookie-driven), `() → 200`.
+- `/api/auth/logout`: POST, anónimo (cookie-driven), `() → 204`.
 - `/api/perfil`: GET/PUT, `[Authorize]` (requires bearer accessToken).
   - GET: `() → { id, email, name, ...perfil }` (CQRS query).
   - PUT: `(name, ...perfil) → 204` (CQRS command). Validaciones en `Domain`.
