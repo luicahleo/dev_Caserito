@@ -1,5 +1,8 @@
 using System.Text;
+using CaseritoApp.BuildingBlocks.Application.Abstractions;
+using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +40,16 @@ public static class DependencyInjection
             .AddSignInManager<SignInManager<ApplicationUser>>()
             .AddDefaultTokenProviders();
 
+        servicios.AddScoped<IRepositorioPerfil, RepositorioPerfilUserManager>();
+
+        // Registro incondicional (no atado a la presencia de cadena de conexión): en tests de
+        // integración (CaseritoApiFactory) el IdentityDbContext se registra por fuera de este
+        // método (RemoveAll + AddDbContext contra Testcontainers), así que atar este registro al
+        // mismo "if" de arriba dejaría IUnitOfWork sin resolver ahí. Solo falla en tiempo de
+        // resolución (al manejar un ICommand/IQuery de Identity) si IdentityDbContext no está
+        // registrado, igual que ya ocurre con UserManager/SignInManager en ese escenario.
+        servicios.AddScoped<IUnitOfWork, UnitOfWorkIdentity>();
+
         return servicios;
     }
 
@@ -63,6 +76,13 @@ public static class DependencyInjection
         servicios.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
             {
+                // Sin este ajuste, JwtSecurityTokenHandler remapea automáticamente el claim "sub"
+                // (JwtRegisteredClaimNames.Sub) a ClaimTypes.NameIdentifier al deserializar el
+                // token entrante. Se desactiva ese mapeo para que los endpoints (p. ej. /api/perfil)
+                // puedan leer el userId directamente vía User.FindFirst(JwtRegisteredClaimNames.Sub),
+                // igual que se emitió en GeneradorTokensAcceso.
+                opt.MapInboundClaims = false;
+
                 var o = config.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
 
                 string claveTexto;

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <!-- Requerido por las herramientas de dotnet ef (proyecto de inicio) para generar migraciones;
          no se usa en tiempo de ejecución. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
