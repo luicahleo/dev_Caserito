@@ -1,4 +1,5 @@
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
+using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Infrastructure;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,8 @@ if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(cadenaConexion
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapAuthEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 

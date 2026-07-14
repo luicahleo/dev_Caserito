@@ -1,4 +1,5 @@
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Identity.Infrastructure.Auth;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -19,9 +20,16 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
         .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
         .Build();
 
+    /// <summary>
+    /// Clave HS256 fija (mínimo 32 bytes) usada en Testing para que la firma del access JWT (en
+    /// login/refresh) y su validación (Bearer, p. ej. /perfil) usen exactamente la misma clave.
+    /// </summary>
+    public const string JwtKeyDePrueba = "clave-de-prueba-para-tests-de-integracion-32b+";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseSetting($"{OpcionesJwt.Seccion}:Key", JwtKeyDePrueba);
         builder.ConfigureServices(servicios =>
         {
             servicios.RemoveAll<DbContextOptions<IdentityDbContext>>();
