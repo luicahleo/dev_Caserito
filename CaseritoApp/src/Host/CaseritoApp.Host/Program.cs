@@ -13,14 +13,11 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavi
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
-// El DbContext de Identity solo se registra si hay cadena de conexión configurada
-// (env, user-secrets o compose). Sin cadena (p. ej. tests de /health), el host arranca sin BD.
+// El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
+// conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
+// el host arranca sin BD.
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
-if (!string.IsNullOrWhiteSpace(cadenaConexion))
-{
-    builder.Services.AddDbContext<IdentityDbContext>(opciones =>
-        opciones.UseSqlServer(cadenaConexion));
-}
+builder.Services.AgregarIdentity(builder.Configuration);
 
 var app = builder.Build();
 

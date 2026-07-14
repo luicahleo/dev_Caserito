@@ -1,0 +1,6 @@
+# Código generado por `dotnet ef migrations add`: siempre emite namespaces con bloque
+# (no file-scoped) y no admite personalización de plantilla en el SDK actual. Se relaja
+# aquí, solo para este directorio, la regla de rigor global (csharp_style_namespace_declarations)
+# para no editar a mano archivos generados en cada migración futura.
+[*.cs]
+csharp_style_namespace_declarations = block_scoped:silent

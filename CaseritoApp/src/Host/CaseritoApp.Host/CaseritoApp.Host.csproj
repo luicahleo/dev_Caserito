@@ -14,6 +14,12 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" />
+    <!-- Requerido por las herramientas de dotnet ef (proyecto de inicio) para generar migraciones;
+         no se usa en tiempo de ejecución. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>
