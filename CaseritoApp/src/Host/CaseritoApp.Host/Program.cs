@@ -1,10 +1,11 @@
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
+using CaseritoApp.Identity.Infrastructure;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Se registran MediatR y los behaviors del pipeline de aplicación.
-// Aún no se registran DbContexts ni cadena de conexión: el host arranca sin BD.
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<CaseritoApp.BuildingBlocks.Application.Abstractions.IUnitOfWork>());
 
@@ -12,7 +13,24 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavi
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
+// El DbContext de Identity solo se registra si hay cadena de conexión configurada
+// (env, user-secrets o compose). Sin cadena (p. ej. tests de /health), el host arranca sin BD.
+var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrWhiteSpace(cadenaConexion))
+{
+    builder.Services.AddDbContext<IdentityDbContext>(opciones =>
+        opciones.UseSqlServer(cadenaConexion));
+}
+
 var app = builder.Build();
+
+// Migración automática solo en Development y solo si hay cadena de conexión presente.
+if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(cadenaConexion))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 

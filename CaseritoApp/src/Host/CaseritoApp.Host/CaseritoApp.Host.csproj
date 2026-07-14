@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Infrastructure\CaseritoApp.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

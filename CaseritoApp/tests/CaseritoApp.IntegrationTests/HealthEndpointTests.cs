@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -10,7 +11,9 @@ public sealed class HealthEndpointTests(WebApplicationFactory<Program> factory)
     [Fact]
     public async Task Health_responde_200()
     {
-        var cliente = factory.CreateClient();
+        var cliente = factory
+            .WithWebHostBuilder(b => b.UseEnvironment("Testing"))
+            .CreateClient();
         var respuesta = await cliente.GetAsync("/health");
         Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
     }
