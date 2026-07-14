@@ -18,6 +18,7 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBeh
 // el host arranca sin BD.
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AgregarIdentity(builder.Configuration);
+builder.Services.AgregarAutenticacionJwt(builder.Configuration);
 
 var app = builder.Build();
 
@@ -28,6 +29,9 @@ if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(cadenaConexion
     var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
     await db.Database.MigrateAsync();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 
