@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Host\CaseritoApp.Host\CaseritoApp.Host.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Application\CaseritoApp.Identity.Application.csproj" />
   </ItemGroup>
 
 </Project>
