@@ -55,3 +55,19 @@ Desde `CaseritoApp/`:
 ## Especificaciones
 
 Diseños y planes en `docs/superpowers/specs/` y `docs/superpowers/plans/`.
+
+## Frontend web (web/)
+
+SPA React + TypeScript (Vite) como PWA instalable; se envuelve con Capacitor para
+tiendas. Consume la Web API de `CaseritoApp/` (host .NET). Vive en `web/`.
+
+- UI: **MUI** (Material UI) + Emotion; tema en `src/theme/`.
+- Navegación: **React Router** (`src/app/router.tsx`).
+- Estado de servidor/API: **TanStack Query**; la capa de API vive en `src/api/`
+  (hoy cliente a mano de `/health`; en Fase 1 se genera un cliente tipado del OpenAPI).
+- Calidad: TypeScript estricto, ESLint + Prettier, Vitest + React Testing Library.
+- Textos de UI y comentarios en **español**.
+- Nunca exponer PII en logs del cliente (mismo criterio que el backend).
+
+Comandos (desde `web/`): `npm run dev` | `build` | `lint` | `typecheck` | `test`.
+Dev: Vite proxya `/health` y `/api` al host .NET (ver `vite.config.ts`).
