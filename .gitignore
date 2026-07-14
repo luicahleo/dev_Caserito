@@ -49,3 +49,6 @@ web/dev-dist/
 web/android/
 web/ios/
 .capacitor/
+
+# Docker: variables de entorno locales (secretos), nunca versionar
+.env
