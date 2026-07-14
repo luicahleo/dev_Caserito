@@ -71,3 +71,14 @@ tiendas. Consume la Web API de `CaseritoApp/` (host .NET). Vive en `web/`.
 
 Comandos (desde `web/`): `npm run dev` | `build` | `lint` | `typecheck` | `test`.
 Dev: Vite proxya `/health` y `/api` al host .NET (ver `vite.config.ts`).
+
+## Contenedores y base de datos
+
+Dev y test corren en contenedores (SQL Server 2022 + api + web).
+
+- Levantar todo (dev): `./rebuild.ps1` (o `docker compose -f docker-compose.dev.yml up -d --build`). Requiere un `.env` (copiar de `.env.example`).
+- BD: SQL Server en contenedor; cadena por env `ConnectionStrings__DefaultConnection` (host = `sqlserver` en compose). Migración automática **solo en Development** al arrancar; prod es controlada.
+- Flujo híbrido (api en host contra SQL en contenedor): `docker compose -f docker-compose.dev.yml up -d sqlserver` + `dotnet user-secrets` con la cadena a `localhost,1433`. La password de SA vive en `.env`/user-secrets, nunca versionada.
+- Tests de integración: **Testcontainers.MsSql** bajo entorno `Testing` (`CaseritoApiFactory`); requieren Docker.
+- Prod: `docker-compose.yml` (plantilla) con imágenes runtime y red externa `trajano-shared-network` (NGINX/TLS fuera del repo). Deploy a VPS diferido.
+- Dockerfiles corren como usuario **no-root**; API en puerto 8080.

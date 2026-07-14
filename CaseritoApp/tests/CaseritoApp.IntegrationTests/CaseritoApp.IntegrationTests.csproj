@@ -15,6 +15,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Testcontainers.MsSql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Host\CaseritoApp.Host\CaseritoApp.Host.csproj" />
+    <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

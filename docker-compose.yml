@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  api:
+    image: caserito-api:latest
+    container_name: caserito-api
+    env_file: .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      TZ: "America/La_Paz"
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks: [trajano-shared-network]
+    restart: always
+
+  web:
+    image: caserito-web:latest
+    container_name: caserito-web
+    environment:
+      TZ: "America/La_Paz"
+    ports:
+      - "127.0.0.1:8090:80"
+    networks: [trajano-shared-network]
+    restart: always
+
+networks:
+  trajano-shared-network:
+    external: true

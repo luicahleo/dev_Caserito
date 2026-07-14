@@ -1,0 +1,20 @@
+# Dockerfile de producción para CaseritoApp.Host
+# Runtime-only: copia binarios pre-compilados de publish/
+# No incluye herramientas de build (dotnet SDK)
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+
+WORKDIR /app
+
+# Copiar binarios publicados (generados por 'dotnet publish' en el pipeline CI)
+COPY publish/ ./
+
+# Configurar puerto HTTP
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+
+# Ejecutar como usuario no-root (usuario 'app' integrado en imagen aspnet)
+USER app
+
+# Punto de entrada: ejecutar la aplicación
+ENTRYPOINT ["dotnet", "CaseritoApp.Host.dll"]

@@ -3,6 +3,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Target del proxy configurable por entorno (Docker/compose apunta al servicio "api");
+// fallback al puerto de dev en host.
+const apiTarget = process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:5245';
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -25,9 +29,10 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: true,
     proxy: {
-      '/health': 'http://localhost:5245',
-      '/api': 'http://localhost:5245',
+      '/health': apiTarget,
+      '/api': apiTarget,
     },
   },
   test: {

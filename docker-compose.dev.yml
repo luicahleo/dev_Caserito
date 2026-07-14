@@ -1,0 +1,61 @@
+# Orquestación de desarrollo local: SQL Server + API (.NET) + Web (Vite/React).
+# Uso: cp .env.example .env  (ajusta SA_PASSWORD)  ->  ./rebuild.ps1 o ./rebuild.sh
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: caserito-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      # Volumen persistente para no perder datos entre reinicios.
+      - caserito-sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./CaseritoApp
+      dockerfile: src/Host/CaseritoApp.Host/Dockerfile
+    container_name: caserito-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      # Cadena de conexión apuntando al servicio sqlserver dentro de la red de compose.
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CaseritoDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      sqlserver:
+        # Espera a que sqlserver pase el healthcheck antes de arrancar la API.
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    container_name: caserito-web
+    environment:
+      # El dev server de Vite proxya las llamadas de la API hacia el contenedor api.
+      VITE_API_PROXY_TARGET: "http://api:8080"
+    ports:
+      - "5173:5173"
+    volumes:
+      # Bind mount del código fuente para HMR; volumen anónimo para no pisar
+      # las node_modules instaladas dentro de la imagen con las del host.
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  caserito-sqlserver-data:
