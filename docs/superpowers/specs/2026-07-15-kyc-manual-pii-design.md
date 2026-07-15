@@ -48,7 +48,8 @@ Un agregado por usuario (`UserId`), que agrupa el **historial** de solicitudes.
     borrar la anterior (trazabilidad + base para OCR futuro, brief §4.4).
 - `Aprobar(solicitudId, revisorId)`: solo válido desde `Pendiente`
   (`Kyc.TransicionInvalida` en otro caso). Setea `Estado=Aprobada`, `ResueltaEn`,
-  `ResueltaPor`. Levanta evento de dominio que se traduce a `UserVerified`.
+  `ResueltaPor`. La emisión del evento `UserVerified` la hace el handler del comando
+  tras aprobar con éxito (ver §5), no el agregado.
 - `Rechazar(solicitudId, revisorId, motivo)`: solo desde `Pendiente`. Setea
   `Estado=Rechazada`, `MotivoRechazo`, `ResueltaEn`, `ResueltaPor`.
 
@@ -139,9 +140,14 @@ Application.
 - Configuración EF Core de `VerificacionKyc` + `SolicitudKyc` en
   **`IdentityDbContext`**, schema `identity` (mismo bounded context).
 - Migración nueva: **`KycInicial`**.
-- Emisión de `UserVerified` mediante el dispatcher de eventos de integración
-  existente al aprobar una solicitud.
-- Registro de repositorio y adaptador de blobs en `DependencyInjection` de Identity.
+- **Publicación de `UserVerified`**: hoy **no existe** infraestructura de despacho de
+  eventos (`IDomainEventDispatcher` es solo interfaz; `UnitOfWorkBehavior` no despacha).
+  Se introduce un puerto mínimo `IPublicadorEventosIntegracion` (Application) con una
+  implementación in-process que **loguea el evento sin PII** (solo `EventId`/`UserId`).
+  Satisface el brief §4.5 (publicar aunque no haya consumidores). El **outbox
+  transaccional queda diferido** (ya diferido en Fase 0). El handler de aprobar publica
+  `UserVerified` tras aprobar con éxito.
+- Registro de repositorio, adaptador de blobs y publicador en `DependencyInjection` de Identity.
 
 ## 6. Endpoints (Host)
 
