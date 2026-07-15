@@ -22,7 +22,7 @@ public sealed class GeneradorTokensAccesoTests
     {
         var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
 
-        var jwt = CrearGenerador().Generar(usuario, [Permisos.KycRevisar, Permisos.UsuariosGestionar]);
+        var jwt = CrearGenerador().Generar(usuario, [Permisos.KycRevisar, Permisos.UsuariosGestionar], verificado: false);
 
         var permisos = Leer(jwt).Claims.Where(c => c.Type == ClaimsApp.Permiso).Select(c => c.Value).ToArray();
         Assert.Contains(Permisos.KycRevisar, permisos);
@@ -35,8 +35,18 @@ public sealed class GeneradorTokensAccesoTests
     {
         var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
 
-        var jwt = CrearGenerador().Generar(usuario, []);
+        var jwt = CrearGenerador().Generar(usuario, [], verificado: false);
 
         Assert.DoesNotContain(Leer(jwt).Claims, c => c.Type == ClaimsApp.Permiso);
+    }
+
+    [Fact]
+    public void Generar_incluye_claim_verificado_true_cuando_esta_verificado()
+    {
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+
+        var jwt = CrearGenerador().Generar(usuario, [], verificado: true);
+
+        Assert.Equal("true", Leer(jwt).Claims.Single(c => c.Type == "verificado").Value);
     }
 }

@@ -44,7 +44,7 @@ public sealed class ProveedorClaveFirmaTests
         var generador = new GeneradorTokensAcceso(opciones, proveedor, TimeProvider.System);
 
         var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
-        var jwt = generador.Generar(usuario, []);
+        var jwt = generador.Generar(usuario, [], verificado: false);
 
         var parametros = new TokenValidationParameters
         {

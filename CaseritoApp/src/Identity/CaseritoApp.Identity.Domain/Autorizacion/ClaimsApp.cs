@@ -5,4 +5,7 @@ public static class ClaimsApp
 {
     /// <summary>Claim de permiso concedido (uno por permiso). No es PII.</summary>
     public const string Permiso = "perm";
+
+    /// <summary>Tipo de claim que indica que el usuario tiene una verificación KYC aprobada.</summary>
+    public const string Verificado = "verificado";
 }

@@ -1,3 +1,4 @@
+using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
@@ -75,6 +76,7 @@ public static class AuthEndpoints
         SignInManager<ApplicationUser> signInManager,
         IGeneradorTokensAcceso generadorTokens,
         IServicioRefreshTokens servicioRefreshTokens,
+        IConsultaVerificacionKyc consultaKyc,
         HttpContext contexto,
         IHostEnvironment entorno,
         CancellationToken ct)
@@ -93,7 +95,8 @@ public static class AuthEndpoints
 
         var roles = await userManager.GetRolesAsync(usuario);
         var permisos = MapaRolesPermisos.PermisosDe(roles);
-        var accessToken = generadorTokens.Generar(usuario, permisos);
+        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
+        var accessToken = generadorTokens.Generar(usuario, permisos, verificado);
         var refreshTokenPlano = await servicioRefreshTokens.EmitirAsync(usuario.Id, ct);
 
         EstablecerCookieRefresh(contexto, refreshTokenPlano, entorno);
@@ -105,6 +108,7 @@ public static class AuthEndpoints
         UserManager<ApplicationUser> userManager,
         IGeneradorTokensAcceso generadorTokens,
         IServicioRefreshTokens servicioRefreshTokens,
+        IConsultaVerificacionKyc consultaKyc,
         HttpContext contexto,
         IHostEnvironment entorno,
         CancellationToken ct)
@@ -133,7 +137,8 @@ public static class AuthEndpoints
 
         var roles = await userManager.GetRolesAsync(usuario);
         var permisos = MapaRolesPermisos.PermisosDe(roles);
-        var accessToken = generadorTokens.Generar(usuario, permisos);
+        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
+        var accessToken = generadorTokens.Generar(usuario, permisos, verificado);
         EstablecerCookieRefresh(contexto, nuevoTokenPlano, entorno);
 
         return Results.Ok(new TokenAccesoResponse(accessToken));

@@ -23,7 +23,7 @@ public sealed class GeneradorTokensAccesoTests
         var gen = new GeneradorTokensAcceso(opciones, proveedorClave, tiempo);
         var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombre = "Ana" };
 
-        var jwt = gen.Generar(usuario, []);
+        var jwt = gen.Generar(usuario, [], verificado: false);
         var leido = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
 
         Assert.Equal(usuario.Id.ToString(), leido.Subject);
@@ -47,7 +47,7 @@ public sealed class GeneradorTokensAccesoTests
         var gen = new GeneradorTokensAcceso(opciones, proveedorClave, tiempo);
         var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombre = "Ana" };
 
-        var jwt = gen.Generar(usuario, []);
+        var jwt = gen.Generar(usuario, [], verificado: false);
         var leido = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
 
         Assert.Equal(ahora.AddMinutes(15).UtcDateTime, leido.ValidTo);
