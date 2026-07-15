@@ -133,3 +133,15 @@ dotnet ef migrations add InicialIdentity \
 ```
 
 Aplicada automáticamente en Development al arrancar (via `CaseritoApiFactory` en tests con Testcontainers).
+
+## Economía de tokens (trabajo asistido por IA)
+
+Reglas para minimizar consumo de tokens al desarrollar con agentes en este repo:
+
+- **Una feature/bloque por sesión.** Al terminar y mergear un bloque, abrir sesión nueva para el siguiente. La continuidad la dan la memoria (`MEMORY.md`) y los specs/planes en `docs/superpowers/{specs,plans}/`; no hace falta arrastrar el historial. Evitar encadenar muchos bloques en una sola sesión.
+- **Selección de modelo en ejecución subagent-driven** (especificar SIEMPRE el modelo al despachar; no heredar el del loop):
+  - **Haiku** para tasks mecánicas / transcripción / markdown y revisiones triviales.
+  - **Sonnet** para lógica, integración, EF/behaviors y revisiones de riesgo medio.
+  - Reservar el modelo más capaz (**Opus**) para la **revisión final de rama** o decisiones de arquitectura; no usarlo en tasks rutinarias.
+- **Escalar la ceremonia de revisión al riesgo**: no todo necesita implementer + review + fix-loop + revisión final. Cambios triviales pueden ir con revisión ligera o ejecución inline.
+- **Apoyarse en los planes/specs ya escritos** en vez de re-explicar contexto; usar `Read` puntual del plan relevante. Usar `/compact` entre piezas grandes de trabajo dentro de una sesión.
