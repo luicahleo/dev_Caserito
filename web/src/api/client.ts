@@ -7,9 +7,13 @@ import { clearAccessToken, getAccessToken, setAccessToken } from '../auth/sessio
 async function refrescarToken(): Promise<boolean> {
   const r = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
   if (!r.ok) return false;
-  const data = (await r.json()) as { accessToken: string };
-  setAccessToken(data.accessToken);
-  return true;
+  try {
+    const data = (await r.json()) as { accessToken: string };
+    setAccessToken(data.accessToken);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function ejecutar(ruta: string, init: RequestInit, reintentar = true): Promise<Response> {
