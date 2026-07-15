@@ -4,6 +4,7 @@ using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using FluentValidation;
 using MediatR;
 
 namespace CaseritoApp.Host.Endpoints;
@@ -46,12 +47,9 @@ public static class AdminEndpoints
             var resultado = await sender.Send(new BuscarUsuariosQuery(query, pagina, tamano), ct);
             return Results.Ok(resultado);
         }
-        catch (FluentValidation.ValidationException ex)
+        catch (ValidationException ex)
         {
-            var errores = ex.Errors
-                .GroupBy(e => e.PropertyName)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-            return Results.ValidationProblem(errores);
+            return ProblemaDeValidacion(ex);
         }
     }
 
@@ -68,12 +66,9 @@ public static class AdminEndpoints
             var resultado = await sender.Send(new AsignarRolCommand(adminId, id, request.Rol), ct);
             return DesdeResult(resultado);
         }
-        catch (FluentValidation.ValidationException ex)
+        catch (ValidationException ex)
         {
-            var errores = ex.Errors
-                .GroupBy(e => e.PropertyName)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-            return Results.ValidationProblem(errores);
+            return ProblemaDeValidacion(ex);
         }
     }
 
@@ -90,14 +85,17 @@ public static class AdminEndpoints
             var resultado = await sender.Send(new QuitarRolCommand(adminId, id, rol), ct);
             return DesdeResult(resultado);
         }
-        catch (FluentValidation.ValidationException ex)
+        catch (ValidationException ex)
         {
-            var errores = ex.Errors
-                .GroupBy(e => e.PropertyName)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-            return Results.ValidationProblem(errores);
+            return ProblemaDeValidacion(ex);
         }
     }
+
+    // Traduce una ValidationException de FluentValidation al 400 ValidationProblem estándar.
+    private static IResult ProblemaDeValidacion(ValidationException ex) =>
+        Results.ValidationProblem(ex.Errors
+            .GroupBy(e => e.PropertyName)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()));
 
     private static bool TryObtenerAdminId(ClaimsPrincipal usuario, out Guid userId)
     {
