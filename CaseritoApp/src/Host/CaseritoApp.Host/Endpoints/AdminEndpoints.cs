@@ -1,12 +1,13 @@
+using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using MediatR;
 
 namespace CaseritoApp.Host.Endpoints;
 
 /// <summary>
-/// Grupo minimal API <c>/api/admin</c>. Por ahora solo expone <c>GET /ping</c> como andamiaje
-/// demostrativo del pipeline RBAC (policy de permiso). Los endpoints reales de administración
-/// (moderación, revisión KYC) llegan en Fase 2.
+/// Grupo minimal API <c>/api/admin</c>, protegido por la policy del permiso <c>usuarios.gestionar</c>:
+/// ping de ejemplo, catálogo de roles, búsqueda de usuarios y gestión de roles por usuario.
 /// </summary>
 public static class AdminEndpoints
 {
@@ -17,7 +18,14 @@ public static class AdminEndpoints
             .RequireAuthorization(PoliticasAutorizacion.Permiso(Permisos.UsuariosGestionar));
 
         grupo.MapGet("/ping", () => Results.Ok(new { estado = "ok" }));
+        grupo.MapGet("/roles", ListarRolesAsync);
 
         return app;
+    }
+
+    private static async Task<IResult> ListarRolesAsync(ISender sender, CancellationToken ct)
+    {
+        var roles = await sender.Send(new ListarRolesQuery(), ct);
+        return Results.Ok(roles);
     }
 }
