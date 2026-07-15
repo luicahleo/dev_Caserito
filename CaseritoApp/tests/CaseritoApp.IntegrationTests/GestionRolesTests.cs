@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -43,6 +45,26 @@ public sealed class GestionRolesTests(CaseritoApiFactory factory) : IClassFixtur
     }
 
     private static string Email(string prefijo) => $"{prefijo}-{Guid.NewGuid():N}@caserito.test";
+
+    private static string[] PermisosDelToken(string accessToken)
+    {
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+        return jwt.Claims.Where(c => c.Type == "perm").Select(c => c.Value).ToArray();
+    }
+
+    private async Task<(string email, Guid id)> RegistrarClienteAsync(HttpClient cliente)
+    {
+        var email = Email("target");
+        var registro = await cliente.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistroRequest(email, "Password123!", "Usuario", "Lima"));
+        Assert.Equal(HttpStatusCode.OK, registro.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = await userManager.FindByEmailAsync(email);
+        return (email, usuario!.Id);
+    }
 
     [Fact]
     public async Task Listar_roles_devuelve_200_con_admin()
@@ -94,6 +116,87 @@ public sealed class GestionRolesTests(CaseritoApiFactory factory) : IClassFixtur
         var respuesta = await cliente.SendAsync(solicitud);
 
         Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Asignar_rol_lo_refleja_en_la_busqueda_y_se_propaga_al_relogin()
+    {
+        using var cliente = factory.CreateClient();
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-asignar"), RolesApp.AdminPlataforma);
+        var (targetEmail, targetId) = await RegistrarClienteAsync(cliente);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{targetId}/roles", adminToken);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest(RolesApp.Moderador));
+        var respuesta = await cliente.SendAsync(asignar);
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+
+        // Se refleja en la búsqueda.
+        using var buscar = Autorizada(HttpMethod.Get, $"/api/admin/usuarios?query={Uri.EscapeDataString(targetEmail)}", adminToken);
+        var paginaResp = await cliente.SendAsync(buscar);
+        var pagina = await paginaResp.Content.ReadFromJsonAsync<PaginaUsuariosResponse>();
+        Assert.Contains(pagina!.Items, u => u.Id == targetId && u.Roles.Contains(RolesApp.Moderador));
+
+        // Propagación: al (re)loguear, el JWT del target trae los permisos de Moderador.
+        var login = await cliente.PostAsJsonAsync("/api/auth/login", new LoginRequest(targetEmail, "Password123!"));
+        var tokenTarget = (await login.Content.ReadFromJsonAsync<TokenAccesoResponse>())!.AccessToken;
+        var permisos = PermisosDelToken(tokenTarget);
+        Assert.Contains(Permisos.PublicacionesModerar, permisos);
+        Assert.Contains(Permisos.ChatModerar, permisos);
+    }
+
+    [Fact]
+    public async Task Asignar_rol_desconocido_devuelve_400()
+    {
+        using var cliente = factory.CreateClient();
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-rol-falso"), RolesApp.AdminPlataforma);
+        var (_, targetId) = await RegistrarClienteAsync(cliente);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{targetId}/roles", adminToken);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest("RolFalso"));
+        var respuesta = await cliente.SendAsync(asignar);
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Asignar_rol_Sistema_devuelve_400()
+    {
+        using var cliente = factory.CreateClient();
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-sistema"), RolesApp.AdminPlataforma);
+        var (_, targetId) = await RegistrarClienteAsync(cliente);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{targetId}/roles", adminToken);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest(RolesApp.Sistema));
+        var respuesta = await cliente.SendAsync(asignar);
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Asignar_rol_a_usuario_inexistente_devuelve_404()
+    {
+        using var cliente = factory.CreateClient();
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-404"), RolesApp.AdminPlataforma);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{Guid.NewGuid()}/roles", adminToken);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest(RolesApp.Moderador));
+        var respuesta = await cliente.SendAsync(asignar);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Asignar_rol_sin_permiso_devuelve_403()
+    {
+        using var cliente = factory.CreateClient();
+        var token = await RegistrarYLoguearAsync(cliente, Email("no-admin"), rolExtra: null);
+        var (_, targetId) = await RegistrarClienteAsync(cliente);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{targetId}/roles", token);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest(RolesApp.Moderador));
+        var respuesta = await cliente.SendAsync(asignar);
+
+        Assert.Equal(HttpStatusCode.Forbidden, respuesta.StatusCode);
     }
 }
 
