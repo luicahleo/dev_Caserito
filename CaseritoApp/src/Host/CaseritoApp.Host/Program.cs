@@ -31,8 +31,15 @@ builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environm
 
 var app = builder.Build();
 
-// Migración + seeding de roles automáticos solo en Development y solo si hay cadena de conexión.
-if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(cadenaConexion))
+// Migración + seeding de roles al arrancar. En Development es automático; fuera de Development
+// (p. ej. Production) es opt-in vía "Migraciones:EjecutarAlArranque" (ruta de migración controlada:
+// el deploy de prod activa el flag para aplicar el esquema y sembrar los roles del MVP —incluido
+// Cliente, sin el cual el registro daría 500—). El seeding es idempotente y corre tras migrar.
+var ejecutarMigraciones =
+    app.Environment.IsDevelopment()
+    || app.Configuration.GetValue<bool>("Migraciones:EjecutarAlArranque");
+
+if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
 {
     using (var scope = app.Services.CreateScope())
     {

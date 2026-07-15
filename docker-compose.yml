@@ -9,6 +9,9 @@ services:
       ASPNETCORE_ENVIRONMENT: "Production"
       ASPNETCORE_HTTP_PORTS: "8080"
       TZ: "America/La_Paz"
+      # Ruta de migración controlada de prod: aplica el esquema pendiente y siembra los roles del MVP
+      # (idempotente) al arrancar. Sin esto, el registro fallaría con 500 (rol Cliente inexistente).
+      Migraciones__EjecutarAlArranque: "true"
     ports:
       - "127.0.0.1:8080:8080"
     networks: [trajano-shared-network]
