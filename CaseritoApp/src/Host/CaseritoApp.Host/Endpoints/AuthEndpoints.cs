@@ -55,6 +55,9 @@ public static class AuthEndpoints
                     e => new[] { e.Description }));
         }
 
+        // Cada usuario nuevo recibe el rol por defecto Cliente (sembrado en el arranque).
+        await userManager.AddToRoleAsync(usuario, RolesApp.Cliente);
+
         return Results.Ok();
     }
 
