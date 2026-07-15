@@ -5,5 +5,7 @@ namespace CaseritoApp.BuildingBlocks.Infrastructure.Security;
 public sealed class PassthroughEncryptor : IEncryptor
 {
     public string Cifrar(string textoPlano) => textoPlano;
+    public byte[] Cifrar(byte[] datos) => datos;
     public string Descifrar(string textoCifrado) => textoCifrado;
+    public byte[] Descifrar(byte[] datos) => datos;
 }

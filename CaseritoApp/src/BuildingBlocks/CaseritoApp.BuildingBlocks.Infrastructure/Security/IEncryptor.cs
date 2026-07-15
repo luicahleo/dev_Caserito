@@ -5,5 +5,7 @@ namespace CaseritoApp.BuildingBlocks.Infrastructure.Security;
 public interface IEncryptor
 {
     public string Cifrar(string textoPlano);
+    public byte[] Cifrar(byte[] datos);
     public string Descifrar(string textoCifrado);
+    public byte[] Descifrar(byte[] datos);
 }
