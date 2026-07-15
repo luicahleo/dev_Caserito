@@ -1,6 +1,7 @@
 using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.Identity.Application.Perfil;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace CaseritoApp.Identity.Infrastructure;
 
@@ -64,14 +64,14 @@ public static class DependencyInjection
         this IServiceCollection servicios, IConfiguration config, IHostEnvironment entorno)
     {
         servicios.AddSingleton(TimeProvider.System);
+        servicios.AddSingleton<ProveedorClaveFirma>();
         servicios.AddSingleton<IGeneradorTokensAcceso, GeneradorTokensAcceso>();
         servicios.AddScoped<IServicioRefreshTokens, ServicioRefreshTokens>();
 
         // Solo en Development/Testing se admite una clave efímera de repuesto; fuera de esos
         // entornos la ausencia de "Jwt:Key" es un error de configuración crítico y debe fallar
-        // rápido (fail-fast). La validación con ValidateOnStart corre al construir el host (no de
-        // forma perezosa en la primera request autenticada), así que un despliegue mal configurado
-        // ni siquiera arranca ni pasa health checks.
+        // rápido (fail-fast). ValidateOnStart corre al construir el host, así que un despliegue mal
+        // configurado ni siquiera arranca.
         var permiteClaveEfimera = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
 
         servicios.AddOptions<OpcionesJwt>()
@@ -82,48 +82,24 @@ public static class DependencyInjection
                 "Jwt:Key es obligatorio y debe tener al menos 32 bytes fuera de Development/Testing")
             .ValidateOnStart();
 
-        servicios.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(opt =>
+        servicios.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+
+        // La configuración de JwtBearerOptions se hace vía IConfigureNamedOptions para inyectar el
+        // OpcionesJwt bindeado y la clave compartida (ProveedorClaveFirma), en vez de releer la
+        // config a mano. Así firma (GeneradorTokensAcceso) y validación usan la misma clave.
+        servicios.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigurarJwtBearer>();
+
+        servicios.AddAuthorization(opciones =>
+        {
+            // Una policy por permiso: exige el claim "perm" con ese valor. La autorización chequea
+            // permisos, no roles (los roles solo agregan permisos al emitir el token).
+            foreach (var permiso in Permisos.Todos)
             {
-                // Sin este ajuste, JwtSecurityTokenHandler remapea automáticamente el claim "sub"
-                // (JwtRegisteredClaimNames.Sub) a ClaimTypes.NameIdentifier al deserializar el
-                // token entrante. Se desactiva ese mapeo para que los endpoints (p. ej. /api/perfil)
-                // puedan leer el userId directamente vía User.FindFirst(JwtRegisteredClaimNames.Sub),
-                // igual que se emitió en GeneradorTokensAcceso.
-                opt.MapInboundClaims = false;
-
-                var o = config.GetSection(OpcionesJwt.Seccion).Get<OpcionesJwt>() ?? new OpcionesJwt();
-
-                // La validación al arranque (ValidateOnStart, arriba) ya garantiza que fuera de
-                // Development/Testing "Jwt:Key" está presente y tiene al menos 32 bytes; aquí solo
-                // queda cubrir el caso dev/test sin clave configurada con una efímera de repuesto.
-                string claveTexto;
-                if (!string.IsNullOrWhiteSpace(o.Key))
-                {
-                    claveTexto = o.Key;
-                }
-                else
-                {
-                    // Clave efímera solo para que la construcción de las opciones no falle en
-                    // dev/test; nunca podrá validar tokens reales (se firman con la clave real
-                    // provista por user-secrets/env, no con esta clave de repuesto).
-                    claveTexto = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
-                }
-
-                opt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = o.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = o.Audience,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(claveTexto)),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.FromSeconds(30),
-                };
-            });
-
-        servicios.AddAuthorization();
+                opciones.AddPolicy(
+                    PoliticasAutorizacion.Permiso(permiso),
+                    p => p.RequireClaim(ClaimsApp.Permiso, permiso));
+            }
+        });
 
         return servicios;
     }
