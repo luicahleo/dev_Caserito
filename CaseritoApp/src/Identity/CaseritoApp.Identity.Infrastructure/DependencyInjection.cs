@@ -1,6 +1,7 @@
 using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.Identity.Application.Perfil;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -88,7 +89,17 @@ public static class DependencyInjection
         // config a mano. Así firma (GeneradorTokensAcceso) y validación usan la misma clave.
         servicios.AddSingleton<IConfigureOptions<JwtBearerOptions>, ConfigurarJwtBearer>();
 
-        servicios.AddAuthorization();
+        servicios.AddAuthorization(opciones =>
+        {
+            // Una policy por permiso: exige el claim "perm" con ese valor. La autorización chequea
+            // permisos, no roles (los roles solo agregan permisos al emitir el token).
+            foreach (var permiso in Permisos.Todos)
+            {
+                opciones.AddPolicy(
+                    PoliticasAutorizacion.Permiso(permiso),
+                    p => p.RequireClaim(ClaimsApp.Permiso, permiso));
+            }
+        });
 
         return servicios;
     }
