@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CaseritoApp.BuildingBlocks.Domain\CaseritoApp.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\CaseritoApp.BuildingBlocks.Contracts\CaseritoApp.BuildingBlocks.Contracts.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
