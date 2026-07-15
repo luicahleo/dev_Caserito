@@ -1,10 +1,12 @@
 using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.Identity.Application.Autorizacion;
+using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Identity.Infrastructure.Autorizacion;
+using CaseritoApp.Identity.Infrastructure.Kyc;
 using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -45,6 +47,8 @@ public static class DependencyInjection
 
         servicios.AddScoped<IRepositorioPerfil, RepositorioPerfilUserManager>();
         servicios.AddScoped<IRepositorioRolesUsuario, RepositorioRolesUsuarioUserManager>();
+        servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
+        servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
 
         // Registro incondicional (no atado a la presencia de cadena de conexión): en tests de
         // integración (CaseritoApiFactory) el IdentityDbContext se registra por fuera de este
