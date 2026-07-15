@@ -56,6 +56,7 @@ app.UseAuthorization();
 app.MapAuthEndpoints();
 app.MapPerfilEndpoints();
 app.MapAdminEndpoints();
+app.MapKycEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 
