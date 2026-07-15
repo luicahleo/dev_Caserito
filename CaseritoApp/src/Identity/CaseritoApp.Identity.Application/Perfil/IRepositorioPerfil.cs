@@ -6,7 +6,7 @@ namespace CaseritoApp.Identity.Application.Perfil;
 /// Datos de perfil expuestos por el contexto de Identity: identidad, email y los campos
 /// editables (nombre, ciudad) del usuario.
 /// </summary>
-public sealed record PerfilDto(Guid Id, string Email, string Nombre, string Ciudad);
+public sealed record PerfilDto(Guid Id, string Email, string Nombre, string Ciudad, bool Verificado);
 
 /// <summary>
 /// Abstracción (puerto) que permite a la capa de aplicación leer y actualizar el perfil de un

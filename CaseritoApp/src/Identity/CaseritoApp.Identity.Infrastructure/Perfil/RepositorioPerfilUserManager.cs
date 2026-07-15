@@ -1,4 +1,5 @@
 using CaseritoApp.BuildingBlocks.Domain;
+using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Application.Perfil;
 using Microsoft.AspNetCore.Identity;
 
@@ -8,16 +9,20 @@ namespace CaseritoApp.Identity.Infrastructure.Perfil;
 /// Implementación de <see cref="IRepositorioPerfil"/> apoyada en
 /// <see cref="UserManager{TUser}"/> de ASP.NET Core Identity.
 /// </summary>
-public sealed class RepositorioPerfilUserManager(UserManager<ApplicationUser> userManager)
+public sealed class RepositorioPerfilUserManager(
+    UserManager<ApplicationUser> userManager, IConsultaVerificacionKyc consultaKyc)
     : IRepositorioPerfil
 {
     public async Task<PerfilDto?> ObtenerAsync(Guid userId, CancellationToken cancellationToken)
     {
         var usuario = await userManager.FindByIdAsync(userId.ToString());
+        if (usuario is null)
+        {
+            return null;
+        }
 
-        return usuario is null
-            ? null
-            : new PerfilDto(usuario.Id, usuario.Email ?? string.Empty, usuario.Nombre, usuario.Ciudad);
+        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, cancellationToken);
+        return new PerfilDto(usuario.Id, usuario.Email ?? string.Empty, usuario.Nombre, usuario.Ciudad, verificado);
     }
 
     public async Task<Result> ActualizarAsync(
