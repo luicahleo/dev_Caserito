@@ -20,14 +20,13 @@ public sealed class RepositorioVerificacionKycEfCore(IdentityDbContext db) : IRe
     public async Task<ResultadoPaginado<SolicitudKycResumenDto>> ListarAsync(
         EstadoKyc? estado, int pagina, int tamano, CancellationToken ct)
     {
-        var consulta = db.VerificacionesKyc
-            .SelectMany(v => v.Solicitudes.Select(s => new SolicitudKycResumenDto(
-                s.Id, v.Id, s.Estado.ToString(), s.TipoDocumento.ToString(), s.EnviadaEn, s.ResueltaEn)));
+        // Se filtra/pagina sobre la entidad (traducible por EF) y se proyecta al DTO al final,
+        // usando EF.Property para leer la FK sombra "VerificacionKycId" (= UsuarioId).
+        var consulta = db.Set<SolicitudKyc>().AsQueryable();
 
         if (estado is not null)
         {
-            var texto = estado.Value.ToString();
-            consulta = consulta.Where(s => s.Estado == texto);
+            consulta = consulta.Where(s => s.Estado == estado.Value);
         }
 
         var total = await consulta.CountAsync(ct);
@@ -36,6 +35,13 @@ public sealed class RepositorioVerificacionKycEfCore(IdentityDbContext db) : IRe
             .OrderByDescending(s => s.EnviadaEn)
             .Skip((pagina - 1) * tamano)
             .Take(tamano)
+            .Select(s => new SolicitudKycResumenDto(
+                s.Id,
+                EF.Property<Guid>(s, "VerificacionKycId"),
+                s.Estado.ToString(),
+                s.TipoDocumento.ToString(),
+                s.EnviadaEn,
+                s.ResueltaEn))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<SolicitudKycResumenDto>(items, pagina, tamano, total);
