@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,7 +13,8 @@ public interface IGeneradorTokensAcceso
 }
 
 /// <inheritdoc cref="IGeneradorTokensAcceso"/>
-public sealed class GeneradorTokensAcceso(IOptions<OpcionesJwt> opciones, TimeProvider tiempo)
+public sealed class GeneradorTokensAcceso(
+    IOptions<OpcionesJwt> opciones, ProveedorClaveFirma proveedorClave, TimeProvider tiempo)
     : IGeneradorTokensAcceso
 {
     private readonly OpcionesJwt _o = opciones.Value;
@@ -22,8 +22,7 @@ public sealed class GeneradorTokensAcceso(IOptions<OpcionesJwt> opciones, TimePr
     /// <inheritdoc/>
     public string Generar(ApplicationUser usuario)
     {
-        var clave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_o.Key));
-        var credenciales = new SigningCredentials(clave, SecurityAlgorithms.HmacSha256);
+        var credenciales = new SigningCredentials(proveedorClave.Clave, SecurityAlgorithms.HmacSha256);
         var ahora = tiempo.GetUtcNow();
 
         var claims = new List<Claim>
