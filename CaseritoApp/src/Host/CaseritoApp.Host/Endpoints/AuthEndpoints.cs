@@ -1,3 +1,4 @@
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using Microsoft.AspNetCore.Http;
@@ -79,7 +80,9 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        var accessToken = generadorTokens.Generar(usuario);
+        var roles = await userManager.GetRolesAsync(usuario);
+        var permisos = MapaRolesPermisos.PermisosDe(roles);
+        var accessToken = generadorTokens.Generar(usuario, permisos);
         var refreshTokenPlano = await servicioRefreshTokens.EmitirAsync(usuario.Id, ct);
 
         EstablecerCookieRefresh(contexto, refreshTokenPlano, entorno);
@@ -117,7 +120,9 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        var accessToken = generadorTokens.Generar(usuario);
+        var roles = await userManager.GetRolesAsync(usuario);
+        var permisos = MapaRolesPermisos.PermisosDe(roles);
+        var accessToken = generadorTokens.Generar(usuario, permisos);
         EstablecerCookieRefresh(contexto, nuevoTokenPlano, entorno);
 
         return Results.Ok(new TokenAccesoResponse(accessToken));
