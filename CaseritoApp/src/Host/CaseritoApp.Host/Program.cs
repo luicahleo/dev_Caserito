@@ -31,12 +31,16 @@ builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environm
 
 var app = builder.Build();
 
-// Migración automática solo en Development y solo si hay cadena de conexión presente.
+// Migración + seeding de roles automáticos solo en Development y solo si hay cadena de conexión.
 if (app.Environment.IsDevelopment() && !string.IsNullOrWhiteSpace(cadenaConexion))
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-    await db.Database.MigrateAsync();
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        await db.Database.MigrateAsync();
+    }
+
+    await app.Services.SembrarRolesAsync();
 }
 
 app.UseAuthentication();

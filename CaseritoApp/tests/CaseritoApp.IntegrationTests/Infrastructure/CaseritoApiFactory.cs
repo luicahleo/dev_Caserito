@@ -40,9 +40,13 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
     public async Task InitializeAsync()
     {
         await _sql.StartAsync();
-        using var scope = Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-        await db.Database.MigrateAsync();
+        using (var scope = Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            await db.Database.MigrateAsync();
+        }
+
+        await Services.SembrarRolesAsync();
     }
 
     // El WebApplicationFactory base expone DisposeAsync() -> ValueTask (de IAsyncDisposable).
