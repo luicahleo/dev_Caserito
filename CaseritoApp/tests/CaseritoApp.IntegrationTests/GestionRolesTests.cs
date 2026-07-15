@@ -67,4 +67,36 @@ public sealed class GestionRolesTests(CaseritoApiFactory factory) : IClassFixtur
 
         Assert.Equal(HttpStatusCode.Forbidden, respuesta.StatusCode);
     }
+
+    [Fact]
+    public async Task Buscar_usuarios_devuelve_al_usuario_por_email()
+    {
+        using var cliente = factory.CreateClient();
+        var email = Email("busqueda");
+        var token = await RegistrarYLoguearAsync(cliente, email, RolesApp.AdminPlataforma);
+
+        using var solicitud = Autorizada(HttpMethod.Get, $"/api/admin/usuarios?query={Uri.EscapeDataString(email)}", token);
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var pagina = await respuesta.Content.ReadFromJsonAsync<PaginaUsuariosResponse>();
+        Assert.Contains(pagina!.Items, u => u.Email == email);
+        Assert.Contains(pagina.Items, u => u.Roles.Contains(RolesApp.AdminPlataforma));
+    }
+
+    [Fact]
+    public async Task Buscar_usuarios_con_paginacion_invalida_devuelve_400()
+    {
+        using var cliente = factory.CreateClient();
+        var token = await RegistrarYLoguearAsync(cliente, Email("busqueda-400"), RolesApp.AdminPlataforma);
+
+        using var solicitud = Autorizada(HttpMethod.Get, "/api/admin/usuarios?tamano=0", token);
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
 }
+
+sealed file record UsuarioConRolesResponse(Guid Id, string Email, string Nombre, string Ciudad, string[] Roles);
+
+sealed file record PaginaUsuariosResponse(UsuarioConRolesResponse[] Items, int Pagina, int Tamano, int Total);

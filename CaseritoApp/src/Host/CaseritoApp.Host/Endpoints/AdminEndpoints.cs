@@ -19,6 +19,7 @@ public static class AdminEndpoints
 
         grupo.MapGet("/ping", () => Results.Ok(new { estado = "ok" }));
         grupo.MapGet("/roles", ListarRolesAsync);
+        grupo.MapGet("/usuarios", BuscarUsuariosAsync);
 
         return app;
     }
@@ -27,5 +28,22 @@ public static class AdminEndpoints
     {
         var roles = await sender.Send(new ListarRolesQuery(), ct);
         return Results.Ok(roles);
+    }
+
+    private static async Task<IResult> BuscarUsuariosAsync(
+        ISender sender, CancellationToken ct, string? query = null, int pagina = 1, int tamano = 20)
+    {
+        try
+        {
+            var resultado = await sender.Send(new BuscarUsuariosQuery(query, pagina, tamano), ct);
+            return Results.Ok(resultado);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            var errores = ex.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            return Results.ValidationProblem(errores);
+        }
     }
 }
