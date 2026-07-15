@@ -11,7 +11,9 @@ public static class SeedRolesExtensions
     /// <summary>
     /// Asegura que existan los 6 roles de <see cref="RolesApp.Todos"/> y que cada uno tenga los
     /// RoleClaims <c>perm</c> del mapa <see cref="MapaRolesPermisos"/>. Idempotente: re-ejecutar no
-    /// crea duplicados. Debe llamarse DESPUÉS de aplicar las migraciones.
+    /// crea duplicados. Debe llamarse DESPUÉS de aplicar las migraciones. Estos RoleClaims quedan
+    /// persistidos en BD para introspección y futuros flujos de claims directos, pero NO se consumen
+    /// al emitir el access token: la fuente autoritativa en runtime es <see cref="MapaRolesPermisos"/>.
     /// </summary>
     public static async Task SembrarRolesAsync(this IServiceProvider proveedor, CancellationToken ct = default)
     {
