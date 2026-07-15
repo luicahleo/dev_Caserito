@@ -198,6 +198,70 @@ public sealed class GestionRolesTests(CaseritoApiFactory factory) : IClassFixtur
 
         Assert.Equal(HttpStatusCode.Forbidden, respuesta.StatusCode);
     }
+
+    [Fact]
+    public async Task Quitar_rol_lo_elimina_de_la_busqueda()
+    {
+        using var cliente = factory.CreateClient();
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-quitar"), RolesApp.AdminPlataforma);
+        var (targetEmail, targetId) = await RegistrarClienteAsync(cliente);
+
+        using var asignar = Autorizada(HttpMethod.Post, $"/api/admin/usuarios/{targetId}/roles", adminToken);
+        asignar.Content = JsonContent.Create(new AsignarRolRequest(RolesApp.Moderador));
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(asignar)).StatusCode);
+
+        using var quitar = Autorizada(HttpMethod.Delete, $"/api/admin/usuarios/{targetId}/roles/{RolesApp.Moderador}", adminToken);
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(quitar)).StatusCode);
+
+        using var buscar = Autorizada(HttpMethod.Get, $"/api/admin/usuarios?query={Uri.EscapeDataString(targetEmail)}", adminToken);
+        var pagina = await (await cliente.SendAsync(buscar)).Content.ReadFromJsonAsync<PaginaUsuariosResponse>();
+        Assert.DoesNotContain(pagina!.Items, u => u.Id == targetId && u.Roles.Contains(RolesApp.Moderador));
+    }
+
+    // Nota: el 409 "último AdminPlataforma" (conteo global = 1) se cubre en unit (Task 4, Step 6b),
+    // porque la BD de integración es compartida y suele tener varios AdminPlataforma. Aquí se verifica
+    // el caso complementario: con otro admin presente, quitar AdminPlataforma a un tercero es 204.
+    [Fact]
+    public async Task Quitar_AdminPlataforma_con_otro_admin_presente_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        // El ejecutor es AdminPlataforma; garantiza que exista >1 admin en BD.
+        var adminToken = await RegistrarYLoguearAsync(cliente, Email("admin-ejecutor"), RolesApp.AdminPlataforma);
+
+        // El objetivo también es AdminPlataforma (distinto del ejecutor): quitarle el rol no lo deja sin admins.
+        var (_, targetId) = await RegistrarClienteAsync(cliente);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var target = await userManager.FindByIdAsync(targetId.ToString());
+            await userManager.AddToRoleAsync(target!, RolesApp.AdminPlataforma);
+        }
+
+        using var quitar = Autorizada(HttpMethod.Delete, $"/api/admin/usuarios/{targetId}/roles/{RolesApp.AdminPlataforma}", adminToken);
+        var respuesta = await cliente.SendAsync(quitar);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Auto_retiro_de_AdminPlataforma_devuelve_400()
+    {
+        using var cliente = factory.CreateClient();
+        var email = Email("admin-auto");
+        var adminToken = await RegistrarYLoguearAsync(cliente, email, RolesApp.AdminPlataforma);
+
+        Guid adminId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            adminId = (await userManager.FindByEmailAsync(email))!.Id;
+        }
+
+        using var quitar = Autorizada(HttpMethod.Delete, $"/api/admin/usuarios/{adminId}/roles/{RolesApp.AdminPlataforma}", adminToken);
+        var respuesta = await cliente.SendAsync(quitar);
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
 }
 
 sealed file record UsuarioConRolesResponse(Guid Id, string Email, string Nombre, string Ciudad, string[] Roles);

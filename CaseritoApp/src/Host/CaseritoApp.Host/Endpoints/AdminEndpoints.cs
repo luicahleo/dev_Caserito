@@ -27,6 +27,7 @@ public static class AdminEndpoints
         grupo.MapGet("/roles", ListarRolesAsync);
         grupo.MapGet("/usuarios", BuscarUsuariosAsync);
         grupo.MapPost("/usuarios/{id:guid}/roles", AsignarRolAsync);
+        grupo.MapDelete("/usuarios/{id:guid}/roles/{rol}", QuitarRolAsync);
 
         return app;
     }
@@ -65,6 +66,28 @@ public static class AdminEndpoints
         try
         {
             var resultado = await sender.Send(new AsignarRolCommand(adminId, id, request.Rol), ct);
+            return DesdeResult(resultado);
+        }
+        catch (FluentValidation.ValidationException ex)
+        {
+            var errores = ex.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            return Results.ValidationProblem(errores);
+        }
+    }
+
+    private static async Task<IResult> QuitarRolAsync(
+        Guid id, string rol, ClaimsPrincipal admin, ISender sender, CancellationToken ct)
+    {
+        if (!TryObtenerAdminId(admin, out var adminId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var resultado = await sender.Send(new QuitarRolCommand(adminId, id, rol), ct);
             return DesdeResult(resultado);
         }
         catch (FluentValidation.ValidationException ex)
