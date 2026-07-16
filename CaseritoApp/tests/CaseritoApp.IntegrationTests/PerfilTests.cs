@@ -51,6 +51,7 @@ public sealed class PerfilTests(CaseritoApiFactory factory) : IClassFixture<Case
         Assert.Equal(email, perfilInicial!.Email);
         Assert.Equal("Usuario Original", perfilInicial.Nombre);
         Assert.Equal("Lima", perfilInicial.Ciudad);
+        Assert.False(perfilInicial.Verificado);
 
         // 4. PUT /api/perfil: 200 y actualiza nombre/ciudad.
         using var solicitudPut = new HttpRequestMessage(HttpMethod.Put, "/api/perfil")

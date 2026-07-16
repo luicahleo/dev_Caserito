@@ -1,3 +1,5 @@
+using CaseritoApp.Identity.Domain.Kyc;
+using CaseritoApp.Identity.Infrastructure.Kyc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using IdentityDbContextBase = Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<
@@ -13,6 +15,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
     public const string Schema = "identity";
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<VerificacionKyc> VerificacionesKyc => Set<VerificacionKyc>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -26,5 +29,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             e.HasIndex(x => x.TokenHash).IsUnique();
             e.HasIndex(x => x.UserId);
         });
+
+        ConfiguracionKyc.Configurar(builder);
     }
 }
