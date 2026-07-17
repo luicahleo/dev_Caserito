@@ -12,6 +12,7 @@ public static class ConfiguracionKyc
         {
             e.ToTable("VerificacionesKyc");
             e.HasKey(v => v.Id);
+            e.Property(v => v.Id).ValueGeneratedNever();
 
             e.HasMany(v => v.Solicitudes)
                 .WithOne()
@@ -19,12 +20,26 @@ public static class ConfiguracionKyc
                 .OnDelete(DeleteBehavior.Cascade);
 
             e.Navigation(v => v.Solicitudes).UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            // Token de concurrencia optimista de la raíz (entero incremental, no rowversion: la raíz
+            // no tiene columnas escalares propias, así que un rowversion no generaría UPDATE al tocar
+            // la raíz). El override de SaveChangesAsync lo incrementa cuando cambia una hija, para que
+            // dos operaciones concurrentes sobre el mismo agregado colisionen (doble aprobación / dos
+            // Pendiente).
+            e.Property<int>("Version").IsConcurrencyToken();
         });
 
         builder.Entity<SolicitudKyc>(e =>
         {
             e.ToTable("SolicitudesKyc");
             e.HasKey(s => s.Id);
+            // El Id lo genera el dominio (Guid.NewGuid() en el constructor), no la BD. Sin esto, EF
+            // Core asume por convención que un Guid de PK es "value-generated on add"; al descubrir
+            // una hija nueva (con Id ya asignado) añadida a la colección de una raíz YA rastreada
+            // (p. ej. reenvío de KYC tras un rechazo, sin pasar por Add() explícito), EF la trata como
+            // si ya existiera en la BD y genera un UPDATE en vez de un INSERT, fallando con 0 filas
+            // afectadas (DbUpdateConcurrencyException espuria, no relacionada con el token de Version).
+            e.Property(s => s.Id).ValueGeneratedNever();
             e.Property(s => s.Estado).HasConversion<string>().HasMaxLength(20).IsRequired();
             e.Property(s => s.TipoDocumento).HasConversion<string>().HasMaxLength(30).IsRequired();
             e.Property(s => s.ReferenciaDocumento).HasMaxLength(200).IsRequired();

@@ -1,3 +1,4 @@
+using System.Linq;
 using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure.Kyc;
 using Microsoft.AspNetCore.Identity;
@@ -31,5 +32,41 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         });
 
         ConfiguracionKyc.Configurar(builder);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        MarcarRaicesKycModificadas();
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    // EF no bumpea la versión de la raíz cuando solo cambia una hija: la raíz no entra en el UPDATE
+    // y su token no se chequea. Se incrementa el Version de la raíz para forzar ese UPDATE con el
+    // chequeo de concurrencia, de modo que dos transacciones concurrentes sobre el mismo agregado
+    // colisionen. Incrementar la propiedad la marca como modificada (y a la raíz como Modified).
+    private void MarcarRaicesKycModificadas()
+    {
+        foreach (var hija in ChangeTracker.Entries<SolicitudKyc>().ToList())
+        {
+            if (hija.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+            {
+                continue;
+            }
+
+            var verificacionId = hija.Property<Guid?>("VerificacionKycId").CurrentValue;
+            if (verificacionId is null)
+            {
+                continue;
+            }
+
+            var raiz = ChangeTracker.Entries<VerificacionKyc>()
+                .FirstOrDefault(v => v.Entity.Id == verificacionId);
+
+            if (raiz is { State: EntityState.Unchanged })
+            {
+                var version = raiz.Property<int>("Version");
+                version.CurrentValue += 1;
+            }
+        }
     }
 }
