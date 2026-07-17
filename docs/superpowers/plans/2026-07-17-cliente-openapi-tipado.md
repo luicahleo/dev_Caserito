@@ -189,6 +189,10 @@ git commit -m "feat(api): exponer OpenAPI del host y emitirlo en build (Bearer J
 - Consumes: DTOs ya existentes — `RegistroRequest`, `LoginRequest`, `TokenAccesoResponse` (`AuthEndpoints.cs`); `ActualizarPerfilRequest` (`PerfilEndpoints.cs`), `PerfilDto` (`CaseritoApp.Identity.Application.Perfil`); `RechazarKycRequest` (`KycEndpoints.cs`), `EstadoKycDto`, `SolicitudKycResumenDto` (`CaseritoApp.Identity.Application.Kyc`), `ResultadoPaginado<T>` (BuildingBlocks); `AsignarRolRequest`, `RolDto`, `UsuarioConRolesDto` (`CaseritoApp.Identity.Application.Autorizacion`).
 - Produces: contrato OpenAPI con request/response/status por endpoint. **Nota:** los cuerpos de los handlers NO se tocan — solo se encadena metadata a los `Map*`.
 
+**Nota de Task 1 (opcional, Minor del review):** el transformer aplica el requisito Bearer a nivel de documento, así que los endpoints anónimos (`register`, `login`, `refresh`, `logout`, `/health`) figuran como si requirieran token. No rompe el cliente generado (el contrato de seguridad es documental, `openapi-typescript`/`openapi-fetch` no lo imponen), pero si es barato, considerá anular el requisito por operación en los anónimos (metadata de seguridad vacía) para un contrato más honesto. No bloquea la task; si añade complejidad, dejarlo como follow-up.
+
+**Emisión (Task 1):** para regenerar el JSON tras anotar, la emisión es opt-in: desde `CaseritoApp/`, `ASPNETCORE_ENVIRONMENT=Testing dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true`. Un `dotnet build`/`dotnet test` normal NO emite.
+
 - [ ] **Step 1: Anotar `AuthEndpoints`**
 
 En `MapAuthEndpoints` (`AuthEndpoints.cs`), reemplazar el bloque de mapeos por:
@@ -302,8 +306,8 @@ Añadir los `using` que pida el compilador (`CaseritoApp.Identity.Application.Au
 
 - [ ] **Step 5: Regenerar y verificar el contrato**
 
-Run (desde `CaseritoApp/`): `dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj`
-Expected: build correcto; `artifacts/openapi/CaseritoApp.Host.json` regenerado.
+Run (desde `CaseritoApp/`): `ASPNETCORE_ENVIRONMENT=Testing dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true`
+Expected: build correcto; `artifacts/openapi/CaseritoApp.Host.json` regenerado (con los esquemas de respuesta ahora presentes).
 
 Run (desde `CaseritoApp/`): `cat artifacts/openapi/CaseritoApp.Host.json | grep -i "TokenAccesoResponse"`
 Expected: aparece `TokenAccesoResponse` en `components.schemas` (evidencia de que las respuestas se tiparon).
@@ -356,6 +360,8 @@ Run (desde `web/`): `npm install`
 Expected: instala sin errores; `package-lock.json` actualizado.
 
 - [ ] **Step 3: Generar los tipos**
+
+Nota (Task 1): el `schema.d.ts` se genera del JSON **ya committeado** (`CaseritoApp/artifacts/openapi/CaseritoApp.Host.json`). El script `generate:api` NO reconstruye el backend; la (re)emisión del JSON es opt-in y ocurre solo en el job `contract` del CI (Task 8) con `-p:GenerateOpenApi=true` + `ASPNETCORE_ENVIRONMENT=Testing`.
 
 Run (desde `web/`): `npm run generate:api`
 Expected: se crea `web/src/api/schema.d.ts`. 
@@ -945,8 +951,13 @@ En `.github/workflows/ci.yml`, agregar al final de `jobs:` (mismo nivel que `bui
           cache-dependency-path: web/package-lock.json
 
       - name: Emitir OpenAPI (build del host)
-        run: dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj
+        # La emisión es opt-in (Task 1 fix 7a859f5): requiere -p:GenerateOpenApi=true y
+        # ASPNETCORE_ENVIRONMENT=Testing (instancia el host; Testing evita el fail-fast del
+        # encryptor y ValidateOnBuild). Un build normal NO emite, por eso el job `build` no cambia.
+        run: dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true
         working-directory: CaseritoApp
+        env:
+          ASPNETCORE_ENVIRONMENT: Testing
 
       - name: Instalar deps web
         run: npm ci
