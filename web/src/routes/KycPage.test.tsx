@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
@@ -50,7 +50,9 @@ describe('KycPage', () => {
     await screen.findByRole('button', { name: /enviar/i });
     const u = userEvent.setup();
     const pdf = new File(['x'], 'doc.pdf', { type: 'application/pdf' });
-    await u.upload(screen.getByLabelText(/documento/i), pdf);
+    // fireEvent.change evita el filtro de `accept` del input (defensa-en-profundidad de UX
+    // en producción), permitiendo verificar la validación JS independiente ante un tipo inválido.
+    fireEvent.change(screen.getByLabelText(/documento/i), { target: { files: [pdf] } });
     expect(await screen.findByText(/formato no permitido/i)).toBeInTheDocument();
     await u.click(screen.getByRole('button', { name: /enviar/i }));
     expect(enviar).not.toHaveBeenCalled();

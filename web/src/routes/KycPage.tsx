@@ -98,6 +98,7 @@ export function KycPage() {
                 type="file"
                 hidden
                 aria-label="documento"
+                accept="image/jpeg,image/png"
                 onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
                   setDocumento(f);
@@ -116,6 +117,7 @@ export function KycPage() {
                 type="file"
                 hidden
                 aria-label="selfie"
+                accept="image/jpeg,image/png"
                 onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
                   setSelfie(f);
