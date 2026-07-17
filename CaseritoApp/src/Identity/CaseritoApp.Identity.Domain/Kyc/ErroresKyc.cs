@@ -7,4 +7,5 @@ public static class ErroresKyc
     public const string YaVerificado = "Kyc.YaVerificado";
     public const string SolicitudNoEncontrada = "Kyc.SolicitudNoEncontrada";
     public const string TransicionInvalida = "Kyc.TransicionInvalida";
+    public const string ConflictoConcurrencia = "Kyc.ConflictoConcurrencia";
 }

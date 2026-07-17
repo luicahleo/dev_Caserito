@@ -26,7 +26,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
 // el host arranca sin BD.
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AgregarIdentity(builder.Configuration);
+builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
 
 var app = builder.Build();

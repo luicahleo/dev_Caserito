@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Autorizacion;
@@ -54,6 +55,10 @@ public static class KycEndpoints
                     userId, docBytes, documento.ContentType, selfieBytes, selfie.ContentType), ct);
             return DesdeResult(resultado);
         }
+        catch (ConflictoConcurrenciaException)
+        {
+            return Conflicto409();
+        }
         catch (ValidationException ex)
         {
             return ProblemaDeValidacion(ex);
@@ -107,8 +112,15 @@ public static class KycEndpoints
             return Results.Unauthorized();
         }
 
-        var resultado = await sender.Send(new AprobarSolicitudKycCommand(solicitudId, adminId), ct);
-        return DesdeResult(resultado);
+        try
+        {
+            var resultado = await sender.Send(new AprobarSolicitudKycCommand(solicitudId, adminId), ct);
+            return DesdeResult(resultado);
+        }
+        catch (ConflictoConcurrenciaException)
+        {
+            return Conflicto409();
+        }
     }
 
     private static async Task<IResult> RechazarAsync(
@@ -124,6 +136,10 @@ public static class KycEndpoints
             var resultado = await sender.Send(
                 new RechazarSolicitudKycCommand(solicitudId, adminId, request.Motivo), ct);
             return DesdeResult(resultado);
+        }
+        catch (ConflictoConcurrenciaException)
+        {
+            return Conflicto409();
         }
         catch (ValidationException ex)
         {
@@ -144,6 +160,12 @@ public static class KycEndpoints
             ?? usuario.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(valor, out userId);
     }
+
+    private static IResult Conflicto409() =>
+        Results.Problem(
+            title: ErroresKyc.ConflictoConcurrencia,
+            detail: "La operación entró en conflicto con otra concurrente. Reintente.",
+            statusCode: StatusCodes.Status409Conflict);
 
     private static IResult ProblemaDeValidacion(ValidationException ex) =>
         Results.ValidationProblem(ex.Errors
