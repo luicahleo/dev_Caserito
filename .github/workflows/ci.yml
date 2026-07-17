@@ -60,3 +60,37 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: CaseritoApp/global.json
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Emitir OpenAPI (build del host)
+        run: dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true
+        working-directory: CaseritoApp
+        env:
+          ASPNETCORE_ENVIRONMENT: Testing
+
+      - name: Instalar deps web
+        run: npm ci
+        working-directory: web
+
+      - name: Regenerar tipos del cliente
+        run: npm run generate:api
+        working-directory: web
+
+      - name: Verificar que no hay deriva de contrato
+        run: git diff --exit-code -- CaseritoApp/artifacts/openapi/CaseritoApp.Host.json web/src/api/schema.d.ts
