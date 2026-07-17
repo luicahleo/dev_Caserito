@@ -53,12 +53,20 @@ function PanelRevision({
     let activo = true;
     (async () => {
       try {
-        doc = await obtenerImagenKyc(solicitud.solicitudId, 'documento');
-        self = await obtenerImagenKyc(solicitud.solicitudId, 'selfie');
-        if (activo) {
-          setUrlDoc(doc);
-          setUrlSelfie(self);
+        const d = await obtenerImagenKyc(solicitud.solicitudId, 'documento');
+        if (!activo) {
+          URL.revokeObjectURL(d);
+          return;
         }
+        doc = d;
+        setUrlDoc(d);
+        const s = await obtenerImagenKyc(solicitud.solicitudId, 'selfie');
+        if (!activo) {
+          URL.revokeObjectURL(s);
+          return;
+        }
+        self = s;
+        setUrlSelfie(s);
       } catch {
         if (activo) setErrorImg(true);
       }

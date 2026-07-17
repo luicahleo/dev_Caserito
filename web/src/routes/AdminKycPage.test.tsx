@@ -72,4 +72,39 @@ describe('AdminKycPage', () => {
     await u.click(screen.getByRole('button', { name: /confirmar rechazo/i }));
     await waitFor(() => expect(rechazar).toHaveBeenCalledWith('abc', 'Documento ilegible'));
   });
+
+  it('revoca el objectURL si el panel se desmonta antes de que resuelva la imagen (evita fuga de PII)', async () => {
+    vi.spyOn(api, 'listarSolicitudesKyc').mockResolvedValue({
+      items: [solicitud],
+      pagina: 1,
+      tamano: 20,
+      total: 1,
+    });
+
+    let resolverDoc: (url: string) => void = () => {};
+    const promesaDoc = new Promise<string>((resolve) => {
+      resolverDoc = resolve;
+    });
+    vi.spyOn(api, 'obtenerImagenKyc').mockImplementation((_id, tipo) =>
+      tipo === 'documento' ? promesaDoc : new Promise<string>(() => {}),
+    );
+    const revokeSpy = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { unmount } = render(
+      <QueryClientProvider client={qc}>
+        <AdminKycPage />
+      </QueryClientProvider>,
+    );
+    const u = userEvent.setup();
+    await u.click(await screen.findByRole('button', { name: /revisar/i }));
+
+    // Se desmonta el árbol (equivalente a cerrar el diálogo/cambiar de página)
+    // ANTES de que resuelva el fetch de la imagen del documento.
+    unmount();
+
+    resolverDoc('blob:fake-doc');
+
+    await waitFor(() => expect(revokeSpy).toHaveBeenCalledWith('blob:fake-doc'));
+  });
 });
