@@ -20,8 +20,16 @@ public static class PerfilEndpoints
 
         grupo.MapGet("/", ObtenerAsync)
             .Produces<PerfilDto>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        // Nota de contrato: el 400 de negocio (p. ej. perfil no encontrado) llega como
+        // ProblemDetails plano, distinto del 400 de validación documentado abajo. OpenAPI
+        // admite una sola respuesta por código y, al probar ambas anotaciones juntas, la
+        // que se declara último pisa a la otra en el schema generado -- perdiendo el detalle
+        // de "errors" de validación, que es el caso más frecuente. Se prioriza entonces el
+        // caso dominante (validación de FluentValidation) y el 400 de negocio queda como
+        // imprecisión conocida del contrato.
         grupo.MapPut("/", ActualizarAsync)
             .Accepts<ActualizarPerfilRequest>("application/json")
             .Produces(StatusCodes.Status200OK)
