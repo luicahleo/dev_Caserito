@@ -63,3 +63,18 @@ export async function putJson<T>(ruta: string, cuerpo?: unknown): Promise<T> {
   });
   return leer<T>(r, ruta);
 }
+
+export async function postForm(ruta: string, form: FormData): Promise<void> {
+  const r = await ejecutar(ruta, { method: 'POST', body: form });
+  if (!r.ok) {
+    throw new Error(`Petición fallida (${r.status}) a ${ruta}`);
+  }
+}
+
+export async function getBlob(ruta: string): Promise<Blob> {
+  const r = await ejecutar(ruta, { method: 'GET' });
+  if (!r.ok) {
+    throw new Error(`Petición fallida (${r.status}) a ${ruta}`);
+  }
+  return r.blob();
+}
