@@ -726,6 +726,434 @@
           }
         }
       }
+    },
+    "/api/avisos": {
+      "post": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearAvisoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvisoCreadoResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/{id}": {
+      "put": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarAvisoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/{id}/pausar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/{id}/reactivar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/mios": {
+      "get": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "tamano",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoPaginadoOfAvisoResumenDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/mios/{id}": {
+      "get": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvisoDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalogo/categorias": {
+      "get": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoriaDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/catalogo/ciudades": {
+      "get": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CiudadDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -753,6 +1181,244 @@
         "properties": {
           "rol": {
             "type": "string"
+          }
+        }
+      },
+      "AvisoCreadoResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "AvisoDto": {
+        "required": [
+          "id",
+          "vendedorId",
+          "titulo",
+          "descripcion",
+          "monto",
+          "moneda",
+          "categoriaId",
+          "ciudadId",
+          "condicion",
+          "estado",
+          "fechaCreacion",
+          "fechaActualizacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "vendedorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "monto": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "condicion": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AvisoResumenDto": {
+        "required": [
+          "id",
+          "titulo",
+          "monto",
+          "moneda",
+          "categoriaId",
+          "ciudadId",
+          "condicion",
+          "estado",
+          "fechaCreacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "monto": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "moneda": {
+            "type": "string"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "condicion": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CategoriaDto": {
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "CiudadDto": {
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "CrearAvisoRequest": {
+        "required": [
+          "titulo",
+          "descripcion",
+          "monto",
+          "condicion",
+          "categoriaId",
+          "ciudadId"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "monto": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "condicion": {
+            "type": "string"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "EditarAvisoRequest": {
+        "required": [
+          "titulo",
+          "descripcion",
+          "monto",
+          "condicion",
+          "categoriaId",
+          "ciudadId"
+        ],
+        "type": "object",
+        "properties": {
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "monto": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "condicion": {
+            "type": "string"
+          },
+          "categoriaId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -937,6 +1603,47 @@
           },
           "ciudad": {
             "type": "string"
+          }
+        }
+      },
+      "ResultadoPaginadoOfAvisoResumenDto": {
+        "required": [
+          "items",
+          "pagina",
+          "tamano",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvisoResumenDto"
+            }
+          },
+          "pagina": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tamano": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -1149,6 +1856,9 @@
     },
     {
       "name": "KycEndpoints"
+    },
+    {
+      "name": "AvisosEndpoints"
     }
   ]
 }
