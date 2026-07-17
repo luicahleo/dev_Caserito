@@ -1,4 +1,5 @@
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
+using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Identity.Application.Perfil;
@@ -10,18 +11,22 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Se registran MediatR y los behaviors del pipeline de aplicación, ampliando el escaneo de
-// ensamblados para incluir CaseritoApp.Identity.Application (Query/Command de perfil).
+// ensamblados para incluir CaseritoApp.Identity.Application (Query/Command de perfil) y
+// CaseritoApp.Catalog.Application (Query/Command de avisos y catálogo).
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(CaseritoApp.BuildingBlocks.Application.Abstractions.IUnitOfWork).Assembly,
-        typeof(ObtenerPerfilQuery).Assembly));
+        typeof(ObtenerPerfilQuery).Assembly,
+        typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBehavior<,>));
 
-// Validators de FluentValidation del ensamblado de Identity.Application (p. ej. ActualizarPerfilCommandValidator).
+// Validators de FluentValidation de los ensamblados de Identity.Application (p. ej.
+// ActualizarPerfilCommandValidator) y Catalog.Application (p. ej. CrearAvisoCommandValidator).
 builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly);
 
 // El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
@@ -29,6 +34,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
+builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
 var app = builder.Build();
@@ -61,6 +67,14 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
     }
 
     await app.Services.SembrarRolesAsync();
+
+    using (var scopeCatalog = app.Services.CreateScope())
+    {
+        var dbCatalog = scopeCatalog.ServiceProvider.GetRequiredService<CatalogDbContext>();
+        await dbCatalog.Database.MigrateAsync();
+    }
+
+    await app.Services.SembrarCatalogoAsync();
 }
 
 app.UseAuthentication();
@@ -70,6 +84,8 @@ app.MapAuthEndpoints();
 app.MapPerfilEndpoints();
 app.MapAdminEndpoints();
 app.MapKycEndpoints();
+app.MapAvisosEndpoints();
+app.MapCatalogoEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 
