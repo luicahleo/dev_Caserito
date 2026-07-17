@@ -32,3 +32,22 @@ public sealed record CategoriaDto(Guid Id, string Nombre);
 
 /// <summary>Ciudad de referencia.</summary>
 public sealed record CiudadDto(Guid Id, string Nombre);
+
+/// <summary>Proyecciones de dominio a DTO reutilizables por queries.</summary>
+public static class MapaAvisos
+{
+    /// <summary>Proyecta un <see cref="CaseritoApp.Catalog.Domain.Avisos.Aviso"/> a <see cref="AvisoDto"/>.</summary>
+    public static AvisoDto ADto(CaseritoApp.Catalog.Domain.Avisos.Aviso aviso) => new(
+        aviso.Id,
+        aviso.VendedorId,
+        aviso.Titulo,
+        aviso.Descripcion,
+        aviso.Precio.Monto,
+        aviso.Precio.Moneda.ToString(),
+        aviso.CategoriaId,
+        aviso.CiudadId,
+        aviso.Condicion.ToString(),
+        aviso.Estado.ToString(),
+        aviso.FechaCreacion,
+        aviso.FechaActualizacion);
+}
