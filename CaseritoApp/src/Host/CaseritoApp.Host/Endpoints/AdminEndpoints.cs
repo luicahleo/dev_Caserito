@@ -24,11 +24,24 @@ public static class AdminEndpoints
         var grupo = app.MapGroup("/api/admin")
             .RequireAuthorization(PoliticasAutorizacion.Permiso(Permisos.UsuariosGestionar));
 
-        grupo.MapGet("/ping", () => Results.Ok(new { estado = "ok" }));
-        grupo.MapGet("/roles", ListarRolesAsync);
-        grupo.MapGet("/usuarios", BuscarUsuariosAsync);
-        grupo.MapPost("/usuarios/{id:guid}/roles", AsignarRolAsync);
-        grupo.MapDelete("/usuarios/{id:guid}/roles/{rol}", QuitarRolAsync);
+        grupo.MapGet("/ping", () => Results.Ok(new { estado = "ok" }))
+            .Produces(StatusCodes.Status200OK);
+        grupo.MapGet("/roles", ListarRolesAsync)
+            .Produces<IReadOnlyList<RolDto>>(StatusCodes.Status200OK);
+        grupo.MapGet("/usuarios", BuscarUsuariosAsync)
+            .Produces<ResultadoPaginado<UsuarioConRolesDto>>(StatusCodes.Status200OK)
+            .ProducesValidationProblem();
+        grupo.MapPost("/usuarios/{id:guid}/roles", AsignarRolAsync)
+            .Accepts<AsignarRolRequest>("application/json")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem();
+        grupo.MapDelete("/usuarios/{id:guid}/roles/{rol}", QuitarRolAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem();
 
         return app;
     }

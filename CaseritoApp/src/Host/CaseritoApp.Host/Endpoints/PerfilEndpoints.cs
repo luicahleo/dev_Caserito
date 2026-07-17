@@ -18,8 +18,15 @@ public static class PerfilEndpoints
     {
         var grupo = app.MapGroup("/api/perfil").RequireAuthorization();
 
-        grupo.MapGet("/", ObtenerAsync);
-        grupo.MapPut("/", ActualizarAsync);
+        grupo.MapGet("/", ObtenerAsync)
+            .Produces<PerfilDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapPut("/", ActualizarAsync)
+            .Accepts<ActualizarPerfilRequest>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesValidationProblem();
 
         return app;
     }

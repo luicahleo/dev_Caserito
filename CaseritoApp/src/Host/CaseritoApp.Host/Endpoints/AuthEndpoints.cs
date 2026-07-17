@@ -26,10 +26,22 @@ public static class AuthEndpoints
     {
         var grupo = app.MapGroup("/api/auth");
 
-        grupo.MapPost("/register", RegistrarAsync);
-        grupo.MapPost("/login", LoginAsync);
-        grupo.MapPost("/refresh", RefreshAsync);
-        grupo.MapPost("/logout", LogoutAsync);
+        grupo.MapPost("/register", RegistrarAsync)
+            .Accepts<RegistroRequest>("application/json")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesValidationProblem();
+
+        grupo.MapPost("/login", LoginAsync)
+            .Accepts<LoginRequest>("application/json")
+            .Produces<TokenAccesoResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapPost("/refresh", RefreshAsync)
+            .Produces<TokenAccesoResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapPost("/logout", LogoutAsync)
+            .Produces(StatusCodes.Status204NoContent);
 
         return app;
     }
