@@ -1,16 +1,14 @@
-import { getJson, putJson } from './client';
+import type { components } from './schema';
+import { api, desempaquetar } from './http';
 
-export interface Perfil {
-  id: string;
-  email: string;
-  nombre: string;
-  ciudad: string;
+export type Perfil = components['schemas']['PerfilDto'];
+
+export async function obtenerPerfil(): Promise<Perfil> {
+  return desempaquetar(await api.GET('/api/perfil'));
 }
 
-export function obtenerPerfil(): Promise<Perfil> {
-  return getJson<Perfil>('/api/perfil');
-}
-
-export function actualizarPerfil(datos: { nombre: string; ciudad: string }): Promise<void> {
-  return putJson('/api/perfil', datos);
+export async function actualizarPerfil(datos: { nombre: string; ciudad: string }): Promise<void> {
+  desempaquetar(
+    await api.PUT('/api/perfil', { body: { nombre: datos.nombre, ciudad: datos.ciudad } }),
+  );
 }

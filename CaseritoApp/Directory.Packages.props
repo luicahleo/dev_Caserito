@@ -24,6 +24,11 @@
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.0" />
+    <!-- Pin explícito de la dependencia transitiva: 2.0.0 (la que trae Microsoft.AspNetCore.OpenApi 10.0.0)
+         tiene una vulnerabilidad conocida (GHSA-v5pm-xwqc-g5wc); 2.7.5 es la primera versión parcheada. -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
   </ItemGroup>
 
   <!-- Dependencias de test y librerías -->

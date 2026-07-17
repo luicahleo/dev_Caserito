@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { KycPage } from './KycPage';
 import * as api from '../api/kyc';
-import { HttpError } from '../api/client';
+import { HttpError } from '../api/http';
 
 afterEach(() => vi.restoreAllMocks());
 

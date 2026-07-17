@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
+using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Domain.Kyc;
@@ -21,18 +22,39 @@ public static class KycEndpoints
     public static IEndpointRouteBuilder MapKycEndpoints(this IEndpointRouteBuilder app)
     {
         var usuario = app.MapGroup("/api/kyc").RequireAuthorization();
-        usuario.MapPost("/", EnviarAsync).DisableAntiforgery();
-        usuario.MapGet("/estado", EstadoAsync);
+        usuario.MapPost("/", EnviarAsync).DisableAntiforgery()
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem();
+        usuario.MapGet("/estado", EstadoAsync)
+            .Produces<EstadoKycDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         var admin = app.MapGroup("/api/admin/kyc")
             .RequireAuthorization(PoliticasAutorizacion.Permiso(Permisos.KycRevisar));
-        admin.MapGet("/", ListarAsync);
+        admin.MapGet("/", ListarAsync)
+            .Produces<ResultadoPaginado<SolicitudKycResumenDto>>(StatusCodes.Status200OK)
+            .ProducesValidationProblem();
         admin.MapGet("/{solicitudId:guid}/documento", (Guid solicitudId, ClaimsPrincipal u, ISender s, CancellationToken ct)
-            => BlobAsync(solicitudId, TipoBlobKyc.Documento, u, s, ct));
+            => BlobAsync(solicitudId, TipoBlobKyc.Documento, u, s, ct))
+            .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
+            .ProducesProblem(StatusCodes.Status404NotFound);
         admin.MapGet("/{solicitudId:guid}/selfie", (Guid solicitudId, ClaimsPrincipal u, ISender s, CancellationToken ct)
-            => BlobAsync(solicitudId, TipoBlobKyc.Selfie, u, s, ct));
-        admin.MapPost("/{solicitudId:guid}/aprobar", AprobarAsync);
-        admin.MapPost("/{solicitudId:guid}/rechazar", RechazarAsync);
+            => BlobAsync(solicitudId, TipoBlobKyc.Selfie, u, s, ct))
+            .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
+            .ProducesProblem(StatusCodes.Status404NotFound);
+        admin.MapPost("/{solicitudId:guid}/aprobar", AprobarAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+        admin.MapPost("/{solicitudId:guid}/rechazar", RechazarAsync)
+            .Accepts<RechazarKycRequest>("application/json")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem();
 
         return app;
     }

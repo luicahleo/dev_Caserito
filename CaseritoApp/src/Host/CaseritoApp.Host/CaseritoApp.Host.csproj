@@ -22,6 +22,22 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Emite el documento OpenAPI, sin levantar el servidor, para versionarlo como contrato
+         y generar el cliente TS. Es opt-in vía -p:GenerateOpenApi=true: emitir instancia el host
+         completo (HostFactoryResolver), lo que dispara el fail-fast del encryptor de Identity fuera
+         de Testing/Development y ValidateOnBuild en Development sin DbContext. Un `dotnet build`
+         normal (sin la propiedad) NO debe emitir ni instanciar el host. -->
+    <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateOpenApi)' == 'true'">true</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiGenerateDocumentsOnBuild Condition="'$(GenerateOpenApi)' != 'true'">false</OpenApiGenerateDocumentsOnBuild>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../../../artifacts/openapi</OpenApiDocumentsDirectory>
+  </PropertyGroup>
 
 </Project>
