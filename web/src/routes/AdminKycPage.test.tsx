@@ -107,4 +107,26 @@ describe('AdminKycPage', () => {
 
     await waitFor(() => expect(revokeSpy).toHaveBeenCalledWith('blob:fake-doc'));
   });
+
+  it('una solicitud ya resuelta (Aprobada) no muestra los botones Aprobar/Rechazar', async () => {
+    const solicitudResuelta: api.SolicitudKycResumen = {
+      ...solicitud,
+      estado: 'Aprobada',
+      resueltaEn: '2026-07-16T12:00:00Z',
+    };
+    vi.spyOn(api, 'listarSolicitudesKyc').mockResolvedValue({
+      items: [solicitudResuelta],
+      pagina: 1,
+      tamano: 20,
+      total: 1,
+    });
+    vi.spyOn(api, 'obtenerImagenKyc').mockResolvedValue('blob:fake');
+    montar();
+    const u = userEvent.setup();
+    await u.click(await screen.findByRole('button', { name: /revisar/i }));
+    expect(await screen.findByText(/esta solicitud ya fue resuelta/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^aprobar$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^rechazar$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cerrar/i })).toBeInTheDocument();
+  });
 });

@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
+import { HttpError } from '../api/client';
 
 const MIME_PERMITIDOS = ['image/jpeg', 'image/png'];
 const LIMITE_BYTES = 5 * 1024 * 1024;
@@ -27,7 +28,7 @@ function validarArchivo(archivo: File | null): string | null {
 
 export function KycPage() {
   const queryClient = useQueryClient();
-  const { data: estado, isLoading } = useQuery({
+  const { data: estado, isLoading, isError } = useQuery({
     queryKey: ['kyc', 'estado'],
     queryFn: obtenerEstadoKyc,
   });
@@ -40,6 +41,11 @@ export function KycPage() {
   const mutacion = useMutation({
     mutationFn: () => enviarKyc(documento as File, selfie as File),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] }),
+    onError: (error) => {
+      if (error instanceof HttpError && error.status === 409) {
+        queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] });
+      }
+    },
   });
 
   const onEnviar = () => {
@@ -59,6 +65,17 @@ export function KycPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <Alert severity="error">
+          No se pudo cargar tu estado de verificación. Inténtalo más tarde.
+        </Alert>
+      </Container>
+    );
+  }
+
+  const es409 = mutacion.error instanceof HttpError && mutacion.error.status === 409;
   const mostrarFormulario = estado?.estado === 'NoIniciado' || estado?.estado === 'Rechazada';
 
   return (
@@ -129,7 +146,13 @@ export function KycPage() {
             {errorSelfie && <Alert severity="warning" sx={{ mt: 1 }}>{errorSelfie}</Alert>}
           </Box>
 
-          {mutacion.isError && (
+          {mutacion.isError && es409 && (
+            <Alert severity="info">
+              Tu solicitud ya no se puede enviar en este estado; actualizamos tu estado de
+              verificación.
+            </Alert>
+          )}
+          {mutacion.isError && !es409 && (
             <Alert severity="error">
               No se pudo enviar la solicitud. Verifica los archivos e inténtalo de nuevo.
             </Alert>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getJson, postForm, getBlob } from './client';
+import { getJson, postForm, getBlob, HttpError } from './client';
 import { setAccessToken, getAccessToken, clearAccessToken } from '../auth/session';
 
 afterEach(() => {
@@ -55,6 +55,19 @@ describe('postForm', () => {
   it('lanza error si la respuesta no es ok', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('', { status: 400 }));
     await expect(postForm('/api/kyc', new FormData())).rejects.toThrow();
+  });
+
+  it('lanza HttpError con el status y el código de ProblemDetails ante un 409', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ title: 'Kyc.YaVerificado' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const error = await postForm('/api/kyc', new FormData()).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(HttpError);
+    expect((error as HttpError).status).toBe(409);
+    expect((error as HttpError).code).toBe('Kyc.YaVerificado');
   });
 });
 

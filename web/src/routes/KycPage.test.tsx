@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { KycPage } from './KycPage';
 import * as api from '../api/kyc';
+import { HttpError } from '../api/client';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -70,5 +71,35 @@ describe('KycPage', () => {
     await u.upload(screen.getByLabelText(/selfie/i), selfie);
     await u.click(screen.getByRole('button', { name: /enviar/i }));
     await waitFor(() => expect(enviar).toHaveBeenCalledWith(doc, selfie));
+  });
+
+  it('ante un 409 en el envío, muestra un mensaje amable y refresca el estado', async () => {
+    const obtenerEstado = vi
+      .spyOn(api, 'obtenerEstadoKyc')
+      .mockResolvedValue({ estado: 'NoIniciado', motivoRechazo: null });
+    vi.spyOn(api, 'enviarKyc').mockRejectedValue(
+      new HttpError(409, 'Kyc.YaVerificado', 'Petición fallida (409) a /api/kyc'),
+    );
+    montar();
+    await screen.findByRole('button', { name: /enviar/i });
+    const u = userEvent.setup();
+    const doc = new File(['x'], 'doc.png', { type: 'image/png' });
+    const selfie = new File(['y'], 'selfie.jpg', { type: 'image/jpeg' });
+    await u.upload(screen.getByLabelText(/documento/i), doc);
+    await u.upload(screen.getByLabelText(/selfie/i), selfie);
+    const llamadasPrevias = obtenerEstado.mock.calls.length;
+    await u.click(screen.getByRole('button', { name: /enviar/i }));
+    expect(
+      await screen.findByText(/ya no se puede enviar en este estado/i),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(obtenerEstado.mock.calls.length).toBeGreaterThan(llamadasPrevias));
+  });
+
+  it('si falla la carga del estado, muestra un alert de error', async () => {
+    vi.spyOn(api, 'obtenerEstadoKyc').mockRejectedValue(new Error('falló la red'));
+    montar();
+    expect(
+      await screen.findByText(/no se pudo cargar tu estado de verificación/i),
+    ).toBeInTheDocument();
   });
 });

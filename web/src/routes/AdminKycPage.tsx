@@ -136,7 +136,11 @@ function PanelRevision({
       </DialogContent>
       <DialogActions>
         <Button onClick={onCerrar}>Cerrar</Button>
-        {!rechazando ? (
+        {solicitud.estado !== 'Pendiente' ? (
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+            Esta solicitud ya fue resuelta.
+          </Typography>
+        ) : !rechazando ? (
           <>
             <Button color="error" onClick={() => setRechazando(true)}>
               Rechazar
