@@ -29,6 +29,11 @@
     <!-- Pin explícito de la dependencia transitiva: 2.0.0 (la que trae Microsoft.AspNetCore.OpenApi 10.0.0)
          tiene una vulnerabilidad conocida (GHSA-v5pm-xwqc-g5wc); 2.7.5 es la primera versión parcheada. -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.7.5" />
+    <!-- Pin explícito de la dependencia transitiva: 9.0.0 (la que trae Microsoft.Build.Tasks.Core,
+         a su vez traído por Microsoft.EntityFrameworkCore.Design 10.0.0 en proyectos sin
+         FrameworkReference a Microsoft.AspNetCore.App) tiene vulnerabilidades conocidas
+         (GHSA-37gx-xxp4-5rgx, GHSA-w3x6-4m5h-cxqf); 10.0.10 es una versión parcheada. -->
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.10" />
   </ItemGroup>
 
   <!-- Dependencias de test y librerías -->
