@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -14,7 +13,7 @@ using Xunit;
 
 namespace CaseritoApp.IntegrationTests;
 
-/// <summary>Concurrencia optimista del KYC: rowversion en la raíz + mapeo a 409.</summary>
+/// <summary>Concurrencia optimista del KYC: token incremental (int, IsConcurrencyToken) en la raíz + mapeo a 409.</summary>
 public sealed class KycConcurrenciaTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];

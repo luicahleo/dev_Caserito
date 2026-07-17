@@ -29,7 +29,7 @@ namespace CaseritoApp.Identity.Infrastructure.Migrations
             modelBuilder.Entity("CaseritoApp.Identity.Domain.Kyc.SolicitudKyc", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedNever()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("EnviadaEn")
@@ -78,7 +78,7 @@ namespace CaseritoApp.Identity.Infrastructure.Migrations
             modelBuilder.Entity("CaseritoApp.Identity.Domain.Kyc.VerificacionKyc", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                        .ValueGeneratedNever()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Version")

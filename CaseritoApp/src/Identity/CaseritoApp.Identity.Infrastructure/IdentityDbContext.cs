@@ -1,4 +1,3 @@
-using System.Linq;
 using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure.Kyc;
 using Microsoft.AspNetCore.Identity;
@@ -62,6 +61,10 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
             var raiz = ChangeTracker.Entries<VerificacionKyc>()
                 .FirstOrDefault(v => v.Entity.Id == verificacionId);
 
+            // Hoy VerificacionKyc no tiene columnas escalares propias, así que la raíz solo pasa a
+            // Modified mediante este incremento (por eso basta comprobar Unchanged). Si en el futuro
+            // gana estado escalar propio y puede quedar Modified por otra razón, habría que cubrir
+            // también ese caso para no dejar el token de concurrencia sin avanzar.
             if (raiz is { State: EntityState.Unchanged })
             {
                 var version = raiz.Property<int>("Version");
