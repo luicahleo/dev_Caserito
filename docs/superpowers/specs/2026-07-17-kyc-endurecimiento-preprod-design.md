@@ -95,20 +95,28 @@ Dos escenarios problemáticos:
 
 ### 3.1 Token de concurrencia en la raíz
 
-- Propiedad **shadow** `Version` (`byte[]`) en `VerificacionKyc`, configurada como
-  `IsRowVersion()` en `ConfiguracionKyc.Configurar`. SQL Server la auto-mantiene
-  (columna `rowversion`); las filas existentes quedan versionadas automáticamente.
+- Propiedad **shadow** `Version` (`int`) en `VerificacionKyc`, configurada como
+  `IsConcurrencyToken()` en `ConfiguracionKyc.Configurar` (valor inicial 0). Las filas
+  existentes quedan en 0 tras la migración.
+- **Por qué un entero incremental y no `rowversion`:** la raíz `VerificacionKyc` no
+  tiene columnas escalares propias (solo `Id`; el historial vive en otra tabla). Con un
+  `rowversion` (`byte[]`, store-generated), marcar la raíz como `Modified` no generaría
+  ningún `UPDATE` —no hay columna que asignar— y el chequeo de concurrencia nunca
+  dispararía. Un entero que se **incrementa explícitamente** en touch-root sí produce un
+  `UPDATE VerificacionesKyc SET Version=@new WHERE Id=@id AND Version=@old`, con el token
+  en el `WHERE`, que es lo que detecta la colisión.
 
 ### 3.2 Touch-root (propagar cambios de la hija a la raíz)
 
 EF Core **no** bumpea la versión de la raíz cuando solo cambia una hija: la raíz no
-entra en el `UPDATE` y su `rowversion` no se chequea. Para cubrir ambos escenarios se
+entra en el `UPDATE` y su token no se chequea. Para cubrir ambos escenarios se
 override `SaveChangesAsync` en `IdentityDbContext`:
 
 - Antes de delegar en `base.SaveChangesAsync`, recorrer
   `ChangeTracker.Entries<SolicitudKyc>()`; para cada hija en estado
-  `Added | Modified | Deleted`, marcar la raíz `VerificacionKyc` dueña como `Modified`
-  (equivalente a "tocar" su `Version` para forzar el chequeo de concurrencia).
+  `Added | Modified | Deleted`, **incrementar** el `Version` de la raíz `VerificacionKyc`
+  dueña (si está `Unchanged`). Incrementar la propiedad la marca como modificada y fuerza
+  el `UPDATE` con el chequeo de concurrencia.
 - La raíz dueña se localiza por la FK sombra `VerificacionKycId` (= `UsuarioId`), ya
   cargada en el `ChangeTracker` (los handlers hacen `Include(v => v.Solicitudes)`).
 
@@ -119,21 +127,35 @@ Con esto:
 
 ### 3.3 Mapeo del conflicto a HTTP 409
 
-- Nuevo `ConcurrenciaBehavior<TRequest, TResponse>` (MediatR pipeline behavior en
-  BuildingBlocks.Application.Behaviors) que envuelve la ejecución en `try/catch`,
-  captura `DbUpdateConcurrencyException` y devuelve
-  `Result.Fallo(new Error(ErroresKyc.ConflictoConcurrencia, …))` (o su equivalente en
-  el tipo `Result` genérico) en vez de propagar la excepción.
-- **Orden de registro (crítico):** MediatR ejecuta los behaviors en orden de registro
-  (externo→interno). En `Program.cs` el orden actual es
-  `Logging → Validation → UnitOfWork` (hoy líneas 18-20). `ConcurrenciaBehavior` debe
-  registrarse **antes** de `UnitOfWorkBehavior` (que es quien lanza la excepción al
-  hacer `SaveChanges`) para poder envolverlo y capturarla. Se registra justo antes de
-  `UnitOfWorkBehavior`.
-- Nuevo código de error `ErroresKyc.ConflictoConcurrencia`; el mapeo `Result`→HTTP de
-  los endpoints KYC lo traduce a **409 Conflict**, consistente con los 409 que KYC ya
-  usa (ya pendiente/aprobado, transición inválida). El cliente reintenta con estado
+Se traduce el `DbUpdateConcurrencyException` respetando las reglas de capa (verificadas
+por `ArchitectureTests`): `BuildingBlocks.Application` **no** referencia EF Core, así
+que la excepción de EF se captura en la capa que sí la conoce (Infrastructure) y se
+re-lanza como una excepción **neutral** que el Host mapea a HTTP. Esto reutiliza el
+patrón ya existente para `ValidationException` (lanzada en Application, mapeada a
+HTTP en los endpoints), en vez de introducir un behavior que devuelva `Result` (lo que
+exigiría reflexión para construir `Result<T>` y referenciar EF desde Application).
+
+- Nueva excepción neutral `ConflictoConcurrenciaException : Exception` en
+  `BuildingBlocks.Application.Abstractions` (junto a `IUnitOfWork`; sin dependencia de
+  EF Core).
+- `UnitOfWorkIdentity.GuardarCambiosAsync` (Infrastructure, ya referencia EF) envuelve
+  `SaveChangesAsync` en `try/catch (DbUpdateConcurrencyException ex)` y re-lanza
+  `throw new ConflictoConcurrenciaException(ex)`.
+- La excepción propaga sin ser capturada por los behaviors intermedios
+  (`UnitOfWorkBehavior`, `LoggingBehavior`, `ValidationBehavior` no la atrapan) hasta el
+  endpoint.
+- Los endpoints KYC de escritura (`aprobar`, `rechazar`, `enviar`) capturan
+  `ConflictoConcurrenciaException` y responden **409 Conflict** con `Results.Problem`,
+  con `title = ErroresKyc.ConflictoConcurrencia` (código nuevo, solo para el título del
+  ProblemDetails, consistente con los otros 409 de KYC). El cliente reintenta con estado
   fresco.
+- **Caveat documentado:** el escenario de dos subidas concurrentes cuando el agregado
+  **aún no existe** produce una colisión de PK (`DbUpdateException`, no
+  `DbUpdateConcurrencyException`), que no se mapea a 409 y sube como 500. El resultado
+  sigue siendo **seguro** (solo una `Pendiente` se crea); el 409 limpio cubre el caso de
+  agregado ya existente (p. ej. reintento tras rechazo) y la doble aprobación. Detectar
+  la violación de índice único es específico del proveedor y frágil, por lo que queda
+  fuera de alcance a ~20 usuarios.
 
 ### 3.4 Migración
 
