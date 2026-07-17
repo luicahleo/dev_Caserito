@@ -21,14 +21,16 @@ public sealed class UnitOfWorkBehaviorTests
     }
 
     [Fact]
-    public async Task Guarda_cambios_una_vez_tras_el_handler()
+    public async Task Guarda_cambios_una_vez_en_cada_unit_of_work_tras_el_handler()
     {
-        var uow = new UnitOfWorkFake();
-        var behavior = new UnitOfWorkBehavior<Comando, string>(uow);
+        var uow1 = new UnitOfWorkFake();
+        var uow2 = new UnitOfWorkFake();
+        var behavior = new UnitOfWorkBehavior<Comando, string>([uow1, uow2]);
 
         var resultado = await behavior.Handle(new Comando(), () => Task.FromResult("ok"), CancellationToken.None);
 
         Assert.Equal("ok", resultado);
-        Assert.Equal(1, uow.Llamadas);
+        Assert.Equal(1, uow1.Llamadas);
+        Assert.Equal(1, uow2.Llamadas);
     }
 }
