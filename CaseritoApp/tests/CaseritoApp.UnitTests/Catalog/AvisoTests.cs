@@ -8,7 +8,7 @@ public sealed class AvisoTests
 
     private static Aviso NuevoAviso() => Aviso.Crear(
         vendedorId: Guid.NewGuid(),
-        titulo: "Bicicleta de montaÃ±a",
+        titulo: "Bicicleta de montaña",
         descripcion: "Rodado 29, poco uso",
         precio: Dinero.Crear(1200m, Moneda.BOB).Valor,
         categoriaId: Guid.NewGuid(),

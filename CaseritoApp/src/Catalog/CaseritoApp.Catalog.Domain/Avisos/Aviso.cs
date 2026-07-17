@@ -3,7 +3,7 @@ using CaseritoApp.BuildingBlocks.Domain;
 namespace CaseritoApp.Catalog.Domain.Avisos;
 
 /// <summary>
-/// RaÃ­z de agregado de un aviso del marketplace. Encapsula la mÃ¡quina de estados
+/// Raíz de agregado de un aviso del marketplace. Encapsula la máquina de estados
 /// (<see cref="EstadoAviso.Activo"/> â‡„ <see cref="EstadoAviso.Pausado"/>, y
 /// <see cref="EstadoAviso.Eliminado"/> como estado terminal por soft-delete).
 /// </summary>
@@ -33,34 +33,34 @@ public sealed class Aviso : AggregateRoot
         FechaActualizacion = ahoraUtc;
     }
 
-    /// <summary>Id opaco del dueÃ±o (claim <c>sub</c>); sin FK cruzada a Identity.</summary>
+    /// <summary>Id opaco del dueño (claim <c>sub</c>); sin FK cruzada a Identity.</summary>
     public Guid VendedorId { get; private set; }
 
-    /// <summary>TÃ­tulo del aviso.</summary>
+    /// <summary>Título del aviso.</summary>
     public string Titulo { get; private set; }
 
-    /// <summary>DescripciÃ³n del aviso.</summary>
+    /// <summary>Descripción del aviso.</summary>
     public string Descripcion { get; private set; }
 
     /// <summary>Precio del aviso.</summary>
     public Dinero Precio { get; private set; }
 
-    /// <summary>CategorÃ­a (referencia al catÃ¡logo sembrado).</summary>
+    /// <summary>Categoría (referencia al catálogo sembrado).</summary>
     public Guid CategoriaId { get; private set; }
 
-    /// <summary>Ciudad (referencia al catÃ¡logo sembrado).</summary>
+    /// <summary>Ciudad (referencia al catálogo sembrado).</summary>
     public Guid CiudadId { get; private set; }
 
-    /// <summary>CondiciÃ³n del artÃ­culo.</summary>
+    /// <summary>Condición del artículo.</summary>
     public CondicionArticulo Condicion { get; private set; }
 
     /// <summary>Estado actual del aviso.</summary>
     public EstadoAviso Estado { get; private set; }
 
-    /// <summary>Fecha de creaciÃ³n (UTC).</summary>
+    /// <summary>Fecha de creación (UTC).</summary>
     public DateTime FechaCreacion { get; private set; }
 
-    /// <summary>Fecha de Ãºltima modificaciÃ³n (UTC).</summary>
+    /// <summary>Fecha de última modificación (UTC).</summary>
     public DateTime FechaActualizacion { get; private set; }
 
     /// <summary>Crea un aviso nuevo en estado <see cref="EstadoAviso.Activo"/> y emite <see cref="AvisoPublicado"/>.</summary>
@@ -73,7 +73,7 @@ public sealed class Aviso : AggregateRoot
         return aviso;
     }
 
-    /// <summary>Edita los datos del aviso. Prohibido si estÃ¡ eliminado.</summary>
+    /// <summary>Edita los datos del aviso. Prohibido si está eliminado.</summary>
     public Result Editar(
         string titulo, string descripcion, Dinero precio,
         Guid categoriaId, Guid ciudadId, CondicionArticulo condicion, DateTime ahoraUtc)
@@ -127,7 +127,7 @@ public sealed class Aviso : AggregateRoot
     {
         if (Estado == EstadoAviso.Eliminado)
         {
-            return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "El aviso ya estÃ¡ eliminado."));
+            return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "El aviso ya está eliminado."));
         }
 
         Estado = EstadoAviso.Eliminado;
