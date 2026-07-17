@@ -1,5 +1,6 @@
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
 using FluentValidation;
@@ -28,8 +29,12 @@ builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
 var app = builder.Build();
+
+// Expone el documento en dev (/openapi/v1.json). El contrato de generación sale del build, no de aquí.
+app.MapOpenApi();
 
 // Migración + seeding de roles al arrancar. En Development es automático; fuera de Development
 // (p. ej. Production) es opt-in vía "Migraciones:EjecutarAlArranque" (ruta de migración controlada:

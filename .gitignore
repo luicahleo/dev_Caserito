@@ -18,6 +18,10 @@
 project.lock.json
 project.fragment.lock.json
 artifacts/
+# Excepción: el contrato OpenAPI emitido en build se versiona (fuente para el cliente TS tipado).
+!CaseritoApp/artifacts/
+!CaseritoApp/artifacts/openapi/
+!CaseritoApp/artifacts/openapi/*.json
 *.nupkg
 *.snupkg
 msbuild.log
