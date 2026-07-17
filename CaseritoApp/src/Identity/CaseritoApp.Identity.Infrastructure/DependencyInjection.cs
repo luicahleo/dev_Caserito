@@ -27,7 +27,8 @@ public static class DependencyInjection
     /// Identity Core, roles, stores de EF, <see cref="SignInManager{TUser}"/> y los proveedores de token
     /// por defecto.
     /// </summary>
-    public static IServiceCollection AgregarIdentity(this IServiceCollection servicios, IConfiguration config)
+    public static IServiceCollection AgregarIdentity(
+        this IServiceCollection servicios, IConfiguration config, IHostEnvironment entorno)
     {
         var cadena = config.GetConnectionString("DefaultConnection");
         if (!string.IsNullOrWhiteSpace(cadena))
@@ -51,6 +52,18 @@ public static class DependencyInjection
         servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
+
+        // Fail-fast de PII: fuera de Development/Testing no existe un encryptor real cableado
+        // (envelope/KMS diferido), así que se aborta la composición en vez de escribir CI/selfie en
+        // claro. Mismo criterio de entorno que la clave efímera de JWT. Sin escape hatch: prod no
+        // arranca hasta cablear cifrado real.
+        if (!(entorno.IsDevelopment() || entorno.IsEnvironment("Testing")))
+        {
+            throw new InvalidOperationException(
+                "IEncryptor está configurado como PassthroughEncryptor fuera de Development/Testing: " +
+                "se requiere un encryptor real (envelope/KMS) antes de producción.");
+        }
+
         servicios.AddSingleton<IEncryptor, PassthroughEncryptor>();
         servicios.AddScoped<IAlmacenBlobsKyc, AlmacenBlobsKycDisco>();
         servicios.AddSingleton<IPublicadorEventosIntegracion, PublicadorEventosIntegracionLog>();
