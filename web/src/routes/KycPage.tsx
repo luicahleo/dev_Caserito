@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
-import { HttpError } from '../api/client';
+import { HttpError } from '../api/http';
 
 const MIME_PERMITIDOS = ['image/jpeg', 'image/png'];
 const LIMITE_BYTES = 5 * 1024 * 1024;
