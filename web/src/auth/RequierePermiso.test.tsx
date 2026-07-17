@@ -8,7 +8,7 @@ afterEach(() => vi.restoreAllMocks());
 
 function montarCon(permisos: string[]) {
   vi.spyOn(ctx, 'useAuth').mockReturnValue({
-    usuario: { id: '1', email: 'a@b.co', nombre: 'Ana', ciudad: 'La Paz' },
+    usuario: { id: '1', email: 'a@b.co', nombre: 'Ana', ciudad: 'La Paz', verificado: false },
     estaAutenticado: true,
     cargando: false,
     permisos,
