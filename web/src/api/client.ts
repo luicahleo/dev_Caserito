@@ -4,6 +4,30 @@
 // negocio, se reemplaza/complementa con un cliente tipado generado del OpenAPI.
 import { clearAccessToken, getAccessToken, setAccessToken } from '../auth/session';
 
+// Error tipado para respuestas no-ok que necesitan ramificar por status (p.ej. 409).
+// El mensaje solo lleva status/ruta/código no-PII de ProblemDetails, nunca contenido sensible.
+export class HttpError extends Error {
+  readonly status: number;
+  readonly code: string | null;
+
+  constructor(status: number, code: string | null, mensaje: string) {
+    super(mensaje);
+    this.name = 'HttpError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// Intenta leer el código no-PII de un ProblemDetails; null si no se puede.
+async function leerCodigoProblema(r: Response): Promise<string | null> {
+  try {
+    const cuerpo = (await r.clone().json()) as { title?: string };
+    return cuerpo.title ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function refrescarToken(): Promise<boolean> {
   const r = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
   if (!r.ok) return false;
@@ -62,4 +86,20 @@ export async function putJson<T>(ruta: string, cuerpo?: unknown): Promise<T> {
     body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
   });
   return leer<T>(r, ruta);
+}
+
+export async function postForm(ruta: string, form: FormData): Promise<void> {
+  const r = await ejecutar(ruta, { method: 'POST', body: form });
+  if (!r.ok) {
+    const code = await leerCodigoProblema(r);
+    throw new HttpError(r.status, code, `Petición fallida (${r.status}) a ${ruta}`);
+  }
+}
+
+export async function getBlob(ruta: string): Promise<Blob> {
+  const r = await ejecutar(ruta, { method: 'GET' });
+  if (!r.ok) {
+    throw new Error(`Petición fallida (${r.status}) a ${ruta}`);
+  }
+  return r.blob();
 }

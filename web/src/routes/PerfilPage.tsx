@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Box, Button, Container, Snackbar, Stack, TextField, Typography, CircularProgress } from '@mui/material';
+import { Alert, Box, Button, Chip, Container, Link, Snackbar, Stack, TextField, Typography, CircularProgress } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { actualizarPerfil, type Perfil } from '../api/perfil';
 
@@ -14,7 +15,7 @@ const esquema = z.object({
 type Datos = z.infer<typeof esquema>;
 
 export function PerfilPage() {
-  const { usuario, cerrarSesion } = useAuth();
+  const { usuario, cerrarSesion, verificado, tienePermiso } = useAuth();
   const navigate = useNavigate();
   const [perfilGuardado, setPerfilGuardado] = useState<Perfil | null>(null);
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
@@ -67,6 +68,20 @@ export function PerfilPage() {
           disabled
           slotProps={{ input: { readOnly: true } }}
         />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip
+            color={verificado ? 'success' : 'default'}
+            label={verificado ? 'Verificado' : 'Sin verificar'}
+          />
+          <Link component={RouterLink} to="/kyc">
+            {verificado ? 'Ver estado' : 'Verificar identidad'}
+          </Link>
+        </Box>
+        {tienePermiso('kyc.revisar') && (
+          <Link component={RouterLink} to="/admin/kyc">
+            Revisar verificaciones (admin)
+          </Link>
+        )}
         {errorGeneral && <Alert severity="error">{errorGeneral}</Alert>}
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Stack spacing={2}>
