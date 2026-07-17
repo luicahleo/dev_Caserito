@@ -33,8 +33,16 @@ builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySc
 
 var app = builder.Build();
 
-// Expone el documento en dev (/openapi/v1.json). El contrato de generación sale del build, no de aquí.
-app.MapOpenApi();
+// El endpoint /openapi/v1.json se expone en Development y en Testing, pero NUNCA en Production
+// (no se publica la superficie de endpoints, incluidos los admin). Se incluye Testing porque el
+// target de build opt-in (-p:GenerateOpenApi=true, Microsoft.Extensions.ApiDescription.Server)
+// arranca el host bajo ASPNETCORE_ENVIRONMENT=Testing para emitir el JSON del contrato: si
+// MapOpenApi no se registra en ese entorno, cambia el orden de los endpoints y por lo tanto el
+// JSON emitido difiere del committeado. Gatear a Development+Testing preserva el contrato exacto.
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+{
+    app.MapOpenApi();
+}
 
 // Migración + seeding de roles al arrancar. En Development es automático; fuera de Development
 // (p. ej. Production) es opt-in vía "Migraciones:EjecutarAlArranque" (ruta de migración controlada:
