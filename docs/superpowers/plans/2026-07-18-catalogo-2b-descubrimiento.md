@@ -22,42 +22,42 @@
 
 ## Referencias del repo (patrones a imitar)
 
-- Query paginada existente: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/ListarMisAvisosQuery.cs`.
-- `ResultadoPaginado<T>`: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/ResultadoPaginado.cs`.
-- DTOs de 2A: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAviso.cs`.
-- Adaptador de consulta EF: `src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaCatalogoEfCore.cs` y `RepositorioAvisosEfCore.cs`.
-- Registro DI: `src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs`.
-- Endpoints y helper de validación: `src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`, `CatalogoEndpoints.cs`.
-- Registro de endpoints: `src/Host/CaseritoApp.Host/Program.cs:80-90`.
-- Test de integración de 2A: `tests/CaseritoApp.IntegrationTests/AvisosFlujoTests.cs`.
-- Unit tests de validators de 2A: `tests/CaseritoApp.UnitTests/Catalog/CrearAvisoCommandValidatorTests.cs`.
+- Query paginada existente: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ListarMisAvisosQuery.cs`.
+- `ResultadoPaginado<T>`: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ResultadoPaginado.cs`.
+- DTOs de 2A: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAviso.cs`.
+- Adaptador de consulta EF: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaCatalogoEfCore.cs` y `RepositorioAvisosEfCore.cs`.
+- Registro DI: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs`.
+- Endpoints y helper de validación: `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`, `CatalogoEndpoints.cs`.
+- Registro de endpoints: `CaseritoApp/src/Host/CaseritoApp.Host/Program.cs:80-90`.
+- Test de integración de 2A: `CaseritoApp/tests/CaseritoApp.IntegrationTests/AvisosFlujoTests.cs`.
+- Unit tests de validators de 2A: `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/CrearAvisoCommandValidatorTests.cs`.
 
 ## File Structure
 
 **Crear:**
-- `src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs` — `AvisoPublicoResumenDto`, `AvisoPublicoDto`.
-- `src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs` — puerto + `FiltroBusquedaAvisos`.
-- `src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs` — query + handler + validator.
-- `src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs` — query + handler.
-- `src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs` — adaptador EF.
-- `src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs` — endpoints anónimos.
-- `tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`
-- `tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`
-- `tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs` — `AvisoPublicoResumenDto`, `AvisoPublicoDto`.
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs` — puerto + `FiltroBusquedaAvisos`.
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs` — query + handler + validator.
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs` — query + handler.
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs` — adaptador EF.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs` — endpoints anónimos.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`
 
 **Modificar:**
-- `src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs` — registrar el nuevo adaptador.
-- `src/Host/CaseritoApp.Host/Program.cs` — `app.MapPublicoEndpoints();`.
+- `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs` — registrar el nuevo adaptador.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Program.cs` — `app.MapPublicoEndpoints();`.
 - `CaseritoApp/artifacts/openapi/CaseritoApp.Host.json` y `web/src/api/schema.d.ts` — regenerados (Task 7).
-- (Task 8) `src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`, `CrearAvisoCommand.cs`, `EditarAvisoCommand.cs`, `Domain/Avisos/Categoria.cs`, `Ciudad.cs`.
+- (Task 8) `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`, `CrearAvisoCommand.cs`, `EditarAvisoCommand.cs`, `Domain/Avisos/Categoria.cs`, `Ciudad.cs`.
 
 ---
 
 ### Task 1: Contratos de Application (DTOs públicos + puerto)
 
 **Files:**
-- Create: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs`
-- Create: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs`
+- Create: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs`
+- Create: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs`
 
 **Interfaces:**
 - Consumes: `CondicionArticulo` (`CaseritoApp.Catalog.Domain.Avisos`), `ResultadoPaginado<T>`.
@@ -65,7 +65,7 @@
 
 - [ ] **Step 1: Crear los DTOs públicos**
 
-`src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs`:
+`CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs`:
 
 ```csharp
 namespace CaseritoApp.Catalog.Application.Avisos;
@@ -96,7 +96,7 @@ public sealed record AvisoPublicoDto(
 
 - [ ] **Step 2: Crear el puerto y el filtro**
 
-`src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs`:
+`CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Domain.Avisos;
@@ -132,8 +132,8 @@ Expected: build correcto, 0 warnings/errors.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs \
-        src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs
+git add CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs
 git commit -m "feat(catalog): contratos de descubrimiento público (DTOs + puerto IConsultaAvisosPublica)"
 ```
 
@@ -142,9 +142,9 @@ git commit -m "feat(catalog): contratos de descubrimiento público (DTOs + puert
 ### Task 2: Query de búsqueda (BuscarAvisosQuery + handler + validator)
 
 **Files:**
-- Create: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs`
-- Test: `tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`
-- Test: `tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`
+- Create: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs`
+- Test: `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`
+- Test: `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`
 
 **Interfaces:**
 - Consumes: `IConsultaAvisosPublica`, `FiltroBusquedaAvisos`, `AvisoPublicoResumenDto`, `ResultadoPaginado<T>`, `CondicionArticulo`, `IQuery`/`IQueryHandler` (`CaseritoApp.BuildingBlocks.Application.Messaging`).
@@ -152,7 +152,7 @@ git commit -m "feat(catalog): contratos de descubrimiento público (DTOs + puert
 
 - [ ] **Step 1: Escribir los tests del validator (fallan)**
 
-`tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`:
+`CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Application.Avisos;
@@ -235,7 +235,7 @@ public sealed class BuscarAvisosQueryValidatorTests
 
 - [ ] **Step 2: Escribir el test del handler (falla)**
 
-`tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`:
+`CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Application.Avisos;
@@ -305,7 +305,7 @@ Expected: FAIL de compilación (no existe `BuscarAvisosQuery`/`BuscarAvisosQuery
 
 - [ ] **Step 4: Implementar la query, el handler y el validator**
 
-`src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs`:
+`CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs`:
 
 ```csharp
 using CaseritoApp.BuildingBlocks.Application.Messaging;
@@ -381,9 +381,9 @@ Expected: PASS (todos los casos del validator y del handler).
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs \
-        tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs \
-        tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs
+git add CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs \
+        CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs \
+        CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs
 git commit -m "feat(catalog): query de búsqueda pública de avisos (tokenización + validación)"
 ```
 
@@ -392,7 +392,7 @@ git commit -m "feat(catalog): query de búsqueda pública de avisos (tokenizaci�
 ### Task 3: Query de detalle público (ObtenerAvisoPublicoQuery + handler)
 
 **Files:**
-- Create: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs`
+- Create: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs`
 - Test: (se cubre el flujo real en integración, Task 6; aquí un unit con fake)
 
 **Interfaces:**
@@ -401,7 +401,7 @@ git commit -m "feat(catalog): query de búsqueda pública de avisos (tokenizaci�
 
 - [ ] **Step 1: Escribir el test del handler (falla)**
 
-Añadir a `tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs` una clase nueva en un archivo aparte `tests/CaseritoApp.UnitTests/Catalog/ObtenerAvisoPublicoQueryHandlerTests.cs`:
+Añadir a `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs` una clase nueva en un archivo aparte `CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ObtenerAvisoPublicoQueryHandlerTests.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Application.Avisos;
@@ -452,7 +452,7 @@ Expected: FAIL de compilación (no existe `ObtenerAvisoPublicoQuery`/`ObtenerAvi
 
 - [ ] **Step 3: Implementar la query y el handler**
 
-`src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs`:
+`CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs`:
 
 ```csharp
 using CaseritoApp.BuildingBlocks.Application.Messaging;
@@ -479,8 +479,8 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs \
-        tests/CaseritoApp.UnitTests/Catalog/ObtenerAvisoPublicoQueryHandlerTests.cs
+git add CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs \
+        CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ObtenerAvisoPublicoQueryHandlerTests.cs
 git commit -m "feat(catalog): query de detalle público de aviso"
 ```
 
@@ -489,8 +489,8 @@ git commit -m "feat(catalog): query de detalle público de aviso"
 ### Task 4: Adaptador EF Core + registro DI
 
 **Files:**
-- Create: `src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs`
-- Modify: `src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs:26-28`
+- Create: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs`
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs:26-28`
 
 **Interfaces:**
 - Consumes: `CatalogDbContext`, `IConsultaAvisosPublica`, `FiltroBusquedaAvisos`, `AvisoPublicoResumenDto`, `AvisoPublicoDto`, `EstadoAviso`, `ResultadoPaginado<T>`.
@@ -498,7 +498,7 @@ git commit -m "feat(catalog): query de detalle público de aviso"
 
 - [ ] **Step 1: Implementar el adaptador**
 
-`src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs`:
+`CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Application.Avisos;
@@ -600,7 +600,7 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
 
 - [ ] **Step 2: Registrar el adaptador en DI**
 
-En `src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs`, tras la línea `servicios.AddScoped<IConsultaCatalogo, ConsultaCatalogoEfCore>();` añadir:
+En `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs`, tras la línea `servicios.AddScoped<IConsultaCatalogo, ConsultaCatalogoEfCore>();` añadir:
 
 ```csharp
         servicios.AddScoped<IConsultaAvisosPublica, ConsultaAvisosPublicaEfCore>();
@@ -614,8 +614,8 @@ Expected: build correcto, 0 warnings/errors.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs \
-        src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs
+git add CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs
 git commit -m "feat(catalog): adaptador EF de búsqueda pública (LIKE colación CI_AI + filtros)"
 ```
 
@@ -624,8 +624,8 @@ git commit -m "feat(catalog): adaptador EF de búsqueda pública (LIKE colación
 ### Task 5: Endpoints anónimos + registro en el host
 
 **Files:**
-- Create: `src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs`
-- Modify: `src/Host/CaseritoApp.Host/Program.cs:88`
+- Create: `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs`
+- Modify: `CaseritoApp/src/Host/CaseritoApp.Host/Program.cs:88`
 
 **Interfaces:**
 - Consumes: `BuscarAvisosQuery`, `ObtenerAvisoPublicoQuery`, `AvisoPublicoResumenDto`, `AvisoPublicoDto`, `ResultadoPaginado<T>`, `ISender`, `ValidationException`.
@@ -633,7 +633,7 @@ git commit -m "feat(catalog): adaptador EF de búsqueda pública (LIKE colación
 
 - [ ] **Step 1: Crear el archivo de endpoints**
 
-`src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs`:
+`CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs`:
 
 ```csharp
 using CaseritoApp.Catalog.Application.Avisos;
@@ -697,7 +697,7 @@ public static class PublicoEndpoints
 
 - [ ] **Step 2: Registrar en Program.cs**
 
-En `src/Host/CaseritoApp.Host/Program.cs`, después de `app.MapCatalogoEndpoints();` (línea 88) añadir:
+En `CaseritoApp/src/Host/CaseritoApp.Host/Program.cs`, después de `app.MapCatalogoEndpoints();` (línea 88) añadir:
 
 ```csharp
 app.MapPublicoEndpoints();
@@ -711,8 +711,8 @@ Expected: build correcto, 0 warnings/errors.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs \
-        src/Host/CaseritoApp.Host/Program.cs
+git add CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs \
+        CaseritoApp/src/Host/CaseritoApp.Host/Program.cs
 git commit -m "feat(catalog): endpoints anónimos de descubrimiento (/api/publico/avisos)"
 ```
 
@@ -721,7 +721,7 @@ git commit -m "feat(catalog): endpoints anónimos de descubrimiento (/api/public
 ### Task 6: Tests de integración (Testcontainers)
 
 **Files:**
-- Create: `tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`
+- Create: `CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`
 
 **Interfaces:**
 - Consumes: `CaseritoApiFactory`, endpoints de auth/kyc/avisos de 2A (para sembrar avisos vía API), endpoint público de la Task 5.
@@ -730,7 +730,7 @@ Notas de patrón (imitar `AvisosFlujoTests.cs`): usar `CaseritoApiFactory` como 
 
 - [ ] **Step 1: Escribir los tests de integración**
 
-`tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`:
+`CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs`:
 
 ```csharp
 using System.Net;
@@ -960,7 +960,7 @@ Nota de diagnóstico: si el test de acentos falla, verificar que la imagen de SQ
 - [ ] **Step 3: Commit**
 
 ```bash
-git add tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs
+git add CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs
 git commit -m "test(catalog): integración del descubrimiento público (activos/filtros/acentos/paginación/404)"
 ```
 
@@ -977,11 +977,11 @@ git commit -m "test(catalog): integración del descubrimiento público (activos/
 
 - [ ] **Step 1: Regenerar el contrato OpenAPI (opt-in, entorno Testing)**
 
-Run (desde `CaseritoApp/`):
+Run (desde el repo root):
 ```bash
-ASPNETCORE_ENVIRONMENT=Testing dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true
+ASPNETCORE_ENVIRONMENT=Testing dotnet build CaseritoApp/src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true
 ```
-Expected: `artifacts/openapi/CaseritoApp.Host.json` regenerado; `git diff` muestra las rutas nuevas `/api/publico/avisos` y `/api/publico/avisos/{id}` y los schemas `AvisoPublicoDto` / `ResultadoPaginadoOfAvisoPublicoResumenDto`.
+Expected: `CaseritoApp/artifacts/openapi/CaseritoApp.Host.json` regenerado; `git diff` muestra las rutas nuevas `/api/publico/avisos` y `/api/publico/avisos/{id}` y los schemas `AvisoPublicoDto` / `ResultadoPaginadoOfAvisoPublicoResumenDto`.
 
 - [ ] **Step 2: Regenerar el cliente TS**
 
@@ -1010,12 +1010,12 @@ git commit -m "chore(catalog): contrato OpenAPI + tipos TS de los endpoints de d
 Cambios de higiene aprovechando que 2B toca estos archivos. Cada uno es independiente; van juntos en un commit de refactor.
 
 **Files:**
-- Modify: `src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`
-- Modify: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/CrearAvisoCommand.cs:48`
-- Modify: `src/Catalog/CaseritoApp.Catalog.Application/Avisos/EditarAvisoCommand.cs:53`
-- Modify: `src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs` (añadir `CondicionInvalida`)
-- Modify: `src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Categoria.cs:9-11`
-- Modify: `src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Ciudad.cs:9-11`
+- Modify: `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs`
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/CrearAvisoCommand.cs:48`
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/EditarAvisoCommand.cs:53`
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs` (añadir `CondicionInvalida`)
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Categoria.cs:9-11`
+- Modify: `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Ciudad.cs:9-11`
 
 - [ ] **Step 1: Eliminar el helper `UserId()` (Guid.Empty silencioso) en AvisosEndpoints**
 
@@ -1067,7 +1067,7 @@ Eliminar el método `UserId` (línea 170):
 
 - [ ] **Step 2: `Enum.TryParse` defensivo en los handlers Crear/Editar**
 
-Primero añadir la constante de error. En `src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs`, tras `CiudadInvalida` (línea 19) añadir:
+Primero añadir la constante de error. En `CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs`, tras `CiudadInvalida` (línea 19) añadir:
 
 ```csharp
     /// <summary>La condición del artículo no es válida (400).</summary>
@@ -1113,12 +1113,12 @@ Expected: toda la suite en verde (152 previos + los nuevos de este bloque).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs \
-        src/Catalog/CaseritoApp.Catalog.Application/Avisos/CrearAvisoCommand.cs \
-        src/Catalog/CaseritoApp.Catalog.Application/Avisos/EditarAvisoCommand.cs \
-        src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs \
-        src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Categoria.cs \
-        src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Ciudad.cs
+git add CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/CrearAvisoCommand.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/EditarAvisoCommand.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Categoria.cs \
+        CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Ciudad.cs
 git commit -m "refactor(catalog): barre follow-ups de 2A (UserId, Enum.TryParse en handlers, pragma S1144)"
 ```
 
