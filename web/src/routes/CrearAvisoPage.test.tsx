@@ -1,0 +1,51 @@
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter } from 'react-router-dom';
+import { CrearAvisoPage } from './CrearAvisoPage';
+import * as authCtx from '../auth/AuthContext';
+import * as catalogo from '../api/catalogo';
+
+afterEach(() => vi.restoreAllMocks());
+
+function mockAuth(verificado: boolean) {
+  vi.spyOn(authCtx, 'useAuth').mockReturnValue({
+    verificado,
+    estaAutenticado: true,
+    cargando: false,
+    usuario: null,
+    permisos: [],
+    tienePermiso: () => false,
+    iniciarSesion: vi.fn(),
+    registrar: vi.fn(),
+    cerrarSesion: vi.fn(),
+  } as never);
+}
+
+function montar() {
+  vi.spyOn(catalogo, 'listarCategorias').mockResolvedValue([{ id: 'c1', nombre: 'Muebles' }]);
+  vi.spyOn(catalogo, 'listarCiudades').mockResolvedValue([{ id: 'u1', nombre: 'La Paz' }]);
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={qc}>
+      <MemoryRouter>
+        <CrearAvisoPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
+describe('CrearAvisoPage', () => {
+  it('muestra el gate KYC si el usuario no está verificado', () => {
+    mockAuth(false);
+    montar();
+    expect(screen.getByText(/verificar tu identidad/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/título/i)).not.toBeInTheDocument();
+  });
+
+  it('muestra el formulario si el usuario está verificado', () => {
+    mockAuth(true);
+    montar();
+    expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+  });
+});
