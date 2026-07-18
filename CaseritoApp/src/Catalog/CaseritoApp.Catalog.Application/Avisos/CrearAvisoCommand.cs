@@ -45,7 +45,11 @@ public sealed class CrearAvisoCommandHandler(
             return Result.Fallo<Guid>(new Error(ErroresAviso.CiudadInvalida, "La ciudad no es válida."));
         }
 
-        var condicion = Enum.Parse<CondicionArticulo>(request.Condicion);
+        if (!Enum.TryParse<CondicionArticulo>(request.Condicion, out var condicion))
+        {
+            return Result.Fallo<Guid>(new Error(ErroresAviso.CondicionInvalida, "La condición no es válida."));
+        }
+
         var aviso = Aviso.Crear(
             request.VendedorId, request.Titulo, request.Descripcion, precio.Valor,
             request.CategoriaId, request.CiudadId, condicion, reloj.GetUtcNow().UtcDateTime);

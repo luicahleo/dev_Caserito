@@ -50,7 +50,11 @@ public sealed class EditarAvisoCommandHandler(
             return Result.Fallo(new Error(ErroresAviso.CiudadInvalida, "La ciudad no es válida."));
         }
 
-        var condicion = Enum.Parse<CondicionArticulo>(request.Condicion);
+        if (!Enum.TryParse<CondicionArticulo>(request.Condicion, out var condicion))
+        {
+            return Result.Fallo(new Error(ErroresAviso.CondicionInvalida, "La condición no es válida."));
+        }
+
         return aviso.Editar(
             request.Titulo, request.Descripcion, precio.Valor,
             request.CategoriaId, request.CiudadId, condicion, reloj.GetUtcNow().UtcDateTime);

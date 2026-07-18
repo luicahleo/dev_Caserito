@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         servicios.AddScoped<IRepositorioAvisos, RepositorioAvisosEfCore>();
         servicios.AddScoped<IConsultaCatalogo, ConsultaCatalogoEfCore>();
+        servicios.AddScoped<IConsultaAvisosPublica, ConsultaAvisosPublicaEfCore>();
         servicios.AddScoped<IUnitOfWork, UnitOfWorkCatalog>();
 
         return servicios;
