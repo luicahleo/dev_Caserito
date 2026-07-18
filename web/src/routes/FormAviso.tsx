@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Box, Button, Stack, TextField } from '@mui/material';
+import { Alert, Box, Button, MenuItem, Stack, TextField } from '@mui/material';
 import { listarCategorias, listarCiudades } from '../api/catalogo';
 
 export interface ValoresAviso {
@@ -98,13 +98,12 @@ export function FormAviso({
         onChange={set('categoriaId')}
         error={!!errores.categoriaId}
         helperText={errores.categoriaId}
-        slotProps={{ select: { native: true } }}
       >
-        <option value="" />
+        <MenuItem value="" />
         {(categorias.data ?? []).map((c) => (
-          <option key={c.id} value={c.id}>
+          <MenuItem key={c.id} value={c.id}>
             {c.nombre}
-          </option>
+          </MenuItem>
         ))}
       </TextField>
       <TextField
@@ -114,26 +113,19 @@ export function FormAviso({
         onChange={set('ciudadId')}
         error={!!errores.ciudadId}
         helperText={errores.ciudadId}
-        slotProps={{ select: { native: true } }}
       >
-        <option value="" />
+        <MenuItem value="" />
         {(ciudades.data ?? []).map((c) => (
-          <option key={c.id} value={c.id}>
+          <MenuItem key={c.id} value={c.id}>
             {c.nombre}
-          </option>
+          </MenuItem>
         ))}
       </TextField>
-      <TextField
-        select
-        label="Condición"
-        value={valores.condicion}
-        onChange={set('condicion')}
-        slotProps={{ select: { native: true } }}
-      >
+      <TextField select label="Condición" value={valores.condicion} onChange={set('condicion')}>
         {CONDICIONES.map((c) => (
-          <option key={c} value={c}>
+          <MenuItem key={c} value={c}>
             {c}
-          </option>
+          </MenuItem>
         ))}
       </TextField>
       {(categorias.isError || ciudades.isError) && (

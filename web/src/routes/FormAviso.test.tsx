@@ -22,7 +22,7 @@ function montar(onSubmit = vi.fn(), inicial?: Partial<ValoresAviso>) {
 describe('FormAviso', () => {
   it('no envía y muestra errores si faltan campos requeridos', async () => {
     const onSubmit = montar();
-    await screen.findByText('Muebles'); // catálogos cargados
+    await screen.findByRole('button', { name: /publicar/i }); // formulario listo
     await userEvent.click(screen.getByRole('button', { name: /publicar/i }));
     expect(onSubmit).not.toHaveBeenCalled();
     expect(screen.getByText(/el título es obligatorio/i)).toBeInTheDocument();
@@ -32,7 +32,7 @@ describe('FormAviso', () => {
     // Precargamos categoría/ciudad vía `inicial` para no depender de interactuar
     // con los <select> de MUI, que resulta frágil con userEvent.
     const onSubmit = montar(vi.fn(), { categoriaId: 'c1', ciudadId: 'u1' });
-    await screen.findByText('Muebles');
+    await screen.findByRole('button', { name: /publicar/i }); // formulario listo
 
     await userEvent.type(screen.getByLabelText(/título/i), 'Mesa');
     await userEvent.type(screen.getByLabelText(/descripción/i), 'De madera');
