@@ -141,11 +141,13 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
 
         var marca = Guid.NewGuid().ToString("N");
         var barato = await CrearAvisoAsync(cliente, token, $"Barato {marca}", "d", 50m, "Usado");
+        var enRango = await CrearAvisoAsync(cliente, token, $"En rango {marca}", "d", 500m, "Usado");
         var caro = await CrearAvisoAsync(cliente, token, $"Caro {marca}", "d", 5000m, "Usado");
 
         var pagina = await cliente.GetFromJsonAsync<PaginaPublica>(
             $"/api/publico/avisos?q={marca}&precioMin=100&precioMax=1000");
         Assert.DoesNotContain(pagina!.Items, a => a.Id == barato);
+        Assert.Contains(pagina.Items, a => a.Id == enRango);
         Assert.DoesNotContain(pagina.Items, a => a.Id == caro);
     }
 
