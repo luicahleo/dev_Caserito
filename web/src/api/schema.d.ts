@@ -1398,6 +1398,105 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/publico/avisos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    categoriaId?: string;
+                    ciudadId?: string;
+                    precioMin?: number | string;
+                    precioMax?: number | string;
+                    condicion?: string;
+                    pagina?: number | string;
+                    tamano?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ResultadoPaginadoOfAvisoPublicoResumenDto"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/publico/avisos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AvisoPublicoDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1433,6 +1532,33 @@ export interface components {
             fechaCreacion: string;
             /** Format: date-time */
             fechaActualizacion: string;
+        };
+        AvisoPublicoDto: {
+            /** Format: uuid */
+            id: string;
+            titulo: string;
+            descripcion: string;
+            /** Format: double */
+            monto: number | string;
+            moneda: string;
+            nombreCategoria: string;
+            nombreCiudad: string;
+            condicion: string;
+            /** Format: date-time */
+            fechaCreacion: string;
+        };
+        AvisoPublicoResumenDto: {
+            /** Format: uuid */
+            id: string;
+            titulo: string;
+            /** Format: double */
+            monto: number | string;
+            moneda: string;
+            nombreCategoria: string;
+            nombreCiudad: string;
+            condicion: string;
+            /** Format: date-time */
+            fechaCreacion: string;
         };
         AvisoResumenDto: {
             /** Format: uuid */
@@ -1527,6 +1653,15 @@ export interface components {
             password: string;
             nombre: string;
             ciudad: string;
+        };
+        ResultadoPaginadoOfAvisoPublicoResumenDto: {
+            items: components["schemas"]["AvisoPublicoResumenDto"][];
+            /** Format: int32 */
+            pagina: number | string;
+            /** Format: int32 */
+            tamano: number | string;
+            /** Format: int32 */
+            total: number | string;
         };
         ResultadoPaginadoOfAvisoResumenDto: {
             items: components["schemas"]["AvisoResumenDto"][];
