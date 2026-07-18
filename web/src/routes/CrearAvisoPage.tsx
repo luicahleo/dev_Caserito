@@ -1,0 +1,62 @@
+import { useMutation } from '@tanstack/react-query';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Alert, Button, Container, Typography } from '@mui/material';
+import { FormAviso, type ValoresAviso } from './FormAviso';
+import { crearAviso } from '../api/avisos';
+import { useAuth } from '../auth/AuthContext';
+import { HttpError } from '../api/http';
+
+export function CrearAvisoPage() {
+  const { verificado } = useAuth();
+  const navigate = useNavigate();
+
+  const mutacion = useMutation({
+    mutationFn: (v: ValoresAviso) =>
+      crearAviso({
+        titulo: v.titulo,
+        descripcion: v.descripcion,
+        monto: Number(v.monto),
+        condicion: v.condicion,
+        categoriaId: v.categoriaId,
+        ciudadId: v.ciudadId,
+      }),
+    onSuccess: () => navigate('/mis-avisos'),
+  });
+
+  const es403 = mutacion.error instanceof HttpError && mutacion.error.status === 403;
+
+  if (!verificado) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Publicar un aviso
+        </Typography>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Necesitas verificar tu identidad antes de publicar un aviso.
+        </Alert>
+        <Button component={RouterLink} to="/kyc" variant="contained">
+          Verificar identidad
+        </Button>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="sm" sx={{ py: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Publicar un aviso
+      </Typography>
+      {mutacion.isError && es403 && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Necesitas verificar tu identidad. <RouterLink to="/kyc">Verificar ahora</RouterLink>
+        </Alert>
+      )}
+      {mutacion.isError && !es403 && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          No se pudo publicar el aviso. Revisa los datos e inténtalo de nuevo.
+        </Alert>
+      )}
+      <FormAviso enviando={mutacion.isPending} textoBoton="Publicar" onSubmit={mutacion.mutate} />
+    </Container>
+  );
+}

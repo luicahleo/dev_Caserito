@@ -1,0 +1,71 @@
+import { useQuery } from '@tanstack/react-query';
+import { Link as RouterLink, useParams } from 'react-router-dom';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Stack,
+  Typography,
+} from '@mui/material';
+import { obtenerAvisoPublico } from '../api/avisos';
+import { formatearBob } from '../lib/formato';
+import { HttpError } from '../api/http';
+
+export function DetalleAvisoPage() {
+  const { id = '' } = useParams();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['aviso-publico', id],
+    queryFn: () => obtenerAvisoPublico(id),
+  });
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error || !data) {
+    const noDisponible = error instanceof HttpError && error.status === 404;
+    return (
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <Alert severity={noDisponible ? 'info' : 'error'}>
+          {noDisponible
+            ? 'Este aviso no está disponible.'
+            : 'No se pudo cargar el aviso. Inténtalo más tarde.'}
+        </Alert>
+        <Button component={RouterLink} to="/" sx={{ mt: 2 }}>
+          Volver a explorar
+        </Button>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Button component={RouterLink} to="/" sx={{ mb: 2 }}>
+        ← Volver a explorar
+      </Button>
+      {/* Placeholder de foto (2C) */}
+      <Box sx={{ height: 260, bgcolor: 'grey.200', mb: 3 }} aria-hidden />
+      <Typography variant="h4" component="h1" gutterBottom>
+        {data.titulo}
+      </Typography>
+      <Typography variant="h5" color="primary" gutterBottom>
+        {formatearBob(data.monto)}
+      </Typography>
+      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+        <Chip label={data.nombreCategoria} />
+        <Chip label={data.nombreCiudad} />
+        <Chip label={data.condicion} />
+      </Stack>
+      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+        {data.descripcion}
+      </Typography>
+    </Container>
+  );
+}
