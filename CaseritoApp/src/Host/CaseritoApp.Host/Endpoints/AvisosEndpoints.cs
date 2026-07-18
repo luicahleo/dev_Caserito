@@ -43,21 +43,21 @@ public static class AvisosEndpoints
             .ProducesValidationProblem();
 
         grupo.MapPost("/{id:guid}/pausar", (Guid id, ClaimsPrincipal u, ISender s, CancellationToken ct)
-            => TransicionAsync(new PausarAvisoCommand(id, UserId(u)), u, s, ct))
+            => TransicionAsync(usuario => new PausarAvisoCommand(id, usuario), u, s, ct))
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         grupo.MapPost("/{id:guid}/reactivar", (Guid id, ClaimsPrincipal u, ISender s, CancellationToken ct)
-            => TransicionAsync(new ReactivarAvisoCommand(id, UserId(u)), u, s, ct))
+            => TransicionAsync(usuario => new ReactivarAvisoCommand(id, usuario), u, s, ct))
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         grupo.MapDelete("/{id:guid}", (Guid id, ClaimsPrincipal u, ISender s, CancellationToken ct)
-            => TransicionAsync(new EliminarAvisoCommand(id, UserId(u)), u, s, ct))
+            => TransicionAsync(usuario => new EliminarAvisoCommand(id, usuario), u, s, ct))
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -125,14 +125,14 @@ public static class AvisosEndpoints
     }
 
     private static async Task<IResult> TransicionAsync(
-        IRequest<Result> comando, ClaimsPrincipal usuario, ISender sender, CancellationToken ct)
+        Func<Guid, IRequest<Result>> fabricaComando, ClaimsPrincipal usuario, ISender sender, CancellationToken ct)
     {
-        if (!TryUserId(usuario, out _))
+        if (!TryUserId(usuario, out var userId))
         {
             return Results.Unauthorized();
         }
 
-        var resultado = await sender.Send(comando, ct);
+        var resultado = await sender.Send(fabricaComando(userId), ct);
         return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
     }
 
@@ -166,8 +166,6 @@ public static class AvisosEndpoints
         var resultado = await sender.Send(new ObtenerMiAvisoQuery(id, userId), ct);
         return resultado.EsExito ? Results.Ok(resultado.Valor) : DesdeError(resultado.Error);
     }
-
-    private static Guid UserId(ClaimsPrincipal usuario) => TryUserId(usuario, out var id) ? id : Guid.Empty;
 
     private static bool TryUserId(ClaimsPrincipal usuario, out Guid userId)
     {

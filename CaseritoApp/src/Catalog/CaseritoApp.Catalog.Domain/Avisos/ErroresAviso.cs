@@ -18,6 +18,9 @@ public static class ErroresAviso
     /// <summary>La ciudad no existe o está inactiva (400).</summary>
     public const string CiudadInvalida = "avisos.ciudad_invalida";
 
+    /// <summary>La condición del artículo no es válida (400).</summary>
+    public const string CondicionInvalida = "avisos.condicion_invalida";
+
     /// <summary>El precio no es válido (400).</summary>
     public const string PrecioInvalido = "avisos.precio_invalido";
 
