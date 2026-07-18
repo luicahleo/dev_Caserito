@@ -171,6 +171,22 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
         var lista = await (await cliente.SendAsync(ciudades)).Content.ReadFromJsonAsync<CiudadRef[]>();
         Assert.Contains(lista!, c => c.Id == _ciudad);
     }
+
+    [Fact]
+    public async Task Catalogo_de_referencia_es_accesible_anonimo()
+    {
+        var cliente = factory.CreateClient();
+
+        var respCats = await cliente.GetAsync("/api/catalogo/categorias");
+        Assert.Equal(HttpStatusCode.OK, respCats.StatusCode);
+        var categorias = await respCats.Content.ReadFromJsonAsync<CategoriaRef[]>();
+        Assert.Contains(categorias!, c => c.Id == _categoria);
+
+        var respCiudades = await cliente.GetAsync("/api/catalogo/ciudades");
+        Assert.Equal(HttpStatusCode.OK, respCiudades.StatusCode);
+        var ciudades = await respCiudades.Content.ReadFromJsonAsync<CiudadRef[]>();
+        Assert.Contains(ciudades!, c => c.Id == _ciudad);
+    }
 }
 
 sealed file record AvisoResumen(Guid Id, string Titulo, decimal Monto, string Moneda, Guid CategoriaId, Guid CiudadId, string Condicion, string Estado, DateTime FechaCreacion);
