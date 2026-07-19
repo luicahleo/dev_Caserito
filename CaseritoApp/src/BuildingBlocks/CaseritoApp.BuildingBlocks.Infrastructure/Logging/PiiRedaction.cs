@@ -17,6 +17,12 @@ public static class PiiRedaction
             "token",
             "qr",
             "pagoReferencia",
+            "texto",
+            "mensaje",
+            "participante",
+            "remitente",
+            "destinatario",
+            "claveIdempotencia",
         };
 
     public static string Redactar(string campo, string valor) =>

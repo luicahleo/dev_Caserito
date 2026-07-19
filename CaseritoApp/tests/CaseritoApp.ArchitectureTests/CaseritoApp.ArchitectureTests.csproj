@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Domain\CaseritoApp.BuildingBlocks.Domain.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Infrastructure\CaseritoApp.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Contracts\CaseritoApp.BuildingBlocks.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Domain\CaseritoApp.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Application\CaseritoApp.Identity.Application.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
