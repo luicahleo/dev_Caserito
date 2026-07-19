@@ -47,4 +47,8 @@ public static class ErroresAviso
 
     /// <summary>El reporte ya fue atendido o descartado (409).</summary>
     public const string ReporteYaResuelto = "avisos.reporte_ya_resuelto";
+    public const string AutorreporteNoPermitido = "avisos.autorreporte_no_permitido";
+    public const string ReporteDuplicado = "avisos.reporte_duplicado";
+    public const string MotivoReporteInvalido = "avisos.motivo_reporte_invalido";
+    public const string ReporteNoEncontrado = "avisos.reporte_no_encontrado";
 }

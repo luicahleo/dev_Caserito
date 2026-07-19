@@ -18,8 +18,13 @@ public static class FotosEndpoints
     }
 
     private static async Task<IResult> ObtenerAsync(
-        string clave, IAlmacenFotosAviso almacen, CancellationToken ct)
+        string clave, IConsultaFotoPublica consulta, IAlmacenFotosAviso almacen, CancellationToken ct)
     {
+        if (!await consulta.EsPublicaAsync(clave, ct))
+        {
+            return Results.NotFound();
+        }
+
         try
         {
             var (contenido, contentType) = await almacen.ObtenerAsync(clave, ct);

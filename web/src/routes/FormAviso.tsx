@@ -116,7 +116,7 @@ export function FormAviso({
           const url = URL.createObjectURL(archivo);
           setFotosGuardadas((prev) => [
             ...prev,
-            { id, url, orden: prev.length === 0 ? 0 : Math.max(...prev.map((f) => f.orden)) + 1 },
+            { id, url, orden: prev.length === 0 ? 0 : Math.max(...prev.map((f) => Number(f.orden))) + 1 },
           ]);
         }
       } catch {

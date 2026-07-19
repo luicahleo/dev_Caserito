@@ -11,6 +11,7 @@ import { PerfilPage } from '../routes/PerfilPage';
 import { NotFoundPage } from '../routes/NotFoundPage';
 import { KycPage } from '../routes/KycPage';
 import { AdminKycPage } from '../routes/AdminKycPage';
+import { AdminModeracionPage } from '../routes/AdminModeracionPage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
 
@@ -59,6 +60,16 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <KycPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/moderacion',
+        element: (
+          <ProtectedRoute>
+            <RequierePermiso permiso="publicaciones.moderar">
+              <AdminModeracionPage />
+            </RequierePermiso>
           </ProtectedRoute>
         ),
       },

@@ -4,6 +4,74 @@
  */
 
 export interface paths {
+    "/api/avisos/{id}/reportes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportarAvisoRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReporteCreadoResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1314,6 +1382,144 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/avisos/{id}/fotos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        file?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FotoCreadaResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/avisos/{id}/fotos/{fotoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    fotoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/catalogo/categorias": {
         parameters: {
             query?: never;
@@ -1338,13 +1544,6 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["CategoriaDto"][];
                     };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
                 };
             };
         };
@@ -1380,13 +1579,6 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["CiudadDto"][];
                     };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
                 };
             };
         };
@@ -1497,6 +1689,233 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/moderacion/avisos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    estado?: string;
+                    pagina?: number | string;
+                    tamano?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ResultadoPaginadoOfAvisoReportadoResumenDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/moderacion/avisos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    estado?: string;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AvisoReportadoDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/moderacion/avisos/{id}/ocultar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/moderacion/avisos/{id}/restaurar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/moderacion/avisos/{id}/eliminar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/moderacion/reportes/{id}/descartar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1511,13 +1930,6 @@ export interface components {
         AvisoCreadoResponse: {
             /** Format: uuid */
             id: string;
-        };
-        FotoAvisoDto: {
-            /** Format: uuid */
-            id: string;
-            url: string;
-            /** Format: int32 */
-            orden: number;
         };
         AvisoDto: {
             /** Format: uuid */
@@ -1535,6 +1947,7 @@ export interface components {
             ciudadId: string;
             condicion: string;
             estado: string;
+            estadoModeracion: string;
             /** Format: date-time */
             fechaCreacion: string;
             /** Format: date-time */
@@ -1570,6 +1983,28 @@ export interface components {
             fechaCreacion: string;
             fotos: components["schemas"]["FotoAvisoDto"][];
         };
+        AvisoReportadoDto: {
+            /** Format: uuid */
+            avisoId: string;
+            titulo: string;
+            descripcion: string;
+            estadoAviso: string;
+            estadoModeracion: string;
+            fotos: components["schemas"]["FotoAvisoDto"][];
+            reportes: components["schemas"]["ReporteAvisoDto"][];
+        };
+        AvisoReportadoResumenDto: {
+            /** Format: uuid */
+            avisoId: string;
+            titulo: string;
+            estadoAviso: string;
+            estadoModeracion: string;
+            /** Format: int32 */
+            cantidadReportes: number | string;
+            motivos: string[];
+            /** Format: date-time */
+            reporteMasAntiguo: string;
+        };
         AvisoResumenDto: {
             /** Format: uuid */
             id: string;
@@ -1583,6 +2018,7 @@ export interface components {
             ciudadId: string;
             condicion: string;
             estado: string;
+            estadoModeracion: string;
             /** Format: date-time */
             fechaCreacion: string;
             fotos: components["schemas"]["FotoAvisoDto"][];
@@ -1622,6 +2058,17 @@ export interface components {
         EstadoKycDto: {
             estado: string;
             motivoRechazo: null | string;
+        };
+        FotoAvisoDto: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            /** Format: int32 */
+            orden: number | string;
+        };
+        FotoCreadaResponse: {
+            /** Format: uuid */
+            id: string;
         };
         HttpValidationProblemDetails: {
             type?: null | string;
@@ -1665,8 +2112,36 @@ export interface components {
             nombre: string;
             ciudad: string;
         };
+        ReportarAvisoRequest: {
+            motivo: string;
+            detalle: null | string;
+        };
+        ReporteAvisoDto: {
+            /** Format: uuid */
+            id: string;
+            motivo: string;
+            detalle: null | string;
+            estado: string;
+            /** Format: date-time */
+            fechaCreacion: string;
+            /** Format: date-time */
+            fechaResolucion: null | string;
+        };
+        ReporteCreadoResponse: {
+            /** Format: uuid */
+            id: string;
+        };
         ResultadoPaginadoOfAvisoPublicoResumenDto: {
             items: components["schemas"]["AvisoPublicoResumenDto"][];
+            /** Format: int32 */
+            pagina: number | string;
+            /** Format: int32 */
+            tamano: number | string;
+            /** Format: int32 */
+            total: number | string;
+        };
+        ResultadoPaginadoOfAvisoReportadoResumenDto: {
+            items: components["schemas"]["AvisoReportadoResumenDto"][];
             /** Format: int32 */
             pagina: number | string;
             /** Format: int32 */

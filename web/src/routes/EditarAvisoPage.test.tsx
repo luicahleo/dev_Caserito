@@ -37,6 +37,7 @@ describe('EditarAvisoPage', () => {
       ciudadId: 'u1',
       condicion: 'Usado',
       estado: 'Activo',
+      estadoModeracion: 'Visible',
       fechaCreacion: '2026-07-18T10:00:00Z',
       fechaActualizacion: '2026-07-18T10:00:00Z',
       fotos: [],
