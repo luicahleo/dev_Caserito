@@ -29,6 +29,7 @@ public sealed class Aviso : AggregateRoot
         CiudadId = ciudadId;
         Condicion = condicion;
         Estado = EstadoAviso.Activo;
+        EstadoModeracion = EstadoModeracionAviso.Visible;
         FechaCreacion = ahoraUtc;
         FechaActualizacion = ahoraUtc;
     }
@@ -56,6 +57,9 @@ public sealed class Aviso : AggregateRoot
 
     /// <summary>Estado actual del aviso.</summary>
     public EstadoAviso Estado { get; private set; }
+
+    /// <summary>Restricción aplicada por moderación, independiente del estado decidido por el dueño.</summary>
+    public EstadoModeracionAviso EstadoModeracion { get; private set; }
 
     /// <summary>Fecha de creación (UTC).</summary>
     public DateTime FechaCreacion { get; private set; }
@@ -142,6 +146,45 @@ public sealed class Aviso : AggregateRoot
         return Result.Exito();
     }
 
+    /// <summary>Oculta temporalmente el aviso de las superficies públicas.</summary>
+    public Result OcultarPorModeracion(DateTime ahoraUtc)
+    {
+        if (EstadoModeracion != EstadoModeracionAviso.Visible)
+        {
+            return FalloModeracion("Solo se puede ocultar un aviso visible.");
+        }
+
+        EstadoModeracion = EstadoModeracionAviso.Oculto;
+        Tocar(ahoraUtc);
+        return Result.Exito();
+    }
+
+    /// <summary>Restaura un aviso previamente ocultado por moderación.</summary>
+    public Result RestaurarPorModeracion(DateTime ahoraUtc)
+    {
+        if (EstadoModeracion != EstadoModeracionAviso.Oculto)
+        {
+            return FalloModeracion("Solo se puede restaurar un aviso oculto.");
+        }
+
+        EstadoModeracion = EstadoModeracionAviso.Visible;
+        Tocar(ahoraUtc);
+        return Result.Exito();
+    }
+
+    /// <summary>Elimina el aviso de forma terminal por moderación.</summary>
+    public Result EliminarPorModeracion(DateTime ahoraUtc)
+    {
+        if (EstadoModeracion == EstadoModeracionAviso.EliminadoPorModeracion)
+        {
+            return FalloModeracion("El aviso ya fue eliminado por moderación.");
+        }
+
+        EstadoModeracion = EstadoModeracionAviso.EliminadoPorModeracion;
+        Tocar(ahoraUtc);
+        return Result.Exito();
+    }
+
     /// <summary>Agrega una foto al aviso. Máximo 5 fotos por aviso.</summary>
     public Result AgregarFoto(string clave, string contentType)
     {
@@ -177,4 +220,7 @@ public sealed class Aviso : AggregateRoot
     }
 
     private void Tocar(DateTime ahoraUtc) => FechaActualizacion = ahoraUtc;
+
+    private static Result FalloModeracion(string mensaje) =>
+        Result.Fallo(new Error(ErroresAviso.TransicionModeracionInvalida, mensaje));
 }

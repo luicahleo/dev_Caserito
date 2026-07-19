@@ -38,4 +38,13 @@ public static class ErroresAviso
 
     /// <summary>Error al guardar o recuperar el blob de la foto (500).</summary>
     public const string ErrorAlmacenamiento = "aviso.error_almacenamiento";
+
+    /// <summary>La transición de moderación no es válida para el estado actual (409).</summary>
+    public const string TransicionModeracionInvalida = "avisos.transicion_moderacion_invalida";
+
+    /// <summary>Una mutación del dueño intentó operar sobre un aviso eliminado por moderación (409).</summary>
+    public const string EliminadoPorModeracion = "avisos.eliminado_por_moderacion";
+
+    /// <summary>El reporte ya fue atendido o descartado (409).</summary>
+    public const string ReporteYaResuelto = "avisos.reporte_ya_resuelto";
 }
