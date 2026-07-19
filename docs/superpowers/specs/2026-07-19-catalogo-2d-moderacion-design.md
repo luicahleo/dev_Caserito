@@ -1,8 +1,8 @@
 # Fase 2 — Bloque 2D: Moderación de avisos
 
-**Fecha:** 2026-07-19  
-**Contexto:** Catalog + frontend `web/`  
-**Base:** bloques 2A, 2B, 2C y 2E integrados en `master`  
+**Fecha:** 2026-07-19
+**Contexto:** Catalog + frontend `web/`
+**Base:** bloques 2A, 2B, 2C y 2E integrados en `master`
 **Rama:** `feat/catalogo-2d-moderacion`
 
 ## 1. Objetivo

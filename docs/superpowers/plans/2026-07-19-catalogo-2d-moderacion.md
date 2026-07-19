@@ -1,7 +1,7 @@
 # Catálogo 2D — Moderación de avisos — Plan de implementación
 
-**Fecha:** 2026-07-19  
-**Spec:** `docs/superpowers/specs/2026-07-19-catalogo-2d-moderacion-design.md`  
+**Fecha:** 2026-07-19
+**Spec:** `docs/superpowers/specs/2026-07-19-catalogo-2d-moderacion-design.md`
 **Rama:** `feat/catalogo-2d-moderacion`
 
 ## Reglas globales
@@ -116,7 +116,7 @@ atender/descartar y doble resolución en verde.
 
 ## Tarea 2 — Reglas del dueño ante moderación
 
-**Consume:** estado de moderación de Tarea 1.  
+**Consume:** estado de moderación de Tarea 1.
 **Produce:** todas las mutaciones del dueño bloquean el estado terminal; eliminar
 atiende reportes pendientes mediante el caso de uso.
 
