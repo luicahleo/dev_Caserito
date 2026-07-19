@@ -8,6 +8,7 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  CardMedia,
   CircularProgress,
   Container,
   Grid,
@@ -176,8 +177,28 @@ export function ExplorarPage() {
               <Grid key={a.id} size={{ xs: 12, sm: 6, md: 4 }}>
                 <Card>
                   <CardActionArea component={RouterLink} to={`/avisos/${a.id}`}>
-                    {/* Placeholder de foto (2C) */}
-                    <Box sx={{ height: 140, bgcolor: 'grey.200' }} aria-hidden />
+                    {a.fotos && a.fotos.length > 0 ? (
+                      <CardMedia
+                        component="img"
+                        height={140}
+                        image={a.fotos[0].url}
+                        alt={a.titulo}
+                      />
+                    ) : (
+                      <Box
+                        sx={{
+                          height: 140,
+                          bgcolor: 'grey.200',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Typography variant="caption" color="text.disabled">
+                          Sin foto
+                        </Typography>
+                      </Box>
+                    )}
                     <CardContent>
                       <Typography variant="h6" noWrap>
                         {a.titulo}

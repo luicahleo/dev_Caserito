@@ -39,6 +39,7 @@ describe('EditarAvisoPage', () => {
       estado: 'Activo',
       fechaCreacion: '2026-07-18T10:00:00Z',
       fechaActualizacion: '2026-07-18T10:00:00Z',
+      fotos: [],
     });
     montar('a1');
     expect(await screen.findByDisplayValue('Mesa antigua')).toBeInTheDocument();

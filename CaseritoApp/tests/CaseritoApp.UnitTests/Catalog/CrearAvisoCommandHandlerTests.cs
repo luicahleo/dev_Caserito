@@ -14,6 +14,8 @@ public sealed class CrearAvisoCommandHandlerTests
 
         public Task<Aviso?> ObtenerAsync(Guid id, CancellationToken ct) => Task.FromResult<Aviso?>(null);
 
+        public Task<Aviso?> ObtenerConFotosAsync(Guid id, CancellationToken ct) => Task.FromResult<Aviso?>(null);
+
         public void Agregar(Aviso aviso) => Agregado = aviso;
 
         public Task<ResultadoPaginado<AvisoResumenDto>> ListarPorVendedorAsync(

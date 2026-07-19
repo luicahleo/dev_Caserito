@@ -19,7 +19,7 @@ public sealed class ObtenerAvisoPublicoQueryHandlerTests
     public async Task Devuelve_el_dto_cuando_existe()
     {
         var esperado = new AvisoPublicoDto(
-            Guid.NewGuid(), "Bici", "desc", 100m, "BOB", "Deportes", "La Paz", "Usado", DateTime.UtcNow);
+            Guid.NewGuid(), "Bici", "desc", 100m, "BOB", "Deportes", "La Paz", "Usado", DateTime.UtcNow, []);
         var handler = new ObtenerAvisoPublicoQueryHandler(new ConsultaFake(esperado));
 
         var dto = await handler.Handle(new ObtenerAvisoPublicoQuery(esperado.Id), CancellationToken.None);

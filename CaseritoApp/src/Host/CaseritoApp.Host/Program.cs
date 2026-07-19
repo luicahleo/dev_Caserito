@@ -87,6 +87,7 @@ app.MapKycEndpoints();
 app.MapAvisosEndpoints();
 app.MapCatalogoEndpoints();
 app.MapPublicoEndpoints();
+app.MapFotosEndpoints();
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 

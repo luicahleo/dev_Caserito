@@ -13,7 +13,7 @@ public sealed class ObtenerMiAvisoQueryHandler(IRepositorioAvisos repositorio)
 {
     public async Task<Result<AvisoDto>> Handle(ObtenerMiAvisoQuery request, CancellationToken cancellationToken)
     {
-        var aviso = await repositorio.ObtenerAsync(request.Id, cancellationToken);
+        var aviso = await repositorio.ObtenerConFotosAsync(request.Id, cancellationToken);
         if (aviso is null || aviso.Estado == EstadoAviso.Eliminado)
         {
             return Result.Fallo<AvisoDto>(new Error(ErroresAviso.NoEncontrado, "El aviso no existe."));

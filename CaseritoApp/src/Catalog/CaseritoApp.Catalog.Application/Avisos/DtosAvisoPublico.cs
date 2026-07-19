@@ -1,6 +1,8 @@
+using CaseritoApp.Catalog.Application.Fotos;
+
 namespace CaseritoApp.Catalog.Application.Avisos;
 
-/// <summary>Resumen de un aviso para el descubrimiento público (listados/búsqueda).</summary>
+/// <summary>Resumen de un aviso para el descubrimiento p&#xfa;blico (listados/b&#xfa;squeda).</summary>
 public sealed record AvisoPublicoResumenDto(
     Guid Id,
     string Titulo,
@@ -9,9 +11,10 @@ public sealed record AvisoPublicoResumenDto(
     string NombreCategoria,
     string NombreCiudad,
     string Condicion,
-    DateTime FechaCreacion);
+    DateTime FechaCreacion,
+    IReadOnlyList<FotoAvisoDto> Fotos);
 
-/// <summary>Detalle público de un aviso Activo. No expone vendedor ni estado.</summary>
+/// <summary>Detalle p&#xfa;blico de un aviso Activo. No expone vendedor ni estado.</summary>
 public sealed record AvisoPublicoDto(
     Guid Id,
     string Titulo,
@@ -21,4 +24,5 @@ public sealed record AvisoPublicoDto(
     string NombreCategoria,
     string NombreCiudad,
     string Condicion,
-    DateTime FechaCreacion);
+    DateTime FechaCreacion,
+    IReadOnlyList<FotoAvisoDto> Fotos);

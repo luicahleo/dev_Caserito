@@ -1,4 +1,5 @@
 using CaseritoApp.Catalog.Application.Avisos;
+using CaseritoApp.Catalog.Application.Fotos;
 using CaseritoApp.Catalog.Domain.Avisos;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,11 @@ public sealed class RepositorioAvisosEfCore(CatalogDbContext db) : IRepositorioA
 {
     public Task<Aviso?> ObtenerAsync(Guid id, CancellationToken ct) =>
         db.Avisos.FirstOrDefaultAsync(a => a.Id == id, ct);
+
+    public Task<Aviso?> ObtenerConFotosAsync(Guid id, CancellationToken ct) =>
+        db.Avisos
+          .Include(a => a.Fotos)
+          .FirstOrDefaultAsync(a => a.Id == id, ct);
 
     public void Agregar(Aviso aviso) => db.Avisos.Add(aviso);
 
@@ -33,7 +39,11 @@ public sealed class RepositorioAvisosEfCore(CatalogDbContext db) : IRepositorioA
                 a.CiudadId,
                 a.Condicion.ToString(),
                 a.Estado.ToString(),
-                a.FechaCreacion))
+                a.FechaCreacion,
+                a.Fotos
+                  .OrderBy(f => f.Orden)
+                  .Select(f => new FotoAvisoDto(f.Id, $"/api/fotos/{f.Clave}", f.Orden))
+                  .ToList()))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<AvisoResumenDto>(items, pagina, tamano, total);

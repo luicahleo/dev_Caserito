@@ -8,6 +8,9 @@ public interface IRepositorioAvisos
     /// <summary>Obtiene un aviso por id (incluye eliminados; el handler decide su tratamiento).</summary>
     public Task<Aviso?> ObtenerAsync(Guid id, CancellationToken ct);
 
+    /// <summary>Obtiene un aviso por id incluyendo su colección de fotos cargada.</summary>
+    public Task<Aviso?> ObtenerConFotosAsync(Guid id, CancellationToken ct);
+
     /// <summary>Marca un aviso nuevo para inserción.</summary>
     public void Agregar(Aviso aviso);
 

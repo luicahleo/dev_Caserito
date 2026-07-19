@@ -19,6 +19,9 @@ public sealed record EditarAvisoRequest(
 /// <summary>Respuesta de creación de un aviso.</summary>
 public sealed record AvisoCreadoResponse(Guid Id);
 
+/// <summary>Respuesta de subida de foto.</summary>
+public sealed record FotoCreadaResponse(Guid Id);
+
 /// <summary>Endpoints del dueño sobre sus avisos, bajo <c>/api/avisos</c>.</summary>
 public static class AvisosEndpoints
 {
@@ -69,6 +72,21 @@ public static class AvisosEndpoints
 
         grupo.MapGet("/mios/{id:guid}", ObtenerMioAsync)
             .Produces<AvisoDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        grupo.MapPost("/{id:guid}/fotos", SubirFotoAsync)
+            .Accepts<IFormFile>("multipart/form-data")
+            .DisableAntiforgery()
+            .Produces<FotoCreadaResponse>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        grupo.MapDelete("/{id:guid}/fotos/{fotoId:guid}", BorrarFotoAsync)
+            .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
@@ -165,6 +183,56 @@ public static class AvisosEndpoints
 
         var resultado = await sender.Send(new ObtenerMiAvisoQuery(id, userId), ct);
         return resultado.EsExito ? Results.Ok(resultado.Valor) : DesdeError(resultado.Error);
+    }
+
+    private static async Task<IResult> SubirFotoAsync(
+        Guid id, IFormFile? file, ClaimsPrincipal usuario, ISender sender, CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (file is null || file.Length == 0)
+        {
+            return Results.Problem(
+                title: "archivo_requerido",
+                detail: "Se debe adjuntar un archivo de imagen.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        byte[] contenido;
+        using (var ms = new MemoryStream())
+        {
+            await file.CopyToAsync(ms, ct);
+            contenido = ms.ToArray();
+        }
+
+        try
+        {
+            var resultado = await sender.Send(
+                new SubirFotoAvisoCommand(id, userId, contenido, file.ContentType ?? string.Empty), ct);
+
+            return resultado.EsExito
+                ? Results.Created($"/api/avisos/mios/{id}", new FotoCreadaResponse(resultado.Valor))
+                : DesdeError(resultado.Error);
+        }
+        catch (ValidationException ex)
+        {
+            return ProblemaDeValidacion(ex);
+        }
+    }
+
+    private static async Task<IResult> BorrarFotoAsync(
+        Guid id, Guid fotoId, ClaimsPrincipal usuario, ISender sender, CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await sender.Send(new BorrarFotoAvisoCommand(id, fotoId, userId), ct);
+        return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
     }
 
     private static bool TryUserId(ClaimsPrincipal usuario, out Guid userId)

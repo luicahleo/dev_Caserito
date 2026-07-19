@@ -33,6 +33,7 @@ describe('DetalleAvisoPage', () => {
       nombreCiudad: 'Cochabamba',
       condicion: 'Usado',
       fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
     });
     montar('a1');
     expect(await screen.findByText('Bicicleta')).toBeInTheDocument();

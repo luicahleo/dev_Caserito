@@ -1,6 +1,8 @@
 import type { components } from './schema';
 import { api, desempaquetar } from './http';
+import { getAccessToken } from '../auth/session';
 
+export type FotoAvisoDto = components['schemas']['FotoAvisoDto'];
 export type AvisoPublicoResumen = components['schemas']['AvisoPublicoResumenDto'];
 export type AvisoPublico = components['schemas']['AvisoPublicoDto'];
 export type AvisoResumen = components['schemas']['AvisoResumenDto'];
@@ -65,4 +67,44 @@ export async function reactivarAviso(id: string): Promise<void> {
 
 export async function eliminarAviso(id: string): Promise<void> {
   desempaquetar(await api.DELETE('/api/avisos/{id}', { params: { path: { id } } }));
+}
+
+/**
+ * Sube una foto al aviso. Devuelve el id de la FotoAviso creada.
+ * Usa fetch con FormData (multipart); no pasa por el wrapper openapi-fetch.
+ */
+export async function subirFotoAviso(avisoId: string, archivo: File): Promise<{ id: string }> {
+  const form = new FormData();
+  form.append('file', archivo);
+
+  const resp = await fetch(`/api/avisos/${avisoId}/fotos`, {
+    method: 'POST',
+    body: form,
+    headers: {
+      Authorization: `Bearer ${getAccessToken() ?? ''}`,
+    },
+  });
+
+  if (!resp.ok) {
+    const texto = await resp.text().catch(() => '');
+    throw new Error(`Error al subir foto: ${resp.status} ${texto}`);
+  }
+
+  return resp.json() as Promise<{ id: string }>;
+}
+
+/**
+ * Borra una foto del aviso.
+ */
+export async function borrarFotoAviso(avisoId: string, fotoId: string): Promise<void> {
+  const resp = await fetch(`/api/avisos/${avisoId}/fotos/${fotoId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${getAccessToken() ?? ''}`,
+    },
+  });
+
+  if (!resp.ok) {
+    throw new Error(`Error al borrar foto: ${resp.status}`);
+  }
 }

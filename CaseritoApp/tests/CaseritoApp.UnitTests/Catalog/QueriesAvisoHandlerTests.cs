@@ -10,11 +10,12 @@ public sealed class QueriesAvisoHandlerTests
     private sealed class RepositorioFake(Aviso? aviso) : IRepositorioAvisos
     {
         public Task<Aviso?> ObtenerAsync(Guid id, CancellationToken ct) => Task.FromResult(aviso);
+        public Task<Aviso?> ObtenerConFotosAsync(Guid id, CancellationToken ct) => Task.FromResult(aviso);
         public void Agregar(Aviso aviso) { }
         public Task<ResultadoPaginado<AvisoResumenDto>> ListarPorVendedorAsync(
             Guid vendedorId, int pagina, int tamano, CancellationToken ct) =>
             Task.FromResult(new ResultadoPaginado<AvisoResumenDto>(
-                [new AvisoResumenDto(Guid.NewGuid(), "T", 1m, "BOB", Guid.NewGuid(), Guid.NewGuid(), "Nuevo", "Activo", _ahora)],
+                [new AvisoResumenDto(Guid.NewGuid(), "T", 1m, "BOB", Guid.NewGuid(), Guid.NewGuid(), "Nuevo", "Activo", _ahora, [])],
                 pagina, tamano, 1));
     }
 

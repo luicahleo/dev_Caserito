@@ -67,6 +67,8 @@ export function EditarAvisoPage() {
         enviando={mutacion.isPending}
         textoBoton="Guardar cambios"
         onSubmit={mutacion.mutate}
+        avisoId={id}
+        fotosIniciales={data.fotos}
       />
     </Container>
   );
