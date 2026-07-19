@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { api } from './http';
-import { buscarAvisos, crearAviso, eliminarAviso } from './avisos';
+import { buscarAvisos, borrarFotoAviso, crearAviso, eliminarAviso, subirFotoAviso } from './avisos';
 
 describe('capa de API de avisos', () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -47,5 +47,47 @@ describe('capa de API de avisos', () => {
     await eliminarAviso('a1');
 
     expect(spy).toHaveBeenCalledWith('/api/avisos/{id}', { params: { path: { id: 'a1' } } });
+  });
+});
+
+describe('subirFotoAviso', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('llama a fetch con POST multipart y retorna el id', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ id: 'foto-uuid' }), { status: 201 }),
+    );
+
+    const archivo = new File([new Uint8Array(10)], 'foto.png', { type: 'image/png' });
+    const resultado = await subirFotoAviso('aviso-id', archivo);
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      '/api/avisos/aviso-id/fotos',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(resultado.id).toBe('foto-uuid');
+  });
+
+  it('lanza error si la respuesta no es ok', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('bad request', { status: 400 }),
+    );
+
+    const archivo = new File([new Uint8Array(10)], 'foto.png', { type: 'image/png' });
+    await expect(subirFotoAviso('aviso-id', archivo)).rejects.toThrow('400');
+  });
+});
+
+describe('borrarFotoAviso', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('llama a fetch con DELETE y resuelve si la respuesta es ok', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 204 }));
+    await expect(borrarFotoAviso('aviso-id', 'foto-id')).resolves.toBeUndefined();
+  });
+
+  it('lanza error si la respuesta no es ok', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response(null, { status: 404 }));
+    await expect(borrarFotoAviso('aviso-id', 'foto-id')).rejects.toThrow('404');
   });
 });

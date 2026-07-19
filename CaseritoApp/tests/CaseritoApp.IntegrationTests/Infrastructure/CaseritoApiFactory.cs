@@ -31,6 +31,7 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting($"{OpcionesJwt.Seccion}:Key", JwtKeyDePrueba);
+        builder.UseSetting("AlmacenFotos:RutaBase", Path.Combine(Path.GetTempPath(), $"fotos-test-{Guid.NewGuid():N}"));
         builder.ConfigureServices(servicios =>
         {
             servicios.RemoveAll<DbContextOptions<IdentityDbContext>>();

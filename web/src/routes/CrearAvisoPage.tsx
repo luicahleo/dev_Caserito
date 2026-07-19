@@ -1,25 +1,35 @@
+import { useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Alert, Button, Container, Typography } from '@mui/material';
 import { FormAviso, type ValoresAviso } from './FormAviso';
-import { crearAviso } from '../api/avisos';
+import { crearAviso, subirFotoAviso } from '../api/avisos';
 import { useAuth } from '../auth/AuthContext';
 import { HttpError } from '../api/http';
 
 export function CrearAvisoPage() {
   const { verificado } = useAuth();
   const navigate = useNavigate();
+  const fotasLocalesRef = useRef<File[]>([]);
 
   const mutacion = useMutation({
-    mutationFn: (v: ValoresAviso) =>
-      crearAviso({
+    mutationFn: async (v: ValoresAviso) => {
+      const { id } = await crearAviso({
         titulo: v.titulo,
         descripcion: v.descripcion,
         monto: Number(v.monto),
         condicion: v.condicion,
         categoriaId: v.categoriaId,
         ciudadId: v.ciudadId,
-      }),
+      });
+      // Subir las fotos locales seleccionadas (best-effort).
+      for (const archivo of fotasLocalesRef.current) {
+        await subirFotoAviso(id, archivo).catch(() => {
+          /* best-effort: la foto queda pendiente */
+        });
+      }
+      return id;
+    },
     onSuccess: () => navigate('/mis-avisos'),
   });
 
@@ -56,7 +66,12 @@ export function CrearAvisoPage() {
           No se pudo publicar el aviso. Revisa los datos e inténtalo de nuevo.
         </Alert>
       )}
-      <FormAviso enviando={mutacion.isPending} textoBoton="Publicar" onSubmit={mutacion.mutate} />
+      <FormAviso
+        enviando={mutacion.isPending}
+        textoBoton="Publicar"
+        onSubmit={mutacion.mutate}
+        onFotasLocalesChange={(archivos) => { fotasLocalesRef.current = archivos; }}
+      />
     </Container>
   );
 }

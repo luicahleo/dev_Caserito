@@ -1,4 +1,5 @@
 using CaseritoApp.Catalog.Application.Avisos;
+using CaseritoApp.Catalog.Application.Fotos;
 using CaseritoApp.Catalog.Domain.Avisos;
 using Microsoft.EntityFrameworkCore;
 
@@ -66,7 +67,11 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
                 db.Categorias.Where(c => c.Id == a.CategoriaId).Select(c => c.Nombre).First(),
                 db.Ciudades.Where(c => c.Id == a.CiudadId).Select(c => c.Nombre).First(),
                 a.Condicion.ToString(),
-                a.FechaCreacion))
+                a.FechaCreacion,
+                a.Fotos
+                  .OrderBy(f => f.Orden)
+                  .Select(f => new FotoAvisoDto(f.Id, $"/api/fotos/{f.Clave}", f.Orden))
+                  .ToList()))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<AvisoPublicoResumenDto>(items, pagina, tamano, total);
@@ -84,7 +89,11 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
                 db.Categorias.Where(c => c.Id == a.CategoriaId).Select(c => c.Nombre).First(),
                 db.Ciudades.Where(c => c.Id == a.CiudadId).Select(c => c.Nombre).First(),
                 a.Condicion.ToString(),
-                a.FechaCreacion))
+                a.FechaCreacion,
+                a.Fotos
+                  .OrderBy(f => f.Orden)
+                  .Select(f => new FotoAvisoDto(f.Id, $"/api/fotos/{f.Clave}", f.Orden))
+                  .ToList()))
             .FirstOrDefaultAsync(ct);
 
     // Neutraliza los comodines de LIKE en el término del usuario usando clases de caracteres.

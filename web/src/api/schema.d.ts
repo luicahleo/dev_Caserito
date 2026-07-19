@@ -1512,6 +1512,13 @@ export interface components {
             /** Format: uuid */
             id: string;
         };
+        FotoAvisoDto: {
+            /** Format: uuid */
+            id: string;
+            url: string;
+            /** Format: int32 */
+            orden: number;
+        };
         AvisoDto: {
             /** Format: uuid */
             id: string;
@@ -1532,6 +1539,7 @@ export interface components {
             fechaCreacion: string;
             /** Format: date-time */
             fechaActualizacion: string;
+            fotos: components["schemas"]["FotoAvisoDto"][];
         };
         AvisoPublicoDto: {
             /** Format: uuid */
@@ -1546,6 +1554,7 @@ export interface components {
             condicion: string;
             /** Format: date-time */
             fechaCreacion: string;
+            fotos: components["schemas"]["FotoAvisoDto"][];
         };
         AvisoPublicoResumenDto: {
             /** Format: uuid */
@@ -1559,6 +1568,7 @@ export interface components {
             condicion: string;
             /** Format: date-time */
             fechaCreacion: string;
+            fotos: components["schemas"]["FotoAvisoDto"][];
         };
         AvisoResumenDto: {
             /** Format: uuid */
@@ -1575,6 +1585,7 @@ export interface components {
             estado: string;
             /** Format: date-time */
             fechaCreacion: string;
+            fotos: components["schemas"]["FotoAvisoDto"][];
         };
         CategoriaDto: {
             /** Format: uuid */

@@ -18,6 +18,7 @@ const activo: avisos.AvisoResumen = {
   condicion: 'Usado',
   estado: 'Activo',
   fechaCreacion: '2026-07-18T10:00:00Z',
+  fotos: [],
 };
 
 function montar() {

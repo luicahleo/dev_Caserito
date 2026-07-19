@@ -63,6 +63,12 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Fecha de última modificación (UTC).</summary>
     public DateTime FechaActualizacion { get; private set; }
 
+    // Colección de fotos (máx. 5). EF accede por el campo privado.
+    private readonly List<FotoAviso> _fotos = [];
+
+    /// <summary>Fotos del aviso ordenadas por <see cref="FotoAviso.Orden"/> ASC.</summary>
+    public IReadOnlyList<FotoAviso> Fotos => _fotos.AsReadOnly();
+
     /// <summary>Crea un aviso nuevo en estado <see cref="EstadoAviso.Activo"/> y emite <see cref="AvisoPublicado"/>.</summary>
     public static Aviso Crear(
         Guid vendedorId, string titulo, string descripcion, Dinero precio,
@@ -134,6 +140,40 @@ public sealed class Aviso : AggregateRoot
         Tocar(ahoraUtc);
         AgregarEvento(new AvisoEliminado(Id));
         return Result.Exito();
+    }
+
+    /// <summary>Agrega una foto al aviso. Máximo 5 fotos por aviso.</summary>
+    public Result AgregarFoto(string clave, string contentType)
+    {
+        if (_fotos.Count >= 5)
+        {
+            return Result.Fallo(new Error(
+                ErroresAviso.LimiteFotosAlcanzado,
+                "Un aviso puede tener hasta 5 fotos."));
+        }
+
+        var orden = _fotos.Count == 0 ? 0 : _fotos.Max(f => f.Orden) + 1;
+        _fotos.Add(new FotoAviso(Id, clave, contentType, orden));
+        Tocar(DateTime.UtcNow);
+        return Result.Exito();
+    }
+
+    /// <summary>
+    /// Quita una foto del aviso y la devuelve para que el llamante pueda borrar el blob.
+    /// </summary>
+    public Result<FotoAviso> QuitarFoto(Guid fotoId)
+    {
+        var foto = _fotos.FirstOrDefault(f => f.Id == fotoId);
+        if (foto is null)
+        {
+            return Result.Fallo<FotoAviso>(new Error(
+                ErroresAviso.FotoNoEncontrada,
+                "La foto no pertenece a este aviso."));
+        }
+
+        _fotos.Remove(foto);
+        Tocar(DateTime.UtcNow);
+        return Result.Exito(foto);
     }
 
     private void Tocar(DateTime ahoraUtc) => FechaActualizacion = ahoraUtc;

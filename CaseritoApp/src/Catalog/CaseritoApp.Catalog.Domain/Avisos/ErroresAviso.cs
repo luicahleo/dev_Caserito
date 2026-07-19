@@ -26,4 +26,16 @@ public static class ErroresAviso
 
     /// <summary>La transición de estado solicitada no es válida para el estado actual (409).</summary>
     public const string TransicionInvalida = "avisos.transicion_invalida";
+
+    /// <summary>El aviso ya tiene el máximo de fotos permitidas — 5 (400).</summary>
+    public const string LimiteFotosAlcanzado = "aviso.limite_fotos_alcanzado";
+
+    /// <summary>La foto no pertenece al aviso indicado (400).</summary>
+    public const string FotoNoEncontrada = "aviso.foto_no_encontrada";
+
+    /// <summary>La imagen no supera la validación (magic bytes / tamaño / tipo MIME) (400).</summary>
+    public const string ImagenInvalida = "aviso.imagen_invalida";
+
+    /// <summary>Error al guardar o recuperar el blob de la foto (500).</summary>
+    public const string ErrorAlmacenamiento = "aviso.error_almacenamiento";
 }

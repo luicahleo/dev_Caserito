@@ -18,6 +18,7 @@ const resumen: avisos.AvisoPublicoResumen = {
   nombreCiudad: 'La Paz',
   condicion: 'Usado',
   fechaCreacion: '2026-07-18T10:00:00Z',
+  fotos: [],
 };
 
 function montar() {

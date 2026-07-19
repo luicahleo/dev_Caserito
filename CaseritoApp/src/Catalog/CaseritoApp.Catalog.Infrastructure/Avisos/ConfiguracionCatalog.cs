@@ -38,6 +38,25 @@ public static class ConfiguracionCatalog
 
             // Los eventos de dominio no se persisten (dispatcher diferido).
             e.Ignore(a => a.EventosDeDominio);
+
+            e.HasMany(a => a.Fotos)
+             .WithOne()
+             .HasForeignKey(f => f.AvisoId)
+             .OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(a => a.Fotos).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        builder.Entity<FotoAviso>(e =>
+        {
+            e.ToTable("FotosAviso");
+            e.HasKey(f => f.Id);
+            e.Property(f => f.Id).ValueGeneratedNever();
+            e.Property(f => f.AvisoId).IsRequired();
+            e.Property(f => f.Clave).HasMaxLength(200).IsRequired();
+            e.Property(f => f.ContentType).HasMaxLength(50).IsRequired();
+            e.Property(f => f.Orden).IsRequired();
+            e.HasIndex(f => f.AvisoId);
+            e.HasIndex(f => new { f.AvisoId, f.Orden });
         });
 
         builder.Entity<Categoria>(e =>
