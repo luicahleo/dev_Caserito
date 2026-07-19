@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Host\CaseritoApp.Host\CaseritoApp.Host.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Application\CaseritoApp.Identity.Application.csproj" />
+    <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Infrastructure\CaseritoApp.Chat.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
