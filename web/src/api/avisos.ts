@@ -9,6 +9,7 @@ export type AvisoResumen = components['schemas']['AvisoResumenDto'];
 export type Aviso = components['schemas']['AvisoDto'];
 export type CrearAvisoRequest = components['schemas']['CrearAvisoRequest'];
 export type EditarAvisoRequest = components['schemas']['EditarAvisoRequest'];
+export type ReportarAvisoRequest = components['schemas']['ReportarAvisoRequest'];
 export type PaginaAvisosPublicos =
   components['schemas']['ResultadoPaginadoOfAvisoPublicoResumenDto'];
 export type PaginaMisAvisos = components['schemas']['ResultadoPaginadoOfAvisoResumenDto'];
@@ -67,6 +68,10 @@ export async function reactivarAviso(id: string): Promise<void> {
 
 export async function eliminarAviso(id: string): Promise<void> {
   desempaquetar(await api.DELETE('/api/avisos/{id}', { params: { path: { id } } }));
+}
+
+export async function reportarAviso(id: string, req: ReportarAvisoRequest): Promise<void> {
+  desempaquetar(await api.POST('/api/avisos/{id}/reportes', { params: { path: { id } }, body: req }));
 }
 
 /**

@@ -17,7 +17,8 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
     public async Task<ResultadoPaginado<AvisoPublicoResumenDto>> BuscarAsync(
         FiltroBusquedaAvisos filtro, int pagina, int tamano, CancellationToken ct)
     {
-        var consulta = db.Avisos.Where(a => a.Estado == EstadoAviso.Activo);
+        var consulta = db.Avisos.Where(a =>
+            a.Estado == EstadoAviso.Activo && a.EstadoModeracion == EstadoModeracionAviso.Visible);
 
         if (filtro.CategoriaId is { } categoria)
         {
@@ -79,7 +80,8 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
 
     public Task<AvisoPublicoDto?> ObtenerPublicoAsync(Guid id, CancellationToken ct) =>
         db.Avisos
-            .Where(a => a.Id == id && a.Estado == EstadoAviso.Activo)
+            .Where(a => a.Id == id && a.Estado == EstadoAviso.Activo &&
+                a.EstadoModeracion == EstadoModeracionAviso.Visible)
             .Select(a => new AvisoPublicoDto(
                 a.Id,
                 a.Titulo,

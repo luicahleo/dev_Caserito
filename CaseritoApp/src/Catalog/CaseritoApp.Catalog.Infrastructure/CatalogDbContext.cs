@@ -1,4 +1,5 @@
 using CaseritoApp.Catalog.Domain.Avisos;
+using CaseritoApp.Catalog.Domain.Moderacion;
 using CaseritoApp.Catalog.Infrastructure.Avisos;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ public sealed class CatalogDbContext(DbContextOptions<CatalogDbContext> options)
 
     /// <summary>Ciudades de referencia.</summary>
     public DbSet<Ciudad> Ciudades => Set<Ciudad>();
+    public DbSet<ReporteAviso> ReportesAviso => Set<ReporteAviso>();
+    public DbSet<RegistroModeracion> RegistrosModeracion => Set<RegistroModeracion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

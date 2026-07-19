@@ -5,6 +5,76 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/avisos/{id}/reportes": {
+      "post": {
+        "tags": [
+          "ModeracionEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportarAvisoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReporteCreadoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -1105,6 +1175,139 @@
         }
       }
     },
+    "/api/avisos/{id}/fotos": {
+      "post": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "$ref": "#/components/schemas/IFormFile"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FotoCreadaResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/avisos/{id}/fotos/{fotoId}": {
+      "delete": {
+        "tags": [
+          "AvisosEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fotoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/catalogo/categorias": {
       "get": {
         "tags": [
@@ -1123,9 +1326,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       }
@@ -1148,9 +1348,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         }
       }
@@ -1305,6 +1502,201 @@
           }
         }
       }
+    },
+    "/api/admin/moderacion/avisos": {
+      "get": {
+        "tags": [
+          "ModeracionEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "Pendiente"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "tamano",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoPaginadoOfAvisoReportadoResumenDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/avisos/{id}": {
+      "get": {
+        "tags": [
+          "ModeracionEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "Pendiente"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvisoReportadoDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/avisos/{id}/ocultar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/avisos/{id}/restaurar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/avisos/{id}/eliminar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/reportes/{id}/descartar": {
+      "post": {
+        "tags": [
+          "CaseritoApp.Host"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1359,8 +1751,10 @@
           "ciudadId",
           "condicion",
           "estado",
+          "estadoModeracion",
           "fechaCreacion",
-          "fechaActualizacion"
+          "fechaActualizacion",
+          "fotos"
         ],
         "type": "object",
         "properties": {
@@ -1403,6 +1797,9 @@
           "estado": {
             "type": "string"
           },
+          "estadoModeracion": {
+            "type": "string"
+          },
           "fechaCreacion": {
             "type": "string",
             "format": "date-time"
@@ -1410,6 +1807,12 @@
           "fechaActualizacion": {
             "type": "string",
             "format": "date-time"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FotoAvisoDto"
+            }
           }
         }
       },
@@ -1423,7 +1826,8 @@
           "nombreCategoria",
           "nombreCiudad",
           "condicion",
-          "fechaCreacion"
+          "fechaCreacion",
+          "fotos"
         ],
         "type": "object",
         "properties": {
@@ -1460,6 +1864,12 @@
           "fechaCreacion": {
             "type": "string",
             "format": "date-time"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FotoAvisoDto"
+            }
           }
         }
       },
@@ -1472,7 +1882,8 @@
           "nombreCategoria",
           "nombreCiudad",
           "condicion",
-          "fechaCreacion"
+          "fechaCreacion",
+          "fotos"
         ],
         "type": "object",
         "properties": {
@@ -1506,6 +1917,99 @@
           "fechaCreacion": {
             "type": "string",
             "format": "date-time"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FotoAvisoDto"
+            }
+          }
+        }
+      },
+      "AvisoReportadoDto": {
+        "required": [
+          "avisoId",
+          "titulo",
+          "descripcion",
+          "estadoAviso",
+          "estadoModeracion",
+          "fotos",
+          "reportes"
+        ],
+        "type": "object",
+        "properties": {
+          "avisoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "estadoAviso": {
+            "type": "string"
+          },
+          "estadoModeracion": {
+            "type": "string"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FotoAvisoDto"
+            }
+          },
+          "reportes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReporteAvisoDto"
+            }
+          }
+        }
+      },
+      "AvisoReportadoResumenDto": {
+        "required": [
+          "avisoId",
+          "titulo",
+          "estadoAviso",
+          "estadoModeracion",
+          "cantidadReportes",
+          "motivos",
+          "reporteMasAntiguo"
+        ],
+        "type": "object",
+        "properties": {
+          "avisoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titulo": {
+            "type": "string"
+          },
+          "estadoAviso": {
+            "type": "string"
+          },
+          "estadoModeracion": {
+            "type": "string"
+          },
+          "cantidadReportes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "motivos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reporteMasAntiguo": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1519,7 +2023,9 @@
           "ciudadId",
           "condicion",
           "estado",
-          "fechaCreacion"
+          "estadoModeracion",
+          "fechaCreacion",
+          "fotos"
         ],
         "type": "object",
         "properties": {
@@ -1555,9 +2061,18 @@
           "estado": {
             "type": "string"
           },
+          "estadoModeracion": {
+            "type": "string"
+          },
           "fechaCreacion": {
             "type": "string",
             "format": "date-time"
+          },
+          "fotos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FotoAvisoDto"
+            }
           }
         }
       },
@@ -1684,6 +2199,43 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "FotoAvisoDto": {
+        "required": [
+          "id",
+          "url",
+          "orden"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string"
+          },
+          "orden": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "FotoCreadaResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -1853,6 +2405,76 @@
           }
         }
       },
+      "ReportarAvisoRequest": {
+        "required": [
+          "motivo",
+          "detalle"
+        ],
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string"
+          },
+          "detalle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ReporteAvisoDto": {
+        "required": [
+          "id",
+          "motivo",
+          "detalle",
+          "estado",
+          "fechaCreacion",
+          "fechaResolucion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "detalle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": "string"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaResolucion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "ReporteCreadoResponse": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
       "ResultadoPaginadoOfAvisoPublicoResumenDto": {
         "required": [
           "items",
@@ -1866,6 +2488,47 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/AvisoPublicoResumenDto"
+            }
+          },
+          "pagina": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "tamano": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ResultadoPaginadoOfAvisoReportadoResumenDto": {
+        "required": [
+          "items",
+          "pagina",
+          "tamano",
+          "total"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AvisoReportadoResumenDto"
             }
           },
           "pagina": {
@@ -2130,6 +2793,9 @@
     }
   ],
   "tags": [
+    {
+      "name": "ModeracionEndpoints"
+    },
     {
       "name": "CaseritoApp.Host"
     },

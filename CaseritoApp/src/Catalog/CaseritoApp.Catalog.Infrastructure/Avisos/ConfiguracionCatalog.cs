@@ -1,4 +1,5 @@
 using CaseritoApp.Catalog.Domain.Avisos;
+using CaseritoApp.Catalog.Domain.Moderacion;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseritoApp.Catalog.Infrastructure.Avisos;
@@ -22,6 +23,8 @@ public static class ConfiguracionCatalog
             e.Property(a => a.CiudadId).IsRequired();
             e.Property(a => a.Condicion).HasConversion<string>().HasMaxLength(20).IsRequired();
             e.Property(a => a.Estado).HasConversion<string>().HasMaxLength(20).IsRequired();
+            e.Property(a => a.EstadoModeracion).HasConversion<string>().HasMaxLength(30).IsRequired()
+                .HasDefaultValue(EstadoModeracionAviso.Visible).IsConcurrencyToken();
             e.Property(a => a.FechaCreacion).IsRequired();
             e.Property(a => a.FechaActualizacion).IsRequired();
 
@@ -77,6 +80,30 @@ public static class ConfiguracionCatalog
             e.Property(c => c.Nombre).HasMaxLength(80).IsRequired();
             e.Property(c => c.Activa).IsRequired();
             e.Property(c => c.Orden).IsRequired();
+        });
+
+        builder.Entity<ReporteAviso>(e =>
+        {
+            e.ToTable("ReportesAviso");
+            e.HasKey(r => r.Id);
+            e.Property(r => r.Id).ValueGeneratedNever();
+            e.Property(r => r.Motivo).HasConversion<string>().HasMaxLength(30).IsRequired();
+            e.Property(r => r.Detalle).HasMaxLength(500);
+            e.Property(r => r.Estado).HasConversion<string>().HasMaxLength(20).IsRequired().IsConcurrencyToken();
+            e.Property(r => r.FechaCreacion).IsRequired();
+            e.HasOne<Aviso>().WithMany().HasForeignKey(r => r.AvisoId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(r => new { r.AvisoId, r.ReportanteId }).IsUnique().HasFilter("[Estado] = N'Pendiente'");
+            e.HasIndex(r => new { r.Estado, r.AvisoId });
+        });
+
+        builder.Entity<RegistroModeracion>(e =>
+        {
+            e.ToTable("RegistrosModeracion");
+            e.HasKey(r => r.Id);
+            e.Property(r => r.Id).ValueGeneratedNever();
+            e.Property(r => r.Accion).HasConversion<string>().HasMaxLength(30).IsRequired();
+            e.Property(r => r.Fecha).IsRequired();
+            e.HasIndex(r => new { r.AvisoId, r.Fecha });
         });
     }
 }

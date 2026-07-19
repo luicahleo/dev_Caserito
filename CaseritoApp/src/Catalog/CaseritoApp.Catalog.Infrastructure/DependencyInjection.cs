@@ -1,8 +1,10 @@
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.Catalog.Application.Avisos;
 using CaseritoApp.Catalog.Application.Fotos;
+using CaseritoApp.Catalog.Application.Moderacion;
 using CaseritoApp.Catalog.Infrastructure.Avisos;
 using CaseritoApp.Catalog.Infrastructure.Fotos;
+using CaseritoApp.Catalog.Infrastructure.Moderacion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,9 @@ public static class DependencyInjection
 
         servicios.Configure<OpcionesAlmacenFotos>(config.GetSection("AlmacenFotos"));
         servicios.AddScoped<IAlmacenFotosAviso, AlmacenFotoAvisoDisco>();
+        servicios.AddScoped<IConsultaFotoPublica, ConsultaFotoPublicaEfCore>();
+        servicios.AddScoped<IRepositorioReportesAviso, RepositorioReportesAvisoEfCore>();
+        servicios.AddScoped<IRepositorioRegistrosModeracion, RepositorioRegistrosModeracionEfCore>();
 
         return servicios;
     }

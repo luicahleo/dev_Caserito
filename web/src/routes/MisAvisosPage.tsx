@@ -107,6 +107,9 @@ export function MisAvisosPage() {
                       label={a.estado}
                       color={a.estado === 'Activo' ? 'success' : 'default'}
                     />
+                    {a.estadoModeracion !== 'Visible' && (
+                      <Chip size="small" label={a.estadoModeracion === 'Oculto' ? 'Oculto por moderación' : 'Eliminado por moderación'} color="warning" sx={{ ml: 1 }} />
+                    )}
                   </TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>

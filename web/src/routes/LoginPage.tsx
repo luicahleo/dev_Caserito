@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useLocation, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Button, Container, Stack, TextField, Typography, Alert, Link } from '@mui/material';
 import { useAuth } from '../auth/AuthContext';
 
@@ -15,6 +15,7 @@ type Datos = z.infer<typeof esquema>;
 export function LoginPage() {
   const { iniciarSesion } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const {
     register,
@@ -28,7 +29,8 @@ export function LoginPage() {
     setErrorGeneral(null);
     try {
       await iniciarSesion(datos);
-      navigate('/perfil');
+      const solicitado = (location.state as { from?: unknown } | null)?.from;
+      navigate(typeof solicitado === 'string' && solicitado.startsWith('/') && !solicitado.startsWith('//') ? solicitado : '/perfil');
     } catch {
       setErrorGeneral('Credenciales inválidas');
     }

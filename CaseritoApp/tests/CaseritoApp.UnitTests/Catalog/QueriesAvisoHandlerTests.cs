@@ -15,7 +15,7 @@ public sealed class QueriesAvisoHandlerTests
         public Task<ResultadoPaginado<AvisoResumenDto>> ListarPorVendedorAsync(
             Guid vendedorId, int pagina, int tamano, CancellationToken ct) =>
             Task.FromResult(new ResultadoPaginado<AvisoResumenDto>(
-                [new AvisoResumenDto(Guid.NewGuid(), "T", 1m, "BOB", Guid.NewGuid(), Guid.NewGuid(), "Nuevo", "Activo", _ahora, [])],
+                [new AvisoResumenDto(Guid.NewGuid(), "T", 1m, "BOB", Guid.NewGuid(), Guid.NewGuid(), "Nuevo", "Activo", "Visible", _ahora, [])],
                 pagina, tamano, 1));
     }
 

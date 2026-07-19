@@ -14,6 +14,7 @@ public sealed record AvisoDto(
     Guid CiudadId,
     string Condicion,
     string Estado,
+    string EstadoModeracion,
     DateTime FechaCreacion,
     DateTime FechaActualizacion,
     IReadOnlyList<FotoAvisoDto> Fotos);
@@ -28,6 +29,7 @@ public sealed record AvisoResumenDto(
     Guid CiudadId,
     string Condicion,
     string Estado,
+    string EstadoModeracion,
     DateTime FechaCreacion,
     IReadOnlyList<FotoAvisoDto> Fotos);
 
@@ -55,6 +57,7 @@ public static class MapaAvisos
         aviso.CiudadId,
         aviso.Condicion.ToString(),
         aviso.Estado.ToString(),
+        aviso.EstadoModeracion.ToString(),
         aviso.FechaCreacion,
         aviso.FechaActualizacion,
         [.. aviso.Fotos.OrderBy(f => f.Orden).Select(f => new FotoAvisoDto(f.Id, $"/api/fotos/{f.Clave}", f.Orden))]);

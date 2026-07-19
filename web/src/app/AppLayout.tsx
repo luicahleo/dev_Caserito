@@ -3,7 +3,7 @@ import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export function AppLayout() {
-  const { estaAutenticado, cerrarSesion } = useAuth();
+  const { estaAutenticado, cerrarSesion, tienePermiso } = useAuth();
   const navigate = useNavigate();
 
   const salir = async () => {
@@ -35,6 +35,9 @@ export function AppLayout() {
                 <Button color="inherit" component={RouterLink} to="/mis-avisos">
                   Mis avisos
                 </Button>
+                {tienePermiso('publicaciones.moderar') && (
+                  <Button color="inherit" component={RouterLink} to="/admin/moderacion">Moderación</Button>
+                )}
               </>
             )}
           </Box>

@@ -39,6 +39,7 @@ public sealed class RepositorioAvisosEfCore(CatalogDbContext db) : IRepositorioA
                 a.CiudadId,
                 a.Condicion.ToString(),
                 a.Estado.ToString(),
+                a.EstadoModeracion.ToString(),
                 a.FechaCreacion,
                 a.Fotos
                   .OrderBy(f => f.Orden)
