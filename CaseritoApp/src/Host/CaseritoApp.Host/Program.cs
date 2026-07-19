@@ -1,5 +1,7 @@
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
 using CaseritoApp.Catalog.Infrastructure;
+using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Identity.Application.Perfil;
@@ -35,6 +37,7 @@ var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnectio
 builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
 builder.Services.AgregarCatalog(builder.Configuration);
+builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
 var app = builder.Build();

@@ -98,6 +98,15 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
                   .ToList()))
             .FirstOrDefaultAsync(ct);
 
+    public Task<ReferenciaAvisoContactableDto?> ObtenerReferenciaContactableAsync(
+        Guid id,
+        CancellationToken ct) => db.Avisos
+            .Where(a => a.Id == id &&
+                a.Estado == EstadoAviso.Activo &&
+                a.EstadoModeracion == EstadoModeracionAviso.Visible)
+            .Select(a => new ReferenciaAvisoContactableDto(a.Id, a.VendedorId))
+            .FirstOrDefaultAsync(ct);
+
     // Neutraliza los comodines de LIKE en el término del usuario usando clases de caracteres.
     private static string EscaparComodines(string token) =>
         token.Replace("[", "[[]", StringComparison.Ordinal)

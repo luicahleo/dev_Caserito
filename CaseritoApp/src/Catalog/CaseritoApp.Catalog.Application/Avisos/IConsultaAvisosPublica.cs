@@ -11,6 +11,8 @@ public sealed record FiltroBusquedaAvisos(
     decimal? PrecioMax,
     CondicionArticulo? Condicion);
 
+public sealed record ReferenciaAvisoContactableDto(Guid AvisoId, Guid VendedorId);
+
 /// <summary>Puerto de lectura pública de avisos (solo estado Activo).</summary>
 public interface IConsultaAvisosPublica
 {
@@ -20,4 +22,8 @@ public interface IConsultaAvisosPublica
 
     /// <summary>Obtiene el detalle público de un aviso Activo; null si no existe o no está Activo.</summary>
     public Task<AvisoPublicoDto?> ObtenerPublicoAsync(Guid id, CancellationToken ct);
+
+    public Task<ReferenciaAvisoContactableDto?> ObtenerReferenciaContactableAsync(
+        Guid id,
+        CancellationToken ct);
 }
