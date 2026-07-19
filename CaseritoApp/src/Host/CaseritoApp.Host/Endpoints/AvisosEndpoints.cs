@@ -257,7 +257,7 @@ public static class AvisosEndpoints
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status404NotFound),
         ErroresAviso.NoEsPropietario or ErroresAviso.NoVerificado =>
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status403Forbidden),
-        ErroresAviso.TransicionInvalida =>
+        ErroresAviso.TransicionInvalida or ErroresAviso.EliminadoPorModeracion =>
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status409Conflict),
         _ =>
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status400BadRequest),

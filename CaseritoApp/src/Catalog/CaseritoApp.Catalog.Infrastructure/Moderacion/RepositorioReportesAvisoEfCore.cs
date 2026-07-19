@@ -22,14 +22,29 @@ public sealed class RepositorioReportesAvisoEfCore(CatalogDbContext db) : IRepos
     {
         var grupos = db.ReportesAviso.Where(r => r.Estado == estado).GroupBy(r => r.AvisoId);
         var total = await grupos.CountAsync(ct);
-        var items = await grupos.OrderBy(g => g.Min(r => r.FechaCreacion)).ThenBy(g => g.Key)
+        var resumenes = await grupos.OrderBy(g => g.Min(r => r.FechaCreacion)).ThenBy(g => g.Key)
             .Skip((pagina - 1) * tamano).Take(tamano)
-            .Select(g => new AvisoReportadoResumenDto(
-                g.Key, db.Avisos.Where(a => a.Id == g.Key).Select(a => a.Titulo).First(),
-                db.Avisos.Where(a => a.Id == g.Key).Select(a => a.Estado.ToString()).First(),
-                db.Avisos.Where(a => a.Id == g.Key).Select(a => a.EstadoModeracion.ToString()).First(),
-                g.Count(), g.Select(r => r.Motivo.ToString()).Distinct().ToList(), g.Min(r => r.FechaCreacion)))
+            .Select(g => new { AvisoId = g.Key, Cantidad = g.Count(), MasAntiguo = g.Min(r => r.FechaCreacion) })
             .ToListAsync(ct);
+
+        var ids = resumenes.Select(r => r.AvisoId).ToArray();
+        var avisos = await db.Avisos.AsNoTracking().Where(a => ids.Contains(a.Id))
+            .Select(a => new { a.Id, a.Titulo, a.Estado, a.EstadoModeracion })
+            .ToDictionaryAsync(a => a.Id, ct);
+        var motivos = (await db.ReportesAviso.AsNoTracking()
+                .Where(r => r.Estado == estado && ids.Contains(r.AvisoId))
+                .Select(r => new { r.AvisoId, r.Motivo })
+                .ToListAsync(ct))
+            .GroupBy(r => r.AvisoId)
+            .ToDictionary(g => g.Key, g => (IReadOnlyList<string>)g.Select(r => r.Motivo.ToString()).Distinct().ToList());
+
+        var items = resumenes.Select(resumen =>
+        {
+            var aviso = avisos[resumen.AvisoId];
+            return new AvisoReportadoResumenDto(
+                resumen.AvisoId, aviso.Titulo, aviso.Estado.ToString(), aviso.EstadoModeracion.ToString(),
+                resumen.Cantidad, motivos[resumen.AvisoId], resumen.MasAntiguo);
+        }).ToList();
         return new(items, pagina, tamano, total);
     }
 
