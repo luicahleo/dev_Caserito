@@ -8,4 +8,5 @@ public static class ErroresConversacion
     public const string TextoInvalido = "chat_texto_invalido";
     public const string SecuenciaInvalida = "chat_secuencia_invalida";
     public const string AvisoNoContactable = "chat_aviso_no_contactable";
+    public const string ClaveIdempotenciaReutilizada = "chat_clave_idempotencia_reutilizada";
 }
