@@ -97,4 +97,38 @@ public sealed class ModeracionDominioTests
         Assert.Null(registro.ReporteId);
         Assert.Equal(_ahora, registro.Fecha);
     }
+
+    [Fact]
+    public void Aviso_oculto_sigue_siendo_editable_por_el_dueno()
+    {
+        var aviso = NuevoAviso();
+        aviso.OcultarPorModeracion(_ahora);
+
+        var resultado = aviso.Editar(
+            "Título corregido", "Descripción corregida", Dinero.Crear(900m, Moneda.BOB).Valor,
+            aviso.CategoriaId, aviso.CiudadId, aviso.Condicion, _ahora.AddMinutes(1));
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal("Título corregido", aviso.Titulo);
+    }
+
+    [Fact]
+    public void Aviso_eliminado_por_moderacion_bloquea_mutaciones_del_dueno()
+    {
+        var aviso = NuevoAviso();
+        aviso.AgregarFoto("clave", "image/jpeg");
+        var fotoId = aviso.Fotos[0].Id;
+        aviso.EliminarPorModeracion(_ahora);
+
+        var editar = aviso.Editar(
+            "Título", "Descripción", aviso.Precio,
+            aviso.CategoriaId, aviso.CiudadId, aviso.Condicion, _ahora);
+
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, editar.Error.Code);
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, aviso.Pausar(_ahora).Error.Code);
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, aviso.Reactivar(_ahora).Error.Code);
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, aviso.Eliminar(_ahora).Error.Code);
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, aviso.AgregarFoto("otra", "image/jpeg").Error.Code);
+        Assert.Equal(ErroresAviso.EliminadoPorModeracion, aviso.QuitarFoto(fotoId).Error.Code);
+    }
 }

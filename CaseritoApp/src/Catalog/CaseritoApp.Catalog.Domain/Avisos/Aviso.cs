@@ -88,6 +88,11 @@ public sealed class Aviso : AggregateRoot
         string titulo, string descripcion, Dinero precio,
         Guid categoriaId, Guid ciudadId, CondicionArticulo condicion, DateTime ahoraUtc)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return FalloEliminadoPorModeracion();
+        }
+
         if (Estado == EstadoAviso.Eliminado)
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "No se puede editar un aviso eliminado."));
@@ -107,6 +112,11 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Pausa un aviso activo.</summary>
     public Result Pausar(DateTime ahoraUtc)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return FalloEliminadoPorModeracion();
+        }
+
         if (Estado != EstadoAviso.Activo)
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "Solo se puede pausar un aviso activo."));
@@ -121,6 +131,11 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Reactiva un aviso pausado.</summary>
     public Result Reactivar(DateTime ahoraUtc)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return FalloEliminadoPorModeracion();
+        }
+
         if (Estado != EstadoAviso.Pausado)
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "Solo se puede reactivar un aviso pausado."));
@@ -135,6 +150,11 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Elimina (soft-delete) el aviso. No se puede eliminar dos veces.</summary>
     public Result Eliminar(DateTime ahoraUtc)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return FalloEliminadoPorModeracion();
+        }
+
         if (Estado == EstadoAviso.Eliminado)
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "El aviso ya está eliminado."));
@@ -188,6 +208,11 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Agrega una foto al aviso. Máximo 5 fotos por aviso.</summary>
     public Result AgregarFoto(string clave, string contentType)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return FalloEliminadoPorModeracion();
+        }
+
         if (_fotos.Count >= 5)
         {
             return Result.Fallo(new Error(
@@ -206,6 +231,13 @@ public sealed class Aviso : AggregateRoot
     /// </summary>
     public Result<FotoAviso> QuitarFoto(Guid fotoId)
     {
+        if (EstaEliminadoPorModeracion())
+        {
+            return Result.Fallo<FotoAviso>(new Error(
+                ErroresAviso.EliminadoPorModeracion,
+                "El aviso fue eliminado por moderación."));
+        }
+
         var foto = _fotos.FirstOrDefault(f => f.Id == fotoId);
         if (foto is null)
         {
@@ -223,4 +255,12 @@ public sealed class Aviso : AggregateRoot
 
     private static Result FalloModeracion(string mensaje) =>
         Result.Fallo(new Error(ErroresAviso.TransicionModeracionInvalida, mensaje));
+
+    private bool EstaEliminadoPorModeracion() =>
+        EstadoModeracion == EstadoModeracionAviso.EliminadoPorModeracion;
+
+    private static Result FalloEliminadoPorModeracion() =>
+        Result.Fallo(new Error(
+            ErroresAviso.EliminadoPorModeracion,
+            "El aviso fue eliminado por moderación."));
 }
