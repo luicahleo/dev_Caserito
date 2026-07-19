@@ -31,6 +31,12 @@ public sealed class Conversacion : AggregateRoot
 
     public DateTimeOffset UltimaActividadEn { get; private set; }
 
+    public long UltimaSecuencia { get; private set; }
+
+    public long UltimaSecuenciaLeidaComprador { get; private set; }
+
+    public long UltimaSecuenciaLeidaVendedor { get; private set; }
+
     public static Result<Conversacion> Crear(
         Guid avisoId,
         Guid compradorId,
@@ -59,4 +65,96 @@ public sealed class Conversacion : AggregateRoot
 
     public bool EsParticipante(Guid usuarioId) =>
         usuarioId != Guid.Empty && (usuarioId == CompradorId || usuarioId == VendedorId);
+
+    public Result<Mensaje> CrearMensaje(
+        Guid remitenteId,
+        Guid claveIdempotencia,
+        long secuencia,
+        string texto,
+        DateTimeOffset enviadoEn)
+    {
+        if (!EsParticipante(remitenteId))
+        {
+            return Result.Fallo<Mensaje>(new Error(
+                ErroresConversacion.NoEncontrada,
+                "La conversación no está disponible."));
+        }
+
+        if (claveIdempotencia == Guid.Empty)
+        {
+            return Result.Fallo<Mensaje>(new Error(
+                ErroresConversacion.IdentificadorInvalido,
+                "La solicitud de mensaje no es válida."));
+        }
+
+        if (secuencia <= UltimaSecuencia)
+        {
+            return Result.Fallo<Mensaje>(new Error(
+                ErroresConversacion.SecuenciaInvalida,
+                "La secuencia del mensaje no es válida."));
+        }
+
+        var textoNormalizado = texto?.Trim();
+        if (string.IsNullOrWhiteSpace(textoNormalizado) || textoNormalizado.Length > 2000)
+        {
+            return Result.Fallo<Mensaje>(new Error(
+                ErroresConversacion.TextoInvalido,
+                "El mensaje debe tener entre 1 y 2000 caracteres."));
+        }
+
+        var fechaUtc = enviadoEn.ToUniversalTime();
+        var mensaje = new Mensaje(
+            Id,
+            remitenteId,
+            claveIdempotencia,
+            secuencia,
+            textoNormalizado,
+            fechaUtc);
+
+        UltimaSecuencia = secuencia;
+        if (fechaUtc > UltimaActividadEn)
+        {
+            UltimaActividadEn = fechaUtc;
+        }
+
+        AgregarEvento(new MensajeEnviado(Id, mensaje.Id, secuencia, fechaUtc));
+        return Result.Exito(mensaje);
+    }
+
+    public Result MarcarLectura(Guid usuarioId, long hastaSecuencia, DateTimeOffset ocurrioEn)
+    {
+        if (!EsParticipante(usuarioId))
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.NoEncontrada,
+                "La conversación no está disponible."));
+        }
+
+        if (hastaSecuencia < 0 || hastaSecuencia > UltimaSecuencia)
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.SecuenciaInvalida,
+                "La secuencia de lectura no es válida."));
+        }
+
+        var secuenciaActual = usuarioId == CompradorId
+            ? UltimaSecuenciaLeidaComprador
+            : UltimaSecuenciaLeidaVendedor;
+        if (hastaSecuencia <= secuenciaActual)
+        {
+            return Result.Exito();
+        }
+
+        if (usuarioId == CompradorId)
+        {
+            UltimaSecuenciaLeidaComprador = hastaSecuencia;
+        }
+        else
+        {
+            UltimaSecuenciaLeidaVendedor = hastaSecuencia;
+        }
+
+        AgregarEvento(new LecturaAvanzada(Id, hastaSecuencia, ocurrioEn.ToUniversalTime()));
+        return Result.Exito();
+    }
 }

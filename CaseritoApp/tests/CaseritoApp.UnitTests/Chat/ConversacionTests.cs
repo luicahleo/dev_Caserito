@@ -71,4 +71,41 @@ public sealed class ConversacionTests
             evento.GetType().GetProperties(),
             propiedad => propiedad.PropertyType == typeof(string));
     }
+
+    [Fact]
+    public void MarcarLectura_avanza_sin_retroceder_y_es_idempotente()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, _ahora).Valor;
+        conversacion.CrearMensaje(vendedorId, Guid.NewGuid(), 5, "Hola", _ahora.AddMinutes(1));
+        conversacion.LimpiarEventos();
+
+        var avance = conversacion.MarcarLectura(compradorId, 5, _ahora.AddMinutes(2));
+        var repeticion = conversacion.MarcarLectura(compradorId, 5, _ahora.AddMinutes(3));
+        var retroceso = conversacion.MarcarLectura(compradorId, 3, _ahora.AddMinutes(4));
+
+        Assert.True(avance.EsExito);
+        Assert.True(repeticion.EsExito);
+        Assert.True(retroceso.EsExito);
+        Assert.Equal(5, conversacion.UltimaSecuenciaLeidaComprador);
+        Assert.Equal(0, conversacion.UltimaSecuenciaLeidaVendedor);
+        Assert.IsType<LecturaAvanzada>(Assert.Single(conversacion.EventosDeDominio));
+    }
+
+    [Fact]
+    public void MarcarLectura_rechaza_tercero_y_secuencia_inexistente()
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+        conversacion.CrearMensaje(compradorId, Guid.NewGuid(), 2, "Hola", _ahora.AddMinutes(1));
+
+        var tercero = conversacion.MarcarLectura(Guid.NewGuid(), 1, _ahora.AddMinutes(2));
+        var inexistente = conversacion.MarcarLectura(compradorId, 3, _ahora.AddMinutes(2));
+
+        Assert.Equal(ErroresConversacion.NoEncontrada, tercero.Error.Code);
+        Assert.Equal(ErroresConversacion.SecuenciaInvalida, inexistente.Error.Code);
+    }
 }
