@@ -169,7 +169,12 @@ app.MapModeracionEndpoints();
 app.MapChatEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
+    var tiempoReal = app.Configuration
+        .GetSection(OpcionesTiempoRealChat.Seccion)
+        .Get<OpcionesTiempoRealChat>() ?? new OpcionesTiempoRealChat();
     opciones.CloseOnAuthenticationExpiration = true;
+    opciones.ApplicationMaxBufferSize = tiempoReal.BufferAplicacionBytes;
+    opciones.TransportMaxBufferSize = tiempoReal.BufferTransporteBytes;
 }).RequireAuthorization(ChatHub.Politica);
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));

@@ -1,23 +1,21 @@
-import { getAccessToken } from '../auth/session';
 import type { MensajeChat } from '../chat/sincronizacionMensajes';
-import { HttpError } from './http';
+import { api, desempaquetar } from './http';
 
 export async function recuperarMensajes(
   conversacionId: string,
   despuesDeSecuencia: number,
   limite = 50,
 ): Promise<MensajeChat[]> {
-  const parametros = new URLSearchParams({
-    despuesDeSecuencia: String(despuesDeSecuencia),
-    limite: String(limite),
-  });
-  const token = getAccessToken();
-  const respuesta = await fetch(
-    `/api/chat/conversaciones/${encodeURIComponent(conversacionId)}/mensajes?${parametros}`,
-    { headers: token ? { Authorization: `Bearer ${token}` } : undefined },
+  const pagina = desempaquetar(
+    await api.GET('/api/chat/conversaciones/{id}/mensajes', {
+      params: {
+        path: { id: conversacionId },
+        query: { despuesDeSecuencia, limite },
+      },
+    }),
   );
-  if (!respuesta.ok)
-    throw new HttpError(respuesta.status, null, 'No fue posible recuperar mensajes.');
-  const cuerpo = (await respuesta.json()) as { items: MensajeChat[] };
-  return cuerpo.items;
+  return pagina.items.map((mensaje) => ({
+    ...mensaje,
+    secuencia: Number(mensaje.secuencia),
+  }));
 }

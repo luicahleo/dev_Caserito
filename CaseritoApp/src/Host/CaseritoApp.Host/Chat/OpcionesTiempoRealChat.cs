@@ -12,6 +12,10 @@ public sealed class OpcionesTiempoRealChat
 
     public int CapacidadBuffer { get; init; } = 10;
 
+    public long BufferAplicacionBytes { get; init; } = 32 * 1024;
+
+    public long BufferTransporteBytes { get; init; } = 32 * 1024;
+
     public int SegundosHandshake { get; init; } = 10;
 
     public int TamanoLote { get; init; } = 20;

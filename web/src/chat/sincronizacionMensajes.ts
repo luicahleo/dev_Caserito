@@ -1,10 +1,9 @@
-export interface MensajeChat {
-  id: string;
-  conversacionId: string;
-  remitenteId: string;
+import type { components } from '../api/schema';
+
+type MensajeApi = components['schemas']['MensajeDto'];
+
+export interface MensajeChat extends Omit<MensajeApi, 'secuencia'> {
   secuencia: number;
-  texto: string;
-  enviadoEn: string;
 }
 
 export class SincronizadorMensajes {
