@@ -6,6 +6,15 @@ namespace CaseritoApp.Chat.Infrastructure.Conversaciones;
 
 public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaConversaciones
 {
+    public Task<bool> PuedeAccederAsync(
+        Guid conversacionId,
+        Guid usuarioId,
+        CancellationToken ct) =>
+        db.Conversaciones.AsNoTracking().AnyAsync(
+            c => c.Id == conversacionId
+                && (c.CompradorId == usuarioId || c.VendedorId == usuarioId),
+            ct);
+
     public async Task<PaginaCursor<ConversacionResumenDto, FronteraConversaciones>> ListarAsync(
         Guid usuarioId,
         FronteraConversaciones? frontera,

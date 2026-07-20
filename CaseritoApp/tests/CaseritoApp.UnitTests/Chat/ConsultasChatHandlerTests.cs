@@ -8,6 +8,8 @@ public sealed class ConsultasChatHandlerTests
 {
     private sealed class ConversacionesFake : IConsultaConversaciones
     {
+        public bool PuedeAcceder { get; init; }
+
         public Guid UsuarioId { get; private set; }
 
         public FronteraConversaciones? Frontera { get; private set; }
@@ -22,6 +24,23 @@ public sealed class ConsultasChatHandlerTests
             Limite = limite;
             return Task.FromResult(new PaginaCursor<ConversacionResumenDto, FronteraConversaciones>([], null));
         }
+
+        public Task<bool> PuedeAccederAsync(
+            Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(PuedeAcceder);
+    }
+
+    [Fact]
+    public async Task PuedeAccederConversacion_devuelve_solo_la_decision_de_participacion()
+    {
+        var handler = new PuedeAccederConversacionQueryHandler(
+            new ConversacionesFake { PuedeAcceder = true });
+
+        var resultado = await handler.Handle(
+            new PuedeAccederConversacionQuery(Guid.NewGuid(), Guid.NewGuid()),
+            CancellationToken.None);
+
+        Assert.True(resultado);
     }
 
     private sealed class MensajesFake(

@@ -18,6 +18,11 @@ public sealed record ConversacionResumenDto(
 
 public interface IConsultaConversaciones
 {
+    public Task<bool> PuedeAccederAsync(
+        Guid conversacionId,
+        Guid usuarioId,
+        CancellationToken ct);
+
     public Task<PaginaCursor<ConversacionResumenDto, FronteraConversaciones>> ListarAsync(
         Guid usuarioId,
         FronteraConversaciones? frontera,
