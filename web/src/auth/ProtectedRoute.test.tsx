@@ -6,15 +6,26 @@ import * as ctx from './AuthContext';
 
 function montar(estado: Partial<ReturnType<typeof ctx.useAuth>>) {
   vi.spyOn(ctx, 'useAuth').mockReturnValue({
-    usuario: null, estaAutenticado: false, cargando: false,
-    iniciarSesion: vi.fn(), registrar: vi.fn(), cerrarSesion: vi.fn(),
+    usuario: null,
+    estaAutenticado: false,
+    cargando: false,
+    iniciarSesion: vi.fn(),
+    registrar: vi.fn(),
+    cerrarSesion: vi.fn(),
     ...estado,
   } as ReturnType<typeof ctx.useAuth>);
   return render(
     <MemoryRouter initialEntries={['/perfil']}>
       <Routes>
         <Route path="/login" element={<div>pantalla login</div>} />
-        <Route path="/perfil" element={<ProtectedRoute><div>perfil privado</div></ProtectedRoute>} />
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <div>perfil privado</div>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </MemoryRouter>,
   );

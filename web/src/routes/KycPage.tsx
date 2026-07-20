@@ -28,7 +28,11 @@ function validarArchivo(archivo: File | null): string | null {
 
 export function KycPage() {
   const queryClient = useQueryClient();
-  const { data: estado, isLoading, isError } = useQuery({
+  const {
+    data: estado,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['kyc', 'estado'],
     queryFn: obtenerEstadoKyc,
   });
@@ -123,8 +127,16 @@ export function KycPage() {
                 }}
               />
             </Button>
-            {documento && <Typography variant="caption" sx={{ ml: 2 }}>{documento.name}</Typography>}
-            {errorDoc && <Alert severity="warning" sx={{ mt: 1 }}>{errorDoc}</Alert>}
+            {documento && (
+              <Typography variant="caption" sx={{ ml: 2 }}>
+                {documento.name}
+              </Typography>
+            )}
+            {errorDoc && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                {errorDoc}
+              </Alert>
+            )}
           </Box>
 
           <Box>
@@ -142,8 +154,16 @@ export function KycPage() {
                 }}
               />
             </Button>
-            {selfie && <Typography variant="caption" sx={{ ml: 2 }}>{selfie.name}</Typography>}
-            {errorSelfie && <Alert severity="warning" sx={{ mt: 1 }}>{errorSelfie}</Alert>}
+            {selfie && (
+              <Typography variant="caption" sx={{ ml: 2 }}>
+                {selfie.name}
+              </Typography>
+            )}
+            {errorSelfie && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                {errorSelfie}
+              </Alert>
+            )}
           </Box>
 
           {mutacion.isError && es409 && (

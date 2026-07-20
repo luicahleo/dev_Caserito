@@ -63,10 +63,7 @@ export function MisAvisosPage() {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Stack
-        direction="row"
-        sx={{ mb: 2, justifyContent: 'space-between', alignItems: 'center' }}
-      >
+      <Stack direction="row" sx={{ mb: 2, justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
           Mis avisos
         </Typography>
@@ -108,7 +105,16 @@ export function MisAvisosPage() {
                       color={a.estado === 'Activo' ? 'success' : 'default'}
                     />
                     {a.estadoModeracion !== 'Visible' && (
-                      <Chip size="small" label={a.estadoModeracion === 'Oculto' ? 'Oculto por moderación' : 'Eliminado por moderación'} color="warning" sx={{ ml: 1 }} />
+                      <Chip
+                        size="small"
+                        label={
+                          a.estadoModeracion === 'Oculto'
+                            ? 'Oculto por moderación'
+                            : 'Eliminado por moderación'
+                        }
+                        color="warning"
+                        sx={{ ml: 1 }}
+                      />
                     )}
                   </TableCell>
                   <TableCell align="right">

@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import {
-  enviarKyc,
-  listarSolicitudesKyc,
-  obtenerImagenKyc,
-  rechazarKyc,
-} from './kyc';
+import { enviarKyc, listarSolicitudesKyc, obtenerImagenKyc, rechazarKyc } from './kyc';
 import { clearAccessToken } from '../auth/session';
 
 afterEach(() => {

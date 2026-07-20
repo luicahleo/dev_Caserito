@@ -71,7 +71,9 @@ export async function eliminarAviso(id: string): Promise<void> {
 }
 
 export async function reportarAviso(id: string, req: ReportarAvisoRequest): Promise<void> {
-  desempaquetar(await api.POST('/api/avisos/{id}/reportes', { params: { path: { id } }, body: req }));
+  desempaquetar(
+    await api.POST('/api/avisos/{id}/reportes', { params: { path: { id } }, body: req }),
+  );
 }
 
 /**

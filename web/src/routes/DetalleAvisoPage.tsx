@@ -8,7 +8,12 @@ import {
   Chip,
   CircularProgress,
   Container,
-  Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  MenuItem,
+  TextField,
   Stack,
   Typography,
 } from '@mui/material';
@@ -24,7 +29,10 @@ export function DetalleAvisoPage() {
   const [motivo, setMotivo] = useState('EstafaOEngano');
   const [detalle, setDetalle] = useState('');
   const estaAutenticado = getAccessToken() !== null;
-  const reporte = useMutation({ mutationFn: () => reportarAviso(id, { motivo, detalle: detalle.trim() || null }), onSuccess: () => setReporteAbierto(false) });
+  const reporte = useMutation({
+    mutationFn: () => reportarAviso(id, { motivo, detalle: detalle.trim() || null }),
+    onSuccess: () => setReporteAbierto(false),
+  });
   const { data, isLoading, error } = useQuery({
     queryKey: ['aviso-publico', id],
     queryFn: () => obtenerAvisoPublico(id),
@@ -78,7 +86,10 @@ export function DetalleAvisoPage() {
                   alt={`Foto ${i + 1}`}
                   onClick={() => setSelectedIdx(i)}
                   sx={{
-                    width: 64, height: 64, objectFit: 'cover', borderRadius: 0.5,
+                    width: 64,
+                    height: 64,
+                    objectFit: 'cover',
+                    borderRadius: 0.5,
                     cursor: 'pointer',
                     border: i === selectedIdx ? '2px solid' : '2px solid transparent',
                     borderColor: i === selectedIdx ? 'primary.main' : 'transparent',
@@ -91,11 +102,17 @@ export function DetalleAvisoPage() {
       ) : (
         <Box
           sx={{
-            height: 260, bgcolor: 'grey.200', mb: 3,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: 260,
+            bgcolor: 'grey.200',
+            mb: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <Typography variant="caption" color="text.disabled">Sin fotos</Typography>
+          <Typography variant="caption" color="text.disabled">
+            Sin fotos
+          </Typography>
         </Box>
       )}
       <Typography variant="h4" component="h1" gutterBottom>
@@ -112,17 +129,53 @@ export function DetalleAvisoPage() {
       <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
         {data.descripcion}
       </Typography>
-      {estaAutenticado ? <Button color="error" onClick={() => setReporteAbierto(true)} sx={{ mt: 3 }}>Reportar aviso</Button> : <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }} sx={{ mt: 3 }}>Inicia sesión para reportar</Button>}
+      {estaAutenticado ? (
+        <Button color="error" onClick={() => setReporteAbierto(true)} sx={{ mt: 3 }}>
+          Reportar aviso
+        </Button>
+      ) : (
+        <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }} sx={{ mt: 3 }}>
+          Inicia sesión para reportar
+        </Button>
+      )}
       <Dialog open={reporteAbierto} onClose={() => setReporteAbierto(false)} fullWidth>
         <DialogTitle>Reportar aviso</DialogTitle>
         <DialogContent>
-          <TextField select fullWidth label="Motivo" value={motivo} onChange={(e) => setMotivo(e.target.value)} sx={{ mt: 1 }}>
-            <MenuItem value="EstafaOEngano">Estafa o engaño</MenuItem><MenuItem value="ProductoProhibido">Producto prohibido</MenuItem><MenuItem value="ContenidoInapropiado">Contenido inapropiado</MenuItem><MenuItem value="DuplicadoOSpam">Duplicado o spam</MenuItem><MenuItem value="Otro">Otro</MenuItem>
+          <TextField
+            select
+            fullWidth
+            label="Motivo"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            sx={{ mt: 1 }}
+          >
+            <MenuItem value="EstafaOEngano">Estafa o engaño</MenuItem>
+            <MenuItem value="ProductoProhibido">Producto prohibido</MenuItem>
+            <MenuItem value="ContenidoInapropiado">Contenido inapropiado</MenuItem>
+            <MenuItem value="DuplicadoOSpam">Duplicado o spam</MenuItem>
+            <MenuItem value="Otro">Otro</MenuItem>
           </TextField>
-          <TextField fullWidth multiline label="Detalle opcional" value={detalle} onChange={(e) => setDetalle(e.target.value)} slotProps={{ htmlInput: { maxLength: 500 } }} sx={{ mt: 2 }} />
-          {reporte.isError && <Alert severity="error" sx={{ mt: 2 }}>No se pudo enviar el reporte.</Alert>}
+          <TextField
+            fullWidth
+            multiline
+            label="Detalle opcional"
+            value={detalle}
+            onChange={(e) => setDetalle(e.target.value)}
+            slotProps={{ htmlInput: { maxLength: 500 } }}
+            sx={{ mt: 2 }}
+          />
+          {reporte.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              No se pudo enviar el reporte.
+            </Alert>
+          )}
         </DialogContent>
-        <DialogActions><Button onClick={() => setReporteAbierto(false)}>Cancelar</Button><Button variant="contained" onClick={() => reporte.mutate()} disabled={reporte.isPending}>Enviar</Button></DialogActions>
+        <DialogActions>
+          <Button onClick={() => setReporteAbierto(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={() => reporte.mutate()} disabled={reporte.isPending}>
+            Enviar
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );

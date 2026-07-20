@@ -36,7 +36,9 @@ export function AppLayout() {
                   Mis avisos
                 </Button>
                 {tienePermiso('publicaciones.moderar') && (
-                  <Button color="inherit" component={RouterLink} to="/admin/moderacion">Moderación</Button>
+                  <Button color="inherit" component={RouterLink} to="/admin/moderacion">
+                    Moderación
+                  </Button>
                 )}
               </>
             )}

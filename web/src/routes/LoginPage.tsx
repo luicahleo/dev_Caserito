@@ -30,7 +30,11 @@ export function LoginPage() {
     try {
       await iniciarSesion(datos);
       const solicitado = (location.state as { from?: unknown } | null)?.from;
-      navigate(typeof solicitado === 'string' && solicitado.startsWith('/') && !solicitado.startsWith('//') ? solicitado : '/perfil');
+      navigate(
+        typeof solicitado === 'string' && solicitado.startsWith('/') && !solicitado.startsWith('//')
+          ? solicitado
+          : '/perfil',
+      );
     } catch {
       setErrorGeneral('Credenciales inválidas');
     }

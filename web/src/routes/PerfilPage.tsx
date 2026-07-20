@@ -3,7 +3,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Box, Button, Chip, Container, Link, Snackbar, Stack, TextField, Typography, CircularProgress } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Link,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { actualizarPerfil, type Perfil } from '../api/perfil';

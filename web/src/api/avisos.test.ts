@@ -54,9 +54,9 @@ describe('subirFotoAviso', () => {
   beforeEach(() => vi.restoreAllMocks());
 
   it('llama a fetch con POST multipart y retorna el id', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: 'foto-uuid' }), { status: 201 }),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 'foto-uuid' }), { status: 201 }));
 
     const archivo = new File([new Uint8Array(10)], 'foto.png', { type: 'image/png' });
     const resultado = await subirFotoAviso('aviso-id', archivo);
