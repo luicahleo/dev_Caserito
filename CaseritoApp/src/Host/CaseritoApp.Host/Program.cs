@@ -45,6 +45,29 @@ builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environm
 builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
+builder.Services.AddOptions<OpcionesTiempoRealChat>()
+    .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
+    .Validate(o => o.MaximoConversaciones is > 0 and <= 100)
+    .Validate(o => o.MaximoInvocacionesPorMinuto is > 0 and <= 600)
+    .ValidateOnStart();
+builder.Services.AddSingleton<EstadoSuscripcionesChat>();
+builder.Services.AddAuthorizationBuilder().AddPolicy(ChatHub.Politica, politica =>
+    politica.RequireAuthenticatedUser().RequireAssertion(contexto =>
+        Guid.TryParse(
+            contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub),
+            out var usuarioId)
+        && usuarioId != Guid.Empty));
+builder.Services.AddSignalR(opciones =>
+{
+    var tiempoReal = builder.Configuration
+        .GetSection(OpcionesTiempoRealChat.Seccion)
+        .Get<OpcionesTiempoRealChat>() ?? new OpcionesTiempoRealChat();
+    opciones.EnableDetailedErrors = false;
+    opciones.MaximumReceiveMessageSize = tiempoReal.TamanoMaximoMensajeBytes;
+    opciones.StreamBufferCapacity = tiempoReal.CapacidadBuffer;
+    opciones.MaximumParallelInvocationsPerClient = 1;
+    opciones.HandshakeTimeout = TimeSpan.FromSeconds(tiempoReal.SegundosHandshake);
+});
 builder.Services.AddRateLimiter(opciones =>
 {
     opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -139,6 +162,10 @@ app.MapPublicoEndpoints();
 app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
 app.MapChatEndpoints();
+app.MapHub<ChatHub>("/hubs/chat", opciones =>
+{
+    opciones.CloseOnAuthenticationExpiration = true;
+}).RequireAuthorization(ChatHub.Politica);
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
 

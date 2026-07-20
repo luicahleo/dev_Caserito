@@ -24,6 +24,20 @@ public sealed class ConfigurarJwtBearer(IOptions<OpcionesJwt> opciones, Proveedo
         // Ver nota en DependencyInjection: se desactiva el remapeo de "sub" para leer el userId
         // directamente en los endpoints.
         options.MapInboundClaims = false;
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = contexto =>
+            {
+                var token = contexto.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(token)
+                    && contexto.HttpContext.Request.Path.StartsWithSegments("/hubs/chat"))
+                {
+                    contexto.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+        };
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
