@@ -195,6 +195,7 @@ public static class ChatEndpoints
         ISender sender,
         CancellationToken ct,
         string? cursor = null,
+        long? despuesDeSecuencia = null,
         int limite = 50)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -203,6 +204,11 @@ public static class ChatEndpoints
         }
 
         long? antesDe = null;
+        if (cursor is not null && despuesDeSecuencia.HasValue)
+        {
+            return CursorInvalido();
+        }
+
         if (cursor is not null)
         {
             if (!CursoresChat.TryDecodificarMensajes(cursor, out var valor))
@@ -216,7 +222,7 @@ public static class ChatEndpoints
         try
         {
             var resultado = await sender.Send(
-                new ObtenerMensajesQuery(id, usuarioId, antesDe, limite), ct);
+                new ObtenerMensajesQuery(id, usuarioId, antesDe, despuesDeSecuencia, limite), ct);
             if (!resultado.EsExito)
             {
                 return DesdeError(resultado.Error);

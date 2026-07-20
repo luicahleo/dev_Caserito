@@ -10,6 +10,7 @@ public sealed class ConsultaMensajesEfCore(ChatDbContext db) : IConsultaMensajes
         Guid conversacionId,
         Guid usuarioId,
         long? antesDe,
+        long? despuesDe,
         int limite,
         CancellationToken ct)
     {
@@ -26,6 +27,23 @@ public sealed class ConsultaMensajesEfCore(ChatDbContext db) : IConsultaMensajes
         if (antesDe is { } frontera)
         {
             consulta = consulta.Where(m => m.Secuencia < frontera);
+        }
+
+        if (despuesDe is { } fronteraPosterior)
+        {
+            var itemsPosteriores = await consulta
+                .Where(m => m.Secuencia > fronteraPosterior)
+                .OrderBy(m => m.Secuencia)
+                .Take(limite)
+                .Select(m => new MensajeDto(
+                    m.Id,
+                    m.ConversacionId,
+                    m.RemitenteId,
+                    m.Secuencia,
+                    m.Texto,
+                    m.EnviadoEn))
+                .ToListAsync(ct);
+            return new PaginaCursor<MensajeDto, long>(itemsPosteriores, null);
         }
 
         var candidatos = await consulta

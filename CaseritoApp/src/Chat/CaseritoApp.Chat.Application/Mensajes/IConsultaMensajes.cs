@@ -8,6 +8,7 @@ public interface IConsultaMensajes
         Guid conversacionId,
         Guid usuarioId,
         long? antesDe,
+        long? despuesDe,
         int limite,
         CancellationToken ct);
 }

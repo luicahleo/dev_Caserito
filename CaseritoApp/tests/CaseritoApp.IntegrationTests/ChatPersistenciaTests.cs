@@ -96,13 +96,17 @@ public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFi
         var consulta = new ConsultaMensajesEfCore(db);
 
         var pagina = await consulta.ListarAsync(
-            conversacion.Id, conversacion.VendedorId, 4, 2, CancellationToken.None);
+            conversacion.Id, conversacion.VendedorId, 4, null, 2, CancellationToken.None);
         var tercero = await consulta.ListarAsync(
-            conversacion.Id, Guid.NewGuid(), null, 2, CancellationToken.None);
+            conversacion.Id, Guid.NewGuid(), null, null, 2, CancellationToken.None);
+        var posteriores = await consulta.ListarAsync(
+            conversacion.Id, conversacion.CompradorId, null, 1, 2, CancellationToken.None);
 
         Assert.Equal([2L, 3L], pagina!.Items.Select(m => m.Secuencia));
         Assert.Equal(2, pagina.Siguiente);
         Assert.Null(tercero);
+        Assert.Equal([2L, 3L], posteriores!.Items.Select(m => m.Secuencia));
+        Assert.Null(posteriores.Siguiente);
     }
 
     [Fact]

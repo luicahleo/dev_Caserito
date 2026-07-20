@@ -97,6 +97,18 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
         var pagina2 = await paginaAnterior.Content.ReadFromJsonAsync<PaginaChatResponse<MensajeDto>>();
         Assert.Equal([mensajeComprador.Id], pagina2!.Items.Select(m => m.Id));
 
+        var recuperacion = await EnviarAsync(cliente, HttpMethod.Get,
+            $"/api/chat/conversaciones/{conversacion.Id}/mensajes?despuesDeSecuencia={mensajeComprador.Secuencia}",
+            comprador.Token);
+        var posteriores = await recuperacion.Content.ReadFromJsonAsync<PaginaChatResponse<MensajeDto>>();
+        Assert.Equal([mensajeVendedor.Id], posteriores!.Items.Select(m => m.Id));
+        Assert.Null(posteriores.SiguienteCursor);
+
+        var fronterasIncompatibles = await EnviarAsync(cliente, HttpMethod.Get,
+            $"/api/chat/conversaciones/{conversacion.Id}/mensajes?cursor={pagina1.SiguienteCursor}&despuesDeSecuencia=0",
+            comprador.Token);
+        Assert.Equal(HttpStatusCode.BadRequest, fronterasIncompatibles.StatusCode);
+
         var cursorInvalido = await EnviarAsync(cliente, HttpMethod.Get,
             $"/api/chat/conversaciones/{conversacion.Id}/mensajes?cursor=invalido", comprador.Token);
         Assert.Equal(HttpStatusCode.BadRequest, cursorInvalido.StatusCode);

@@ -33,14 +33,22 @@ public sealed class ConsultasChatHandlerTests
 
         public long? AntesDe { get; private set; }
 
+        public long? DespuesDe { get; private set; }
+
         public int Limite { get; private set; }
 
         public Task<PaginaCursor<MensajeDto, long>?> ListarAsync(
-            Guid conversacionId, Guid usuarioId, long? antesDe, int limite, CancellationToken ct)
+            Guid conversacionId,
+            Guid usuarioId,
+            long? antesDe,
+            long? despuesDe,
+            int limite,
+            CancellationToken ct)
         {
             ConversacionId = conversacionId;
             UsuarioId = usuarioId;
             AntesDe = antesDe;
+            DespuesDe = despuesDe;
             Limite = limite;
             return Task.FromResult(pagina);
         }
@@ -72,13 +80,31 @@ public sealed class ConsultasChatHandlerTests
         var usuarioId = Guid.NewGuid();
 
         var resultado = await handler.Handle(
-            new ObtenerMensajesQuery(conversacionId, usuarioId, 100, 40), CancellationToken.None);
+            new ObtenerMensajesQuery(conversacionId, usuarioId, 100, null, 40), CancellationToken.None);
 
         Assert.True(resultado.EsExito);
         Assert.Same(pagina, resultado.Valor);
         Assert.Equal(conversacionId, consulta.ConversacionId);
         Assert.Equal(usuarioId, consulta.UsuarioId);
         Assert.Equal(100, consulta.AntesDe);
+        Assert.Null(consulta.DespuesDe);
+        Assert.Equal(40, consulta.Limite);
+    }
+
+    [Fact]
+    public async Task ObtenerMensajes_delega_frontera_hacia_delante()
+    {
+        var pagina = new PaginaCursor<MensajeDto, long>([], null);
+        var consulta = new MensajesFake(pagina);
+        var handler = new ObtenerMensajesQueryHandler(consulta);
+
+        var resultado = await handler.Handle(
+            new ObtenerMensajesQuery(Guid.NewGuid(), Guid.NewGuid(), null, 25, 40),
+            CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Null(consulta.AntesDe);
+        Assert.Equal(25, consulta.DespuesDe);
         Assert.Equal(40, consulta.Limite);
     }
 
@@ -88,7 +114,7 @@ public sealed class ConsultasChatHandlerTests
         var handler = new ObtenerMensajesQueryHandler(new MensajesFake(null));
 
         var resultado = await handler.Handle(
-            new ObtenerMensajesQuery(Guid.NewGuid(), Guid.NewGuid(), null, 50), CancellationToken.None);
+            new ObtenerMensajesQuery(Guid.NewGuid(), Guid.NewGuid(), null, null, 50), CancellationToken.None);
 
         Assert.False(resultado.EsExito);
         Assert.Equal("chat_conversacion_no_encontrada", resultado.Error.Code);
@@ -100,11 +126,22 @@ public sealed class ConsultasChatHandlerTests
         var conversaciones = new ListarConversacionesQueryValidator().Validate(
             new ListarConversacionesQuery(Guid.Empty, null, 51));
         var mensajes = new ObtenerMensajesQueryValidator().Validate(
-            new ObtenerMensajesQuery(Guid.Empty, Guid.Empty, 0, 101));
+            new ObtenerMensajesQuery(Guid.Empty, Guid.Empty, 0, -1, 101));
 
         Assert.False(conversaciones.IsValid);
         Assert.False(mensajes.IsValid);
         Assert.Contains(conversaciones.Errors, e => e.PropertyName == nameof(ListarConversacionesQuery.Limite));
         Assert.Contains(mensajes.Errors, e => e.PropertyName == nameof(ObtenerMensajesQuery.AntesDeSecuencia));
+        Assert.Contains(mensajes.Errors, e => e.PropertyName == nameof(ObtenerMensajesQuery.DespuesDeSecuencia));
+    }
+
+    [Fact]
+    public void ObtenerMensajes_rechaza_dos_fronteras_simultaneas()
+    {
+        var resultado = new ObtenerMensajesQueryValidator().Validate(
+            new ObtenerMensajesQuery(Guid.NewGuid(), Guid.NewGuid(), 10, 20, 50));
+
+        Assert.False(resultado.IsValid);
+        Assert.Contains(resultado.Errors, e => e.ErrorMessage == "Los parámetros de paginación son incompatibles.");
     }
 }

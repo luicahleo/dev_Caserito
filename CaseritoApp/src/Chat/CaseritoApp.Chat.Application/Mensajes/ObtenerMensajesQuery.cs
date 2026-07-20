@@ -10,6 +10,7 @@ public sealed record ObtenerMensajesQuery(
     Guid ConversacionId,
     Guid UsuarioId,
     long? AntesDeSecuencia,
+    long? DespuesDeSecuencia,
     int Limite = 50) : IQuery<Result<PaginaCursor<MensajeDto, long>>>;
 
 public sealed class ObtenerMensajesQueryHandler(IConsultaMensajes consulta)
@@ -23,6 +24,7 @@ public sealed class ObtenerMensajesQueryHandler(IConsultaMensajes consulta)
             request.ConversacionId,
             request.UsuarioId,
             request.AntesDeSecuencia,
+            request.DespuesDeSecuencia,
             request.Limite,
             cancellationToken);
 
@@ -45,6 +47,12 @@ public sealed class ObtenerMensajesQueryValidator : AbstractValidator<ObtenerMen
         RuleFor(q => q.AntesDeSecuencia)
             .GreaterThan(0).When(q => q.AntesDeSecuencia.HasValue)
             .WithMessage("El cursor no es válido.");
+        RuleFor(q => q.DespuesDeSecuencia)
+            .GreaterThanOrEqualTo(0).When(q => q.DespuesDeSecuencia.HasValue)
+            .WithMessage("La secuencia de recuperación no es válida.");
+        RuleFor(q => q)
+            .Must(q => !(q.AntesDeSecuencia.HasValue && q.DespuesDeSecuencia.HasValue))
+            .WithMessage("Los parámetros de paginación son incompatibles.");
         RuleFor(q => q.Limite)
             .InclusiveBetween(1, 100).WithMessage("El límite debe estar entre 1 y 100.");
     }
