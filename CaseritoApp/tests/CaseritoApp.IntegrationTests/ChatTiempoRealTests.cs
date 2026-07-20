@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CaseritoApp.IntegrationTests;
@@ -83,6 +84,41 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
             conexion.InvokeAsync("SuscribirConversacion", ids[20]));
 
         Assert.DoesNotContain(ids[20].ToString(), error.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Mensaje_confirmado_se_publica_al_grupo_suscrito()
+    {
+        var token = await RegistrarYObtenerTokenAsync();
+        var compradorId = UsuarioId(token);
+        var conversacionId = await CrearConversacionAsync(compradorId);
+        await using var conexion = CrearConexion(token);
+        var recibido = new TaskCompletionSource<MensajeTiempoRealDto>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        conexion.On<MensajeTiempoRealDto>("MensajeCreado", mensaje => recibido.TrySetResult(mensaje));
+        await conexion.StartAsync();
+        await conexion.InvokeAsync("SuscribirConversacion", conversacionId);
+        Guid mensajeId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+            var conversacion = await db.Conversaciones.FindAsync(conversacionId);
+            var mensaje = conversacion!.CrearMensaje(
+                compradorId, Guid.NewGuid(), 1, "Contenido", DateTimeOffset.UtcNow).Valor;
+            mensajeId = mensaje.Id;
+            db.Mensajes.Add(mensaje);
+            await db.SaveChangesAsync();
+        }
+
+        var despachador = new DespachadorEntregasTiempoReal(
+            factory.Services.GetRequiredService<IServiceScopeFactory>(),
+            factory.Services.GetRequiredService<IOptions<OpcionesTiempoRealChat>>());
+        await despachador.ProcesarLoteAsync(CancellationToken.None);
+        var mensajeRecibido = await recibido.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.Equal(mensajeId, mensajeRecibido.Id);
+        Assert.Equal(conversacionId, mensajeRecibido.ConversacionId);
+        Assert.Equal("Contenido", mensajeRecibido.Texto);
     }
 
     [Fact]

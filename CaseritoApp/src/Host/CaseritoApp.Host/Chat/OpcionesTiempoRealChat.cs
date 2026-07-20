@@ -13,4 +13,10 @@ public sealed class OpcionesTiempoRealChat
     public int CapacidadBuffer { get; init; } = 10;
 
     public int SegundosHandshake { get; init; } = 10;
+
+    public int TamanoLote { get; init; } = 20;
+
+    public int SegundosLease { get; init; } = 30;
+
+    public int MilisegundosSondeo { get; init; } = 500;
 }

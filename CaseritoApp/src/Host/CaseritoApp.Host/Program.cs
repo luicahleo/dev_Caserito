@@ -51,6 +51,11 @@ builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Validate(o => o.MaximoInvocacionesPorMinuto is > 0 and <= 600)
     .ValidateOnStart();
 builder.Services.AddSingleton<EstadoSuscripcionesChat>();
+builder.Services.AddScoped<IPublicadorMensajesTiempoReal, PublicadorSignalRMensajes>();
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<DespachadorEntregasTiempoReal>();
+}
 builder.Services.AddAuthorizationBuilder().AddPolicy(ChatHub.Politica, politica =>
     politica.RequireAuthenticatedUser().RequireAssertion(contexto =>
         Guid.TryParse(
