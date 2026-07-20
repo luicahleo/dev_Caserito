@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Domain\CaseritoApp.BuildingBlocks.Domain.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Application\CaseritoApp.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Infrastructure\CaseritoApp.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CaseritoApp.BuildingBlocks.Contracts\CaseritoApp.BuildingBlocks.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Domain\CaseritoApp.Identity.Domain.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Application\CaseritoApp.Identity.Application.csproj" />
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
@@ -33,6 +34,7 @@
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Domain\CaseritoApp.Chat.Domain.csproj" />
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Application\CaseritoApp.Chat.Application.csproj" />
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Infrastructure\CaseritoApp.Chat.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Host\CaseritoApp.Host\CaseritoApp.Host.csproj" />
     <ProjectReference Include="..\..\src\Orders\CaseritoApp.Orders.Domain\CaseritoApp.Orders.Domain.csproj" />
     <ProjectReference Include="..\..\src\Orders\CaseritoApp.Orders.Application\CaseritoApp.Orders.Application.csproj" />
     <ProjectReference Include="..\..\src\Orders\CaseritoApp.Orders.Infrastructure\CaseritoApp.Orders.Infrastructure.csproj" />

@@ -27,6 +27,8 @@
     <ProjectReference Include="..\..\src\Identity\CaseritoApp.Identity.Infrastructure\CaseritoApp.Identity.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Catalog\CaseritoApp.Catalog.Domain\CaseritoApp.Catalog.Domain.csproj" />
     <ProjectReference Include="..\..\src\Catalog\CaseritoApp.Catalog.Application\CaseritoApp.Catalog.Application.csproj" />
+    <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Domain\CaseritoApp.Chat.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Application\CaseritoApp.Chat.Application.csproj" />
   </ItemGroup>
 
 </Project>

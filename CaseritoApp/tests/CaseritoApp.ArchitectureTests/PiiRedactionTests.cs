@@ -12,6 +12,12 @@ public sealed class PiiRedactionTests
     [InlineData("token")]
     [InlineData("qr")]
     [InlineData("pagoReferencia")]
+    [InlineData("texto")]
+    [InlineData("mensaje")]
+    [InlineData("participante")]
+    [InlineData("remitente")]
+    [InlineData("destinatario")]
+    [InlineData("claveIdempotencia")]
     public void Redactar_enmascara_campos_prohibidos(string campo)
     {
         Assert.Equal("***", PiiRedaction.Redactar(campo, "valor-sensible"));

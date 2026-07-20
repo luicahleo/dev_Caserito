@@ -13,6 +13,11 @@ public sealed class ObtenerAvisoPublicoQueryHandlerTests
 
         public Task<AvisoPublicoDto?> ObtenerPublicoAsync(Guid id, CancellationToken ct) =>
             Task.FromResult(dto);
+
+        public Task<ReferenciaAvisoContactableDto?> ObtenerReferenciaContactableAsync(
+            Guid id,
+            CancellationToken ct) =>
+            Task.FromResult<ReferenciaAvisoContactableDto?>(null);
     }
 
     [Fact]

@@ -1,5 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
 using CaseritoApp.Catalog.Infrastructure;
+using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Chat.Infrastructure;
+using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Identity.Application.Perfil;
@@ -17,7 +23,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(CaseritoApp.BuildingBlocks.Application.Abstractions.IUnitOfWork).Assembly,
         typeof(ObtenerPerfilQuery).Assembly,
-        typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly));
+        typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly,
+        typeof(IniciarConversacionCommand).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -27,6 +34,7 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBeh
 // ActualizarPerfilCommandValidator) y Catalog.Application (p. ej. CrearAvisoCommandValidator).
 builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(IniciarConversacionCommand).Assembly);
 
 // El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
@@ -35,6 +43,68 @@ var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnectio
 builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
 builder.Services.AgregarCatalog(builder.Configuration);
+builder.Services.AgregarChat(builder.Configuration);
+builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
+builder.Services.AddOptions<OpcionesTiempoRealChat>()
+    .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
+    .Validate(o => o.MaximoConversaciones is > 0 and <= 100)
+    .Validate(o => o.MaximoInvocacionesPorMinuto is > 0 and <= 600)
+    .ValidateOnStart();
+builder.Services.AddSingleton<EstadoSuscripcionesChat>();
+builder.Services.AddScoped<IPublicadorMensajesTiempoReal, PublicadorSignalRMensajes>();
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddHostedService<DespachadorEntregasTiempoReal>();
+}
+builder.Services.AddAuthorizationBuilder().AddPolicy(ChatHub.Politica, politica =>
+    politica.RequireAuthenticatedUser().RequireAssertion(contexto =>
+        Guid.TryParse(
+            contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub),
+            out var usuarioId)
+        && usuarioId != Guid.Empty));
+builder.Services.AddSignalR(opciones =>
+{
+    var tiempoReal = builder.Configuration
+        .GetSection(OpcionesTiempoRealChat.Seccion)
+        .Get<OpcionesTiempoRealChat>() ?? new OpcionesTiempoRealChat();
+    opciones.EnableDetailedErrors = false;
+    opciones.MaximumReceiveMessageSize = tiempoReal.TamanoMaximoMensajeBytes;
+    opciones.StreamBufferCapacity = tiempoReal.CapacidadBuffer;
+    opciones.MaximumParallelInvocationsPerClient = 1;
+    opciones.HandshakeTimeout = TimeSpan.FromSeconds(tiempoReal.SegundosHandshake);
+});
+builder.Services.AddRateLimiter(opciones =>
+{
+    opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    opciones.AddPolicy("chat-iniciar", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("chat-enviar", contexto => RateLimitPartition.GetTokenBucketLimiter(
+        Particion(contexto),
+        _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 25,
+            TokensPerPeriod = 20,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("chat-consultas", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+});
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
 var app = builder.Build();
@@ -75,9 +145,16 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
     }
 
     await app.Services.SembrarCatalogoAsync();
+
+    using (var scopeChat = app.Services.CreateScope())
+    {
+        var dbChat = scopeChat.ServiceProvider.GetRequiredService<ChatDbContext>();
+        await dbChat.Database.MigrateAsync();
+    }
 }
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapAuthEndpoints();
@@ -89,8 +166,23 @@ app.MapCatalogoEndpoints();
 app.MapPublicoEndpoints();
 app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
+app.MapChatEndpoints();
+app.MapHub<ChatHub>("/hubs/chat", opciones =>
+{
+    var tiempoReal = app.Configuration
+        .GetSection(OpcionesTiempoRealChat.Seccion)
+        .Get<OpcionesTiempoRealChat>() ?? new OpcionesTiempoRealChat();
+    opciones.CloseOnAuthenticationExpiration = true;
+    opciones.ApplicationMaxBufferSize = tiempoReal.BufferAplicacionBytes;
+    opciones.TransportMaxBufferSize = tiempoReal.BufferTransporteBytes;
+}).RequireAuthorization(ChatHub.Politica);
 
 app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
+
+static string Particion(HttpContext contexto) =>
+    contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+    ?? contexto.Connection.RemoteIpAddress?.ToString()
+    ?? "anonimo";
 
 await app.RunAsync();
 
