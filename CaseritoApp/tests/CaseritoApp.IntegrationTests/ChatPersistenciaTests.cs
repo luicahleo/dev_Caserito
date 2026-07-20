@@ -2,6 +2,7 @@ using CaseritoApp.Chat.Domain.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Chat.Infrastructure.Conversaciones;
 using CaseritoApp.Chat.Infrastructure.Mensajes;
+using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,70 @@ namespace CaseritoApp.IntegrationTests;
 public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
     private static readonly DateTimeOffset _ahora = new(2026, 7, 19, 12, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Modelo_outbox_no_duplica_contenido_sensible()
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var entrega = db.Model.FindEntityType(typeof(EntregaTiempoReal))!;
+
+        Assert.Equal("chat", entrega.GetSchema());
+        Assert.Equal("EntregasTiempoReal", entrega.GetTableName());
+        Assert.Contains(entrega.GetIndexes(), i =>
+            i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual([nameof(EntregaTiempoReal.MensajeId)]));
+        Assert.DoesNotContain(entrega.GetProperties(), p => p.Name is "Texto" or "RemitenteId"
+            or "DestinatarioId" or "ClaveIdempotencia" or "Token");
+    }
+
+    [Fact]
+    public async Task Guardar_mensaje_crea_una_sola_entrega_en_la_misma_transaccion()
+    {
+        Guid mensajeId;
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+            var conversacion = NuevaConversacion();
+            var mensaje = conversacion.CrearMensaje(
+                conversacion.CompradorId, Guid.NewGuid(), 1, "Contenido", _ahora.AddMinutes(1)).Valor;
+            mensajeId = mensaje.Id;
+            db.Conversaciones.Add(conversacion);
+            db.Mensajes.Add(mensaje);
+
+            await db.SaveChangesAsync();
+            await db.SaveChangesAsync();
+        }
+
+        using var verificacion = factory.Services.CreateScope();
+        var dbVerificacion = verificacion.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var entrega = await dbVerificacion.EntregasTiempoReal.SingleAsync(e => e.MensajeId == mensajeId);
+        Assert.Equal(1, entrega.Secuencia);
+        Assert.Null(entrega.ProcesadaEn);
+    }
+
+    [Fact]
+    public async Task Rollback_no_deja_mensaje_ni_entrega()
+    {
+        var mensajeId = Guid.NewGuid();
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+            await using var transaccion = await db.Database.BeginTransactionAsync();
+            var conversacion = NuevaConversacion();
+            var mensaje = conversacion.CrearMensaje(
+                conversacion.CompradorId, Guid.NewGuid(), 1, "Contenido", _ahora.AddMinutes(1)).Valor;
+            mensajeId = mensaje.Id;
+            db.Conversaciones.Add(conversacion);
+            db.Mensajes.Add(mensaje);
+            await db.SaveChangesAsync();
+            await transaccion.RollbackAsync();
+        }
+
+        using var verificacion = factory.Services.CreateScope();
+        var dbVerificacion = verificacion.ServiceProvider.GetRequiredService<ChatDbContext>();
+        Assert.False(await dbVerificacion.Mensajes.AnyAsync(m => m.Id == mensajeId));
+        Assert.False(await dbVerificacion.EntregasTiempoReal.AnyAsync(e => e.MensajeId == mensajeId));
+    }
 
     [Fact]
     public void Modelo_configura_restricciones_secuencia_y_fk_solo_interna()
