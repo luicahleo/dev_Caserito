@@ -22,9 +22,91 @@ public sealed class ConversacionTests
         Assert.Equal(vendedorId, conversacion.VendedorId);
         Assert.Equal(_ahora, conversacion.CreadaEn);
         Assert.Equal(_ahora, conversacion.UltimaActividadEn);
+        Assert.Equal(EstadoConversacion.Activa, conversacion.Estado);
         Assert.True(conversacion.EsParticipante(compradorId));
         Assert.True(conversacion.EsParticipante(vendedorId));
         Assert.False(conversacion.EsParticipante(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void Participante_cierra_y_reabre_de_forma_idempotente()
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+
+        var cierre = conversacion.CerrarPorParticipante(compradorId, _ahora.AddMinutes(1));
+        var repeticion = conversacion.CerrarPorParticipante(compradorId, _ahora.AddMinutes(2));
+        var reapertura = conversacion.ReabrirPorParticipante(compradorId, _ahora.AddMinutes(3));
+        var segundaReapertura = conversacion.ReabrirPorParticipante(compradorId, _ahora.AddMinutes(4));
+
+        Assert.True(cierre.EsExito);
+        Assert.Equal(compradorId, conversacion.UltimoActorEstadoId);
+        Assert.True(repeticion.EsExito);
+        Assert.True(reapertura.EsExito);
+        Assert.True(segundaReapertura.EsExito);
+        Assert.Equal(EstadoConversacion.Activa, conversacion.Estado);
+        Assert.Null(conversacion.CerradaEn);
+        Assert.Equal(2, conversacion.EventosDeDominio.OfType<ConversacionEstadoCambiado>().Count());
+    }
+
+    [Fact]
+    public void Tercero_no_puede_cerrar_ni_reabrir()
+    {
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), _ahora).Valor;
+
+        var cierre = conversacion.CerrarPorParticipante(Guid.NewGuid(), _ahora.AddMinutes(1));
+        var reapertura = conversacion.ReabrirPorParticipante(Guid.NewGuid(), _ahora.AddMinutes(2));
+
+        Assert.Equal(ErroresConversacion.NoEncontrada, cierre.Error.Code);
+        Assert.Equal(ErroresConversacion.NoEncontrada, reapertura.Error.Code);
+        Assert.Equal(EstadoConversacion.Activa, conversacion.Estado);
+    }
+
+    [Fact]
+    public void Solo_moderacion_revierte_cierre_de_moderacion()
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+
+        var moderadorId = Guid.NewGuid();
+        Assert.True(conversacion.CerrarPorModeracion(moderadorId, _ahora.AddMinutes(1)).EsExito);
+
+        var participante = conversacion.ReabrirPorParticipante(compradorId, _ahora.AddMinutes(2));
+        var moderacion = conversacion.ReabrirPorModeracion(moderadorId, _ahora.AddMinutes(3));
+        var repeticion = conversacion.ReabrirPorModeracion(moderadorId, _ahora.AddMinutes(4));
+
+        Assert.False(participante.EsExito);
+        Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, participante.Error.Code);
+        Assert.True(moderacion.EsExito);
+        Assert.True(repeticion.EsExito);
+        Assert.Equal(EstadoConversacion.Activa, conversacion.Estado);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CrearMensaje_rechaza_conversacion_cerrada_con_error_unico(bool porModeracion)
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+        if (porModeracion)
+        {
+            conversacion.CerrarPorModeracion(Guid.NewGuid(), _ahora.AddMinutes(1));
+        }
+        else
+        {
+            conversacion.CerrarPorParticipante(compradorId, _ahora.AddMinutes(1));
+        }
+
+        var resultado = conversacion.CrearMensaje(
+            compradorId, Guid.NewGuid(), 1, "No debe enviarse", _ahora.AddMinutes(2));
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, resultado.Error.Code);
     }
 
     [Theory]
