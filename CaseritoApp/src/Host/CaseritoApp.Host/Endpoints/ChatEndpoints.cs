@@ -93,6 +93,24 @@ public static class ChatEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .Produces(StatusCodes.Status401Unauthorized);
 
+        grupo.MapDelete("/conversaciones/{id:guid}/cierre", ReabrirAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapPut("/conversaciones/{id:guid}/bloqueo", BloquearAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapDelete("/conversaciones/{id:guid}/bloqueo", DesbloquearAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
+
         return app;
     }
 
@@ -347,6 +365,75 @@ public static class ChatEndpoints
 
         var ejecucion = await EjecutarConReintentoAsync(
             () => sender.Send(new CerrarConversacionCommand(id, usuarioId), ct));
+        if (ejecucion.Conflicto)
+        {
+            return ConflictoPersistencia();
+        }
+
+        return ejecucion.Valor!.EsExito
+            ? Results.NoContent()
+            : DesdeError(ejecucion.Valor.Error);
+    }
+
+    private static async Task<IResult> ReabrirAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var ejecucion = await EjecutarConReintentoAsync(
+            () => sender.Send(new ReabrirConversacionCommand(id, usuarioId), ct));
+        if (ejecucion.Conflicto)
+        {
+            return ConflictoPersistencia();
+        }
+
+        return ejecucion.Valor!.EsExito
+            ? Results.NoContent()
+            : DesdeError(ejecucion.Valor.Error);
+    }
+
+    private static async Task<IResult> BloquearAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var ejecucion = await EjecutarConReintentoAsync(
+            () => sender.Send(new BloquearUsuarioCommand(id, usuarioId), ct));
+        if (ejecucion.Conflicto)
+        {
+            return ConflictoPersistencia();
+        }
+
+        return ejecucion.Valor!.EsExito
+            ? Results.NoContent()
+            : DesdeError(ejecucion.Valor.Error);
+    }
+
+    private static async Task<IResult> DesbloquearAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var ejecucion = await EjecutarConReintentoAsync(
+            () => sender.Send(new DesbloquearUsuarioCommand(id, usuarioId), ct));
         if (ejecucion.Conflicto)
         {
             return ConflictoPersistencia();

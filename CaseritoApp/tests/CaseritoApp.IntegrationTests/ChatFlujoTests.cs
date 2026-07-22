@@ -276,6 +276,63 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
         Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
     }
 
+    [Fact]
+    public async Task Reabrir_conversacion_participante_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reapertura-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reapertura-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var cierre = await EnviarAsync(cliente, HttpMethod.Put,
+            $"/api/chat/conversaciones/{conversacion.Id}/cierre", comprador.Token);
+        Assert.Equal(HttpStatusCode.NoContent, cierre.StatusCode);
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Delete,
+            $"/api/chat/conversaciones/{conversacion.Id}/cierre", comprador.Token);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Bloquear_contraparte_derivada_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-bloqueo-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-bloqueo-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Put,
+            $"/api/chat/conversaciones/{conversacion.Id}/bloqueo", comprador.Token);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Desbloquear_contraparte_derivada_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-desbloqueo-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-desbloqueo-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var bloqueo = await EnviarAsync(cliente, HttpMethod.Put,
+            $"/api/chat/conversaciones/{conversacion.Id}/bloqueo", comprador.Token);
+        Assert.Equal(HttpStatusCode.NoContent, bloqueo.StatusCode);
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Delete,
+            $"/api/chat/conversaciones/{conversacion.Id}/bloqueo", comprador.Token);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+    }
+
     private async Task<UsuarioPrueba> RegistrarAsync(HttpClient cliente, string prefijo)
     {
         var email = Email(prefijo);
