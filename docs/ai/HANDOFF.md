@@ -3,16 +3,15 @@
 ## Objetivo
 
 Completar Fase 3, sub-bloque 3C: seguridad, reportes, bloqueo, cierre y
-moderación de conversaciones, siguiendo TDD y sin incorporar 3D ni Fase 4.
+moderación de conversaciones, mediante TDD y sin incorporar 3D ni Fase 4.
 
-## Rama y estado verificado
+## Estado verificado
 
 - Rama: `feat/chat-3c-seguridad-moderacion`.
-- `origin/feat/chat-3c-seguridad-moderacion` permanece en `786bc10`.
-- La rama local está dos commits por delante del remoto; no se hizo push,
-  merge ni rebase.
-- Al cerrar las tareas 2 y 3 no había cambios de producto pendientes. Este
-  handoff es el único cambio posterior a esos commits.
+- Último commit: `ae2a566 feat(chat): expone seguridad de conversaciones`.
+- La rama local está dos commits por delante de
+  `origin/feat/chat-3c-seguridad-moderacion`; no se hizo push, merge ni rebase.
+- El único cambio pendiente es este handoff actualizado.
 
 ## Spec y plan activos
 
@@ -21,64 +20,64 @@ moderación de conversaciones, siguiendo TDD y sin incorporar 3D ni Fase 4.
 
 ## Completado
 
-- Tarea 1: estados y transiciones de conversación (`ae51597`).
-- Tarea 2: bloqueo dirigido global (`0872897`):
-  - `BloqueoUsuario` dirigido y válido solo entre usuarios distintos;
-  - comandos idempotentes que derivan la contraparte desde la conversación;
-  - solo el bloqueador retira su bloqueo;
-  - iniciar y enviar consultan bloqueos en cualquier dirección;
-  - falta de pertenencia conserva el `404` genérico y el bloqueo usa
-    `chat_conversacion_no_disponible_para_envio` sin revelar dirección.
-- Tarea 3: reportes y auditoría de moderación en dominio (`034d258`):
-  - tipos de objetivo, siete categorías y cuatro estados;
-  - objetivo discriminado, detalle normalizado de hasta 1000 caracteres;
-  - toma exclusiva, liberación y resolución solo por moderador asignado;
-  - estados finales terminales;
-  - siete acciones y registro append-only sin contenido ni participantes.
+- Tareas 1 a 3: `ae51597`, `0872897` y `034d258`.
+- Tarea 4: `4548025 feat(chat): persiste seguridad y moderacion`.
+- Tarea 5: `ae2a566 feat(chat): expone seguridad de conversaciones`:
+  - cierre y reapertura por participantes con bloqueo global;
+  - ausencia y no pertenencia conservan el mismo error genérico;
+  - DTO y resumen exponen estado, origen de cierre y `PuedeEnviar`, sin
+    dirección del bloqueo;
+  - listado calcula elegibilidad con estado y bloqueo en cualquier dirección;
+  - corregido el inicio de una conversación existente para no omitir el
+    bloqueo global.
 
 ## Verificaciones ejecutadas
 
-- Tarea 2: filtro previsto, 17/17 pruebas verdes.
-- Tarea 3: filtro previsto, 7/7 pruebas verdes.
-- `dotnet format CaseritoApp.sln --no-restore` aplicado; ambos commits pasaron
-  el hook `dotnet-format-staged`.
-- `git diff --check` verde antes de cada commit.
-- Revisión con `rg`: no se añadieron logs, excepciones con argumentos, payloads,
-  tokens, texto ni campos de participantes en auditoría.
-- No se ejecutaron suites de integración ni se comprobó Docker porque las
-  tareas cerradas fueron de dominio/Application.
+- Matriz unitaria de seguridad, consultas, lectura, inicio y envío: 28/28.
+- `ChatPersistenciaTests`: 15/15 contra SQL Server Testcontainers.
+- `dotnet format CaseritoApp.sln --no-restore --verify-no-changes`: verde.
+- `git diff --check`: verde.
+- Revisión anti-PII: no se añadieron logs, payloads ni exposición de la
+  dirección del bloqueo.
 
 ## Tarea exacta siguiente
 
-Tarea 4 del plan: `Persistencia SQL Server y migración`.
+Tarea 6 del plan: `Creación y workflow de reportes en Application`.
 
 ### Próximo test rojo exacto
 
-En `CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatPersistenciaTests.cs`,
-añadir primero un único test `Modelo_configura_bloqueos_en_schema_chat` que:
+Crear `tests/CaseritoApp.UnitTests/Chat/ModeracionChatHandlerTests.cs` con un
+único test `Reportar_conversacion_deriva_objetivo_y_agrega_reporte` que:
 
-1. resuelva `ChatDbContext` desde la fábrica;
-2. busque `BloqueoUsuario` en `db.Model`;
-3. afirme tabla `BloqueosUsuario`, schema `chat`;
-4. afirme índice único ordenado `(BloqueadorId, BloqueadoId)` e índices de
-   consulta en cada dirección.
+1. cree una conversación y use al comprador como reportante;
+2. construya `ReportarChatCommand` para objetivo `Conversacion`, categoría
+   `Acoso` y detalle opcional;
+3. ejecute el handler con dobles mínimos de conversación, mensajes y reportes;
+4. afirme éxito, un único reporte agregado, misma conversación/reportante,
+   objetivo `Conversacion` y `MensajeId` nulo.
 
 Ejecutar:
 
 ```powershell
-dotnet test tests/CaseritoApp.IntegrationTests --filter FullyQualifiedName~ChatPersistenciaTests.Modelo_configura_bloqueos_en_schema_chat
+dotnet test tests/CaseritoApp.UnitTests --filter FullyQualifiedName~ModeracionChatHandlerTests.Reportar_conversacion_deriva_objetivo_y_agrega_reporte
 ```
 
-Rojo causal esperado: `BloqueoUsuario` no está incluido en el modelo de EF.
-Implementar solo el `DbSet` y `ConfiguracionSeguridadChat` mínimos hasta verde;
-después continuar, un rojo por vez, con estado/default/concurrencia de
-`Conversacion`, `ReporteChat`, unicidad filtrada de abiertos y
-`RegistroModeracionChat`.
+Rojo causal esperado: puertos, comando y handler de moderación todavía no
+existen. Implementar solamente esas piezas mínimas hasta verde y continuar un
+rojo por vez con mensaje perteneciente, contraparte derivada, duplicado, toma,
+liberación, resolución asignada, cierre atómico y evidencia condicionada a
+auditoría.
 
-## Restricciones que siguen vigentes
+Commit previsto al cerrar la tarea:
 
-- Anti-PII: nunca registrar texto, payloads, tokens, IDs sensibles,
-  participantes, grupos, claves de idempotencia ni argumentos.
+```text
+feat(chat): implementa workflow de reportes
+```
+
+## Restricciones vigentes
+
+- Nunca registrar texto, payloads, tokens, IDs sensibles, participantes,
+  grupos, claves de idempotencia ni argumentos.
 - Mantener errores genéricos e indistinguibilidad para participantes.
 - No añadir 3D, Fase 4 ni capacidades excluidas por el spec.
 - No hacer push, merge ni rebase sin autorización explícita.
