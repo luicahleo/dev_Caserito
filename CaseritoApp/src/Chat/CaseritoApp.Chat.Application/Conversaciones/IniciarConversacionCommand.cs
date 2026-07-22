@@ -1,5 +1,6 @@
 using CaseritoApp.BuildingBlocks.Application.Messaging;
 using CaseritoApp.BuildingBlocks.Domain;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
 using FluentValidation;
 
@@ -12,7 +13,8 @@ public sealed record IniciarConversacionCommand(
 public sealed class IniciarConversacionCommandHandler(
     IRepositorioConversaciones repositorio,
     IConsultaAvisoContactable consultaAviso,
-    TimeProvider reloj)
+    TimeProvider reloj,
+    IRepositorioBloqueosUsuario bloqueos)
     : ICommandHandler<IniciarConversacionCommand, IniciarConversacionResultadoDto>
 {
     public async Task<Result<IniciarConversacionResultadoDto>> Handle(
@@ -25,6 +27,16 @@ public sealed class IniciarConversacionCommandHandler(
             cancellationToken);
         if (existente is not null)
         {
+            if (await bloqueos.ExisteEntreAsync(
+                existente.CompradorId,
+                existente.VendedorId,
+                cancellationToken))
+            {
+                return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
+                    ErroresConversacion.NoDisponibleParaEnvio,
+                    "La conversaciÃ³n no estÃ¡ disponible para enviar mensajes."));
+            }
+
             return Result.Exito(new IniciarConversacionResultadoDto(
                 ConversacionDto.Desde(existente),
                 false));
@@ -36,6 +48,16 @@ public sealed class IniciarConversacionCommandHandler(
             return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
                 ErroresConversacion.AvisoNoContactable,
                 "El aviso no está disponible."));
+        }
+
+        if (await bloqueos.ExisteEntreAsync(
+            request.CompradorId,
+            aviso.VendedorId,
+            cancellationToken))
+        {
+            return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
+                ErroresConversacion.NoDisponibleParaEnvio,
+                "La conversación no está disponible para enviar mensajes."));
         }
 
         var resultadoCreacion = Conversacion.Crear(

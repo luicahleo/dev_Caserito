@@ -1,5 +1,9 @@
 using CaseritoApp.Chat.Domain.Conversaciones;
+using CaseritoApp.Chat.Domain.Moderacion;
+using CaseritoApp.Chat.Domain.Seguridad;
 using CaseritoApp.Chat.Infrastructure.Conversaciones;
+using CaseritoApp.Chat.Infrastructure.Moderacion;
+using CaseritoApp.Chat.Infrastructure.Seguridad;
 using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +18,12 @@ public sealed class ChatDbContext(DbContextOptions<ChatDbContext> options) : DbC
     public DbSet<Mensaje> Mensajes => Set<Mensaje>();
 
     public DbSet<EntregaTiempoReal> EntregasTiempoReal => Set<EntregaTiempoReal>();
+
+    public DbSet<BloqueoUsuario> BloqueosUsuario => Set<BloqueoUsuario>();
+
+    public DbSet<ReporteChat> Reportes => Set<ReporteChat>();
+
+    public DbSet<RegistroModeracionChat> RegistrosModeracion => Set<RegistroModeracionChat>();
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
@@ -34,6 +44,8 @@ public sealed class ChatDbContext(DbContextOptions<ChatDbContext> options) : DbC
         modelBuilder.HasDefaultSchema(Schema);
         base.OnModelCreating(modelBuilder);
         ConfiguracionChat.Configurar(modelBuilder);
+        ConfiguracionSeguridadChat.Configurar(modelBuilder);
+        ConfiguracionModeracionChat.Configurar(modelBuilder);
         ConfiguracionEntregaTiempoReal.Configurar(modelBuilder);
     }
 

@@ -1,4 +1,5 @@
 using CaseritoApp.Chat.Application.Paginacion;
+using CaseritoApp.Chat.Domain.Conversaciones;
 
 namespace CaseritoApp.Chat.Application.Conversaciones;
 
@@ -14,7 +15,10 @@ public sealed record ConversacionResumenDto(
     DateTimeOffset CreadaEn,
     DateTimeOffset UltimaActividadEn,
     long UltimaSecuencia,
-    int NoLeidos);
+    int NoLeidos,
+    EstadoConversacion Estado,
+    string? OrigenCierre,
+    bool PuedeEnviar);
 
 public interface IConsultaConversaciones
 {

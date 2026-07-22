@@ -1,5 +1,6 @@
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Paginacion;
+using CaseritoApp.Chat.Domain.Conversaciones;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseritoApp.Chat.Infrastructure.Conversaciones;
@@ -47,7 +48,19 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                     m.RemitenteId != usuarioId &&
                     m.Secuencia > (c.CompradorId == usuarioId
                         ? c.UltimaSecuenciaLeidaComprador
-                        : c.UltimaSecuenciaLeidaVendedor))))
+                        : c.UltimaSecuenciaLeidaVendedor)),
+                c.Estado,
+#pragma warning disable S3358 // La expresiÃ³n debe permanecer traducible por EF Core.
+                c.Estado == EstadoConversacion.Cerrada
+                    ? "Participante"
+                    : c.Estado == EstadoConversacion.CerradaPorModeracion
+                        ? "Moderacion"
+                        : null,
+#pragma warning restore S3358
+                c.Estado == EstadoConversacion.Activa
+                    && !db.BloqueosUsuario.Any(b =>
+                        (b.BloqueadorId == c.CompradorId && b.BloqueadoId == c.VendedorId)
+                        || (b.BloqueadorId == c.VendedorId && b.BloqueadoId == c.CompradorId))))
             .Take(limite + 1)
             .ToListAsync(ct);
 

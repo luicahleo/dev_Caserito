@@ -1,6 +1,8 @@
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
+using CaseritoApp.Chat.Domain.Seguridad;
 
 namespace CaseritoApp.UnitTests.Chat;
 
@@ -50,7 +52,8 @@ public sealed class EnviarMensajeCommandHandlerTests
             Guid.NewGuid(), remitenteId, Guid.NewGuid(), _ahora).Valor;
         var mensajes = new MensajesFake();
         var handler = new EnviarMensajeCommandHandler(
-            new ConversacionesFake(conversacion), mensajes, new RelojFijo(_ahora.AddMinutes(1)));
+            new ConversacionesFake(conversacion), mensajes,
+            new RelojFijo(_ahora.AddMinutes(1)), new BloqueosFake());
 
         var resultado = await handler.Handle(
             new EnviarMensajeCommand(conversacion.Id, remitenteId, Guid.NewGuid(), " Hola "),
@@ -75,7 +78,7 @@ public sealed class EnviarMensajeCommandHandlerTests
             remitenteId, clave, 4, "Hola", _ahora.AddMinutes(1)).Valor;
         var mensajes = new MensajesFake { Existente = existente };
         var handler = new EnviarMensajeCommandHandler(
-            new ConversacionesFake(conversacion), mensajes, TimeProvider.System);
+            new ConversacionesFake(conversacion), mensajes, TimeProvider.System, new BloqueosFake());
 
         var resultado = await handler.Handle(
             new EnviarMensajeCommand(conversacion.Id, remitenteId, clave, "  Hola  "),
@@ -99,7 +102,7 @@ public sealed class EnviarMensajeCommandHandlerTests
             remitenteId, clave, 4, "Hola", _ahora.AddMinutes(1)).Valor;
         var mensajes = new MensajesFake { Existente = existente };
         var handler = new EnviarMensajeCommandHandler(
-            new ConversacionesFake(conversacion), mensajes, TimeProvider.System);
+            new ConversacionesFake(conversacion), mensajes, TimeProvider.System, new BloqueosFake());
 
         var resultado = await handler.Handle(
             new EnviarMensajeCommand(conversacion.Id, remitenteId, clave, "Otro"),
@@ -119,14 +122,38 @@ public sealed class EnviarMensajeCommandHandlerTests
             conversacion.Id, Guid.NewGuid(), Guid.NewGuid(), "Hola");
 
         var ausente = await new EnviarMensajeCommandHandler(
-            new ConversacionesFake(null), new MensajesFake(), TimeProvider.System)
+            new ConversacionesFake(null), new MensajesFake(), TimeProvider.System, new BloqueosFake())
             .Handle(comando, CancellationToken.None);
         var tercero = await new EnviarMensajeCommandHandler(
-            new ConversacionesFake(conversacion), new MensajesFake(), TimeProvider.System)
+            new ConversacionesFake(conversacion), new MensajesFake(), TimeProvider.System, new BloqueosFake())
             .Handle(comando, CancellationToken.None);
 
         Assert.Equal(ErroresConversacion.NoEncontrada, ausente.Error.Code);
         Assert.Equal(ausente.Error.Code, tercero.Error.Code);
+    }
+
+    [Fact]
+    public async Task Bloqueo_en_cualquier_direccion_impide_enviar_con_error_uniforme()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, _ahora).Valor;
+        var mensajes = new MensajesFake();
+        var handler = new EnviarMensajeCommandHandler(
+            new ConversacionesFake(conversacion),
+            mensajes,
+            TimeProvider.System,
+            new BloqueosFake { Existe = true });
+
+        var resultado = await handler.Handle(
+            new EnviarMensajeCommand(conversacion.Id, compradorId, Guid.NewGuid(), "Hola"),
+            CancellationToken.None);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, resultado.Error.Code);
+        Assert.Equal(0, mensajes.Reservas);
+        Assert.Empty(mensajes.Agregados);
     }
 
     [Fact]
@@ -145,5 +172,25 @@ public sealed class EnviarMensajeCommandHandlerTests
     private sealed class RelojFijo(DateTimeOffset ahora) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => ahora;
+    }
+
+    private sealed class BloqueosFake : IRepositorioBloqueosUsuario
+    {
+        public bool Existe { get; init; }
+
+        public Task<bool> ExisteEntreAsync(Guid usuarioA, Guid usuarioB, CancellationToken ct) =>
+            Task.FromResult(Existe);
+
+        public Task<BloqueoUsuario?> ObtenerAsync(
+            Guid bloqueadorId, Guid bloqueadoId, CancellationToken ct) =>
+            Task.FromResult<BloqueoUsuario?>(null);
+
+        public void Agregar(BloqueoUsuario bloqueo)
+        {
+        }
+
+        public void Quitar(BloqueoUsuario bloqueo)
+        {
+        }
     }
 }

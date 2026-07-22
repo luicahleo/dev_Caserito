@@ -19,6 +19,7 @@ public sealed class Conversacion : AggregateRoot
         VendedorId = vendedorId;
         CreadaEn = creadaEn;
         UltimaActividadEn = creadaEn;
+        Estado = EstadoConversacion.Activa;
     }
 
     public Guid AvisoId { get; private set; }
@@ -36,6 +37,12 @@ public sealed class Conversacion : AggregateRoot
     public long UltimaSecuenciaLeidaComprador { get; private set; }
 
     public long UltimaSecuenciaLeidaVendedor { get; private set; }
+
+    public EstadoConversacion Estado { get; private set; }
+
+    public DateTimeOffset? CerradaEn { get; private set; }
+
+    public Guid? UltimoActorEstadoId { get; private set; }
 
     public static Result<Conversacion> Crear(
         Guid avisoId,
@@ -66,6 +73,68 @@ public sealed class Conversacion : AggregateRoot
     public bool EsParticipante(Guid usuarioId) =>
         usuarioId != Guid.Empty && (usuarioId == CompradorId || usuarioId == VendedorId);
 
+    public Result CerrarPorParticipante(Guid usuarioId, DateTimeOffset ocurrioEn)
+    {
+        if (!EsParticipante(usuarioId))
+        {
+            return NoEncontrada();
+        }
+
+        if (Estado == EstadoConversacion.CerradaPorModeracion)
+        {
+            return NoDisponible();
+        }
+
+        return Estado == EstadoConversacion.Cerrada
+            ? Result.Exito()
+            : CambiarEstado(EstadoConversacion.Cerrada, usuarioId, ocurrioEn);
+    }
+
+    public Result ReabrirPorParticipante(Guid usuarioId, DateTimeOffset ocurrioEn)
+    {
+        if (!EsParticipante(usuarioId))
+        {
+            return NoEncontrada();
+        }
+
+        if (Estado == EstadoConversacion.CerradaPorModeracion)
+        {
+            return NoDisponible();
+        }
+
+        return Estado == EstadoConversacion.Activa
+            ? Result.Exito()
+            : CambiarEstado(EstadoConversacion.Activa, usuarioId, ocurrioEn);
+    }
+
+    public Result CerrarPorModeracion(Guid moderadorId, DateTimeOffset ocurrioEn)
+    {
+        if (moderadorId == Guid.Empty)
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.IdentificadorInvalido,
+                "La solicitud no es válida."));
+        }
+
+        return Estado == EstadoConversacion.CerradaPorModeracion
+            ? Result.Exito()
+            : CambiarEstado(EstadoConversacion.CerradaPorModeracion, moderadorId, ocurrioEn);
+    }
+
+    public Result ReabrirPorModeracion(Guid moderadorId, DateTimeOffset ocurrioEn)
+    {
+        if (moderadorId == Guid.Empty)
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.IdentificadorInvalido,
+                "La solicitud no es válida."));
+        }
+
+        return Estado == EstadoConversacion.Activa
+            ? Result.Exito()
+            : CambiarEstado(EstadoConversacion.Activa, moderadorId, ocurrioEn);
+    }
+
     public Result<Mensaje> CrearMensaje(
         Guid remitenteId,
         Guid claveIdempotencia,
@@ -78,6 +147,13 @@ public sealed class Conversacion : AggregateRoot
             return Result.Fallo<Mensaje>(new Error(
                 ErroresConversacion.NoEncontrada,
                 "La conversación no está disponible."));
+        }
+
+        if (Estado != EstadoConversacion.Activa)
+        {
+            return Result.Fallo<Mensaje>(new Error(
+                ErroresConversacion.NoDisponibleParaEnvio,
+                "La conversación no está disponible para enviar mensajes."));
         }
 
         if (claveIdempotencia == Guid.Empty)
@@ -157,4 +233,25 @@ public sealed class Conversacion : AggregateRoot
         AgregarEvento(new LecturaAvanzada(Id, hastaSecuencia, ocurrioEn.ToUniversalTime()));
         return Result.Exito();
     }
+
+    private Result CambiarEstado(
+        EstadoConversacion estado,
+        Guid actorId,
+        DateTimeOffset ocurrioEn)
+    {
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        Estado = estado;
+        CerradaEn = estado == EstadoConversacion.Activa ? null : fechaUtc;
+        UltimoActorEstadoId = actorId;
+        AgregarEvento(new ConversacionEstadoCambiado(Id, estado, fechaUtc));
+        return Result.Exito();
+    }
+
+    private static Result NoEncontrada() => Result.Fallo(new Error(
+        ErroresConversacion.NoEncontrada,
+        "La conversación no está disponible."));
+
+    private static Result NoDisponible() => Result.Fallo(new Error(
+        ErroresConversacion.NoDisponibleParaEnvio,
+        "La conversación no está disponible para enviar mensajes."));
 }

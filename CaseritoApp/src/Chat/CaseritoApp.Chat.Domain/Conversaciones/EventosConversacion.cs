@@ -17,3 +17,8 @@ public sealed record LecturaAvanzada(
     Guid ConversacionId,
     long HastaSecuencia,
     DateTimeOffset OcurridoEn) : IDomainEvent;
+
+public sealed record ConversacionEstadoCambiado(
+    Guid ConversacionId,
+    EstadoConversacion Estado,
+    DateTimeOffset OcurridoEn) : IDomainEvent;

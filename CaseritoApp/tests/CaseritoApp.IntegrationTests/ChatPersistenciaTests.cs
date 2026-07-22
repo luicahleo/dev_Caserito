@@ -1,4 +1,7 @@
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
+using CaseritoApp.Chat.Domain.Moderacion;
+using CaseritoApp.Chat.Domain.Seguridad;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Chat.Infrastructure.Conversaciones;
 using CaseritoApp.Chat.Infrastructure.Mensajes;
@@ -12,6 +15,82 @@ namespace CaseritoApp.IntegrationTests;
 public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
     private static readonly DateTimeOffset _ahora = new(2026, 7, 19, 12, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Modelo_configura_bloqueos_en_schema_chat()
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var bloqueo = db.Model.FindEntityType(typeof(BloqueoUsuario));
+
+        Assert.NotNull(bloqueo);
+        Assert.Equal("chat", bloqueo.GetSchema());
+        Assert.Equal("BloqueosUsuario", bloqueo.GetTableName());
+        Assert.Contains(bloqueo.GetIndexes(), i =>
+            i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual([
+                nameof(BloqueoUsuario.BloqueadorId), nameof(BloqueoUsuario.BloqueadoId)]));
+        Assert.Contains(bloqueo.GetIndexes(), i =>
+            i.Properties.Select(p => p.Name).SequenceEqual([nameof(BloqueoUsuario.BloqueadorId)]));
+        Assert.Contains(bloqueo.GetIndexes(), i =>
+            i.Properties.Select(p => p.Name).SequenceEqual([nameof(BloqueoUsuario.BloqueadoId)]));
+    }
+
+    [Fact]
+    public void Modelo_configura_estado_activo_y_concurrencia_de_conversacion()
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var conversacion = db.Model.FindEntityType(typeof(Conversacion))!;
+
+        Assert.Equal(EstadoConversacion.Activa, conversacion.FindProperty(nameof(Conversacion.Estado))!.GetDefaultValue());
+        Assert.True(conversacion.FindProperty("Version")!.IsConcurrencyToken);
+    }
+
+    [Fact]
+    public void Modelo_configura_reportes_abiertos_unicos_y_concurrentes()
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var reporte = db.Model.FindEntityType(typeof(ReporteChat));
+
+        Assert.NotNull(reporte);
+        Assert.Equal("chat", reporte.GetSchema());
+        Assert.Equal("Reportes", reporte.GetTableName());
+        Assert.True(reporte.FindProperty("Version")!.IsConcurrencyToken);
+        Assert.Contains(reporte.GetIndexes(), i =>
+            i.IsUnique
+            && i.Properties.Select(p => p.Name).SequenceEqual([
+                nameof(ReporteChat.ReportanteId),
+                nameof(ReporteChat.ConversacionId),
+                nameof(ReporteChat.TipoObjetivo),
+                nameof(ReporteChat.MensajeId)])
+            && i.GetFilter() == "[Estado] IN (1, 2)");
+    }
+
+    [Fact]
+    public void Modelo_configura_registros_de_moderacion_sin_contenido()
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var registro = db.Model.FindEntityType(typeof(RegistroModeracionChat));
+
+        Assert.NotNull(registro);
+        Assert.Equal("chat", registro.GetSchema());
+        Assert.Equal("RegistrosModeracion", registro.GetTableName());
+        Assert.Contains(registro.GetIndexes(), i =>
+            i.Properties.Select(p => p.Name).SequenceEqual([
+                nameof(RegistroModeracionChat.ReporteId), nameof(RegistroModeracionChat.CreadoEn)]));
+        Assert.DoesNotContain(registro.GetProperties(), p =>
+            p.Name is "Contenido" or "Detalle" or "Texto" or "ParticipanteId" or "Payload");
+    }
+
+    [Fact]
+    public void Contenedor_resuelve_repositorio_de_bloqueos()
+    {
+        using var scope = factory.Services.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<IRepositorioBloqueosUsuario>());
+    }
 
     [Fact]
     public void Modelo_outbox_no_duplica_contenido_sensible()
@@ -197,6 +276,9 @@ public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFi
         Assert.Equal(1, item.NoLeidos);
         Assert.Equal(propia.VendedorId, item.ContraparteId);
         Assert.Equal("Comprador", item.Rol);
+        Assert.Equal(EstadoConversacion.Activa, item.Estado);
+        Assert.Null(item.OrigenCierre);
+        Assert.True(item.PuedeEnviar);
     }
 
     [Fact]
