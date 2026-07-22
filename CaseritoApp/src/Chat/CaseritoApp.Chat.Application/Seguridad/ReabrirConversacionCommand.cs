@@ -21,7 +21,7 @@ public sealed class ReabrirConversacionCommandHandler(
         {
             return Result.Fallo(new Error(
                 ErroresConversacion.NoEncontrada,
-                "La conversaciÃ³n no estÃ¡ disponible."));
+                "La conversación no está disponible."));
         }
 
         var contraparteId = request.ActorId == conversacion.CompradorId
@@ -31,7 +31,7 @@ public sealed class ReabrirConversacionCommandHandler(
         {
             return Result.Fallo(new Error(
                 ErroresConversacion.NoDisponibleParaEnvio,
-                "La conversaciÃ³n no estÃ¡ disponible."));
+                "La conversación no está disponible."));
         }
 
         return conversacion.ReabrirPorParticipante(request.ActorId, reloj.GetUtcNow());

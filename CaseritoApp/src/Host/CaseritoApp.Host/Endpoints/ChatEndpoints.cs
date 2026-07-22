@@ -4,8 +4,11 @@ using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
+using CaseritoApp.Chat.Application.Moderacion;
 using CaseritoApp.Chat.Application.Paginacion;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
+using CaseritoApp.Chat.Domain.Moderacion;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Host.Chat;
 using FluentValidation;
@@ -18,6 +21,12 @@ public sealed record IniciarConversacionRequest(Guid AvisoId);
 public sealed record EnviarMensajeRequest(Guid ClaveIdempotencia, string Texto);
 
 public sealed record MarcarLecturaRequest(long HastaSecuencia);
+
+public sealed record ReportarChatRequest(
+    TipoObjetivoReporteChat TipoObjetivo,
+    Guid? MensajeId,
+    CategoriaReporteChat Categoria,
+    string? Detalle);
 
 public sealed record PaginaChatResponse<T>(IReadOnlyList<T> Items, string? SiguienteCursor);
 
@@ -70,6 +79,19 @@ public static class ChatEndpoints
             .ProducesValidationProblem()
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status429TooManyRequests);
+
+        grupo.MapPost("/conversaciones/{id:guid}/reportes", ReportarAsync)
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status401Unauthorized);
+
+        grupo.MapPut("/conversaciones/{id:guid}/cierre", CerrarAsync)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
 
         return app;
     }
@@ -269,6 +291,72 @@ public static class ChatEndpoints
         }
     }
 
+    private static async Task<IResult> ReportarAsync(
+        Guid id,
+        ReportarChatRequest request,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var ejecucion = await EjecutarConReintentoAsync(
+                () => sender.Send(new ReportarChatCommand(
+                    id,
+                    usuarioId,
+                    request.TipoObjetivo,
+                    request.MensajeId,
+                    request.Categoria,
+                    request.Detalle), ct));
+            if (ejecucion.Conflicto)
+            {
+                return ConflictoPersistencia();
+            }
+
+            var resultado = ejecucion.Valor!;
+            if (!resultado.EsExito)
+            {
+                return DesdeError(resultado.Error);
+            }
+
+            return Results.Created(
+                $"/api/chat/conversaciones/{id}/reportes/{resultado.Valor}",
+                new { id = resultado.Valor });
+        }
+        catch (ValidationException ex)
+        {
+            return ProblemaDeValidacion(ex);
+        }
+    }
+
+    private static async Task<IResult> CerrarAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var ejecucion = await EjecutarConReintentoAsync(
+            () => sender.Send(new CerrarConversacionCommand(id, usuarioId), ct));
+        if (ejecucion.Conflicto)
+        {
+            return ConflictoPersistencia();
+        }
+
+        return ejecucion.Valor!.EsExito
+            ? Results.NoContent()
+            : DesdeError(ejecucion.Valor.Error);
+    }
+
     private static async Task<(T? Valor, bool Conflicto)> EjecutarConReintentoAsync<T>(
         Func<Task<T>> accion)
         where T : class
@@ -320,7 +408,9 @@ public static class ChatEndpoints
     {
         ErroresConversacion.NoEncontrada or ErroresConversacion.AvisoNoContactable =>
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status404NotFound),
-        ErroresConversacion.ParticipantesCoinciden or ErroresConversacion.ClaveIdempotenciaReutilizada =>
+        ErroresConversacion.ParticipantesCoinciden or ErroresConversacion.ClaveIdempotenciaReutilizada
+            or ErroresConversacion.NoDisponibleParaEnvio
+            or ErroresModeracionChat.TransicionInvalida =>
             Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status409Conflict),
         _ => Results.Problem(title: error.Code, detail: error.Message, statusCode: StatusCodes.Status400BadRequest),
     };

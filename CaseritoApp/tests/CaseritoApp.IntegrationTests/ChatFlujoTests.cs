@@ -5,6 +5,7 @@ using CaseritoApp.Catalog.Domain.Avisos;
 using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
+using CaseritoApp.Chat.Domain.Moderacion;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Infrastructure;
@@ -230,6 +231,49 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
         var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
         Assert.Equal(1, await db.Mensajes.CountAsync(m =>
             m.ConversacionId == conversacion.Id && m.ClaveIdempotencia == clave));
+    }
+
+    [Fact]
+    public async Task Reportar_conversacion_participante_devuelve_201()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token,
+            new
+            {
+                TipoObjetivo = TipoObjetivoReporteChat.Conversacion,
+                Categoria = CategoriaReporteChat.Acoso,
+                Detalle = "Detalle opcional",
+            });
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
+        Assert.Equal("id", Assert.Single(cuerpo!).Key, StringComparer.OrdinalIgnoreCase);
+        Assert.NotEqual(Guid.Empty, cuerpo!["id"]);
+    }
+
+    [Fact]
+    public async Task Cerrar_conversacion_participante_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-cierre-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-cierre-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Put,
+            $"/api/chat/conversaciones/{conversacion.Id}/cierre", comprador.Token);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
     }
 
     private async Task<UsuarioPrueba> RegistrarAsync(HttpClient cliente, string prefijo)

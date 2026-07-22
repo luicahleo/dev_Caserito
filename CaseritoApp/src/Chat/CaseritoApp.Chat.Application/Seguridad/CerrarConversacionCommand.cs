@@ -29,7 +29,7 @@ public sealed class CerrarConversacionCommandHandler(
         {
             return Result.Fallo(new Error(
                 ErroresConversacion.NoDisponibleParaEnvio,
-                "La conversaciÃ³n no estÃ¡ disponible."));
+                "La conversación no está disponible."));
         }
 
         return conversacion.CerrarPorParticipante(request.ActorId, reloj.GetUtcNow());
@@ -37,5 +37,5 @@ public sealed class CerrarConversacionCommandHandler(
 
     private static Result NoEncontrada() => Result.Fallo(new Error(
         ErroresConversacion.NoEncontrada,
-        "La conversaciÃ³n no estÃ¡ disponible."));
+        "La conversación no está disponible."));
 }
