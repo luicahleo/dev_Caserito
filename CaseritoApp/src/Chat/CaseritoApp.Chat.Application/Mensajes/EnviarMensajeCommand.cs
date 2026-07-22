@@ -1,6 +1,7 @@
 using CaseritoApp.BuildingBlocks.Application.Messaging;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
 using FluentValidation;
 
@@ -15,7 +16,8 @@ public sealed record EnviarMensajeCommand(
 public sealed class EnviarMensajeCommandHandler(
     IRepositorioConversaciones conversaciones,
     IRepositorioMensajes mensajes,
-    TimeProvider reloj)
+    TimeProvider reloj,
+    IRepositorioBloqueosUsuario bloqueos)
     : ICommandHandler<EnviarMensajeCommand, EnviarMensajeResultadoDto>
 {
     public async Task<Result<EnviarMensajeResultadoDto>> Handle(
@@ -28,6 +30,19 @@ public sealed class EnviarMensajeCommandHandler(
         if (conversacion is null || !conversacion.EsParticipante(request.RemitenteId))
         {
             return NoEncontrada();
+        }
+
+        var contraparteId = request.RemitenteId == conversacion.CompradorId
+            ? conversacion.VendedorId
+            : conversacion.CompradorId;
+        if (await bloqueos.ExisteEntreAsync(
+            request.RemitenteId,
+            contraparteId,
+            cancellationToken))
+        {
+            return Result.Fallo<EnviarMensajeResultadoDto>(new Error(
+                ErroresConversacion.NoDisponibleParaEnvio,
+                "La conversación no está disponible para enviar mensajes."));
         }
 
         var existente = await mensajes.ObtenerPorClaveAsync(

@@ -1,5 +1,7 @@
 using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Conversaciones;
+using CaseritoApp.Chat.Domain.Seguridad;
 
 namespace CaseritoApp.UnitTests.Chat;
 
@@ -41,7 +43,8 @@ public sealed class IniciarConversacionCommandHandlerTests
         var existente = Conversacion.Crear(avisoId, compradorId, Guid.NewGuid(), _ahora).Valor;
         var repositorio = new RepositorioFake { Existente = existente };
         var consulta = new ConsultaAvisoFake(null);
-        var handler = new IniciarConversacionCommandHandler(repositorio, consulta, TimeProvider.System);
+        var handler = new IniciarConversacionCommandHandler(
+            repositorio, consulta, TimeProvider.System, new BloqueosFake());
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -57,7 +60,7 @@ public sealed class IniciarConversacionCommandHandlerTests
     public async Task Aviso_no_contactable_devuelve_no_encontrado()
     {
         var handler = new IniciarConversacionCommandHandler(
-            new RepositorioFake(), new ConsultaAvisoFake(null), TimeProvider.System);
+            new RepositorioFake(), new ConsultaAvisoFake(null), TimeProvider.System, new BloqueosFake());
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None);
@@ -72,7 +75,8 @@ public sealed class IniciarConversacionCommandHandlerTests
         var handler = new IniciarConversacionCommandHandler(
             new RepositorioFake(),
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(Guid.NewGuid(), Guid.NewGuid())),
-            TimeProvider.System);
+            TimeProvider.System,
+            new BloqueosFake());
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None);
@@ -89,7 +93,8 @@ public sealed class IniciarConversacionCommandHandlerTests
         var handler = new IniciarConversacionCommandHandler(
             new RepositorioFake(),
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, usuarioId)),
-            TimeProvider.System);
+            TimeProvider.System,
+            new BloqueosFake());
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(usuarioId, avisoId), CancellationToken.None);
@@ -109,7 +114,8 @@ public sealed class IniciarConversacionCommandHandlerTests
         var handler = new IniciarConversacionCommandHandler(
             repositorio,
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
-            reloj);
+            reloj,
+            new BloqueosFake());
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -119,6 +125,27 @@ public sealed class IniciarConversacionCommandHandlerTests
         Assert.Equal(_ahora, resultado.Valor.Conversacion.CreadaEn);
         Assert.Equal(vendedorId, resultado.Valor.Conversacion.VendedorId);
         Assert.Single(repositorio.Agregadas);
+    }
+
+    [Fact]
+    public async Task Bloqueo_en_cualquier_direccion_impide_iniciar_sin_revelar_la_direccion()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var bloqueos = new BloqueosFake { Existe = true };
+        var handler = new IniciarConversacionCommandHandler(
+            new RepositorioFake(),
+            new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
+            TimeProvider.System,
+            bloqueos);
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, resultado.Error.Code);
+        Assert.Equal((compradorId, vendedorId), bloqueos.UltimaPareja);
     }
 
     [Fact]
@@ -136,5 +163,30 @@ public sealed class IniciarConversacionCommandHandlerTests
     private sealed class RelojFijo(DateTimeOffset ahora) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => ahora;
+    }
+
+    private sealed class BloqueosFake : IRepositorioBloqueosUsuario
+    {
+        public bool Existe { get; init; }
+
+        public (Guid, Guid) UltimaPareja { get; private set; }
+
+        public Task<bool> ExisteEntreAsync(Guid usuarioA, Guid usuarioB, CancellationToken ct)
+        {
+            UltimaPareja = (usuarioA, usuarioB);
+            return Task.FromResult(Existe);
+        }
+
+        public Task<BloqueoUsuario?> ObtenerAsync(
+            Guid bloqueadorId, Guid bloqueadoId, CancellationToken ct) =>
+            Task.FromResult<BloqueoUsuario?>(null);
+
+        public void Agregar(BloqueoUsuario bloqueo)
+        {
+        }
+
+        public void Quitar(BloqueoUsuario bloqueo)
+        {
+        }
     }
 }
