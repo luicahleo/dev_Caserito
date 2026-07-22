@@ -276,6 +276,9 @@ public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFi
         Assert.Equal(1, item.NoLeidos);
         Assert.Equal(propia.VendedorId, item.ContraparteId);
         Assert.Equal("Comprador", item.Rol);
+        Assert.Equal(EstadoConversacion.Activa, item.Estado);
+        Assert.Null(item.OrigenCierre);
+        Assert.True(item.PuedeEnviar);
     }
 
     [Fact]

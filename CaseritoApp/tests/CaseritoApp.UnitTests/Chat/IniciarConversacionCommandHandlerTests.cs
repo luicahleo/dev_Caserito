@@ -149,6 +149,28 @@ public sealed class IniciarConversacionCommandHandlerTests
     }
 
     [Fact]
+    public async Task Bloqueo_impide_devolver_una_conversacion_existente()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var existente = Conversacion.Crear(avisoId, compradorId, vendedorId, _ahora).Valor;
+        var bloqueos = new BloqueosFake { Existe = true };
+        var handler = new IniciarConversacionCommandHandler(
+            new RepositorioFake { Existente = existente },
+            new ConsultaAvisoFake(null),
+            TimeProvider.System,
+            bloqueos);
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, resultado.Error.Code);
+        Assert.Equal((compradorId, vendedorId), bloqueos.UltimaPareja);
+    }
+
+    [Fact]
     public void Validator_rechaza_identificadores_vacios()
     {
         var validator = new IniciarConversacionCommandValidator();

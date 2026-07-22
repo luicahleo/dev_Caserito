@@ -27,6 +27,16 @@ public sealed class IniciarConversacionCommandHandler(
             cancellationToken);
         if (existente is not null)
         {
+            if (await bloqueos.ExisteEntreAsync(
+                existente.CompradorId,
+                existente.VendedorId,
+                cancellationToken))
+            {
+                return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
+                    ErroresConversacion.NoDisponibleParaEnvio,
+                    "La conversaciÃ³n no estÃ¡ disponible para enviar mensajes."));
+            }
+
             return Result.Exito(new IniciarConversacionResultadoDto(
                 ConversacionDto.Desde(existente),
                 false));
