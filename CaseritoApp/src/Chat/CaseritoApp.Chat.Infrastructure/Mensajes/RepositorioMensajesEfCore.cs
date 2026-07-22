@@ -6,6 +6,9 @@ namespace CaseritoApp.Chat.Infrastructure.Mensajes;
 
 public sealed class RepositorioMensajesEfCore(ChatDbContext db) : IRepositorioMensajes
 {
+    public Task<Mensaje?> ObtenerAsync(Guid id, CancellationToken ct) =>
+        db.Mensajes.FirstOrDefaultAsync(m => m.Id == id, ct);
+
     public Task<Mensaje?> ObtenerPorClaveAsync(
         Guid conversacionId,
         Guid remitenteId,
