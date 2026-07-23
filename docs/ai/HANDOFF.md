@@ -9,7 +9,7 @@ tarea 8, Chat 3D o Fase 4.
 
 - Rama: `feat/chat-3c-seguridad-moderacion`, con upstream homónimo en `origin`.
 - Punta local y remota inicial:
-  `f0fa5cec0dc642084576191e0c1c574133cc16d9`.
+  `19ae1f2cd0bd39ce432627a655427262bfcbdd12`.
 - El worktree estaba limpio.
 - No se hizo merge, rebase ni eliminación de ramas.
 - Documentos activos:
@@ -18,74 +18,70 @@ tarea 8, Chat 3D o Fase 4.
 
 ## Avance parcial de la tarea 7
 
+Se conserva todo el avance descrito por el checkpoint anterior: contratos de
+participante, errores indistinguibles y genéricos, autorización administrativa
+y cola básica sin contenido ni participantes.
+
+En esta sesión:
+
 - Se agregó
-  `ChatFlujoTests.Reportar_recurso_inexistente_o_ajeno_devuelve_404_indistinguible`.
-  Crea conversación propia y ajena, usa el mismo request contra un GUID
-  inexistente y la conversación ajena, exige `404`, compara los campos públicos
-  genéricos y comprueba que no se reflejan GUIDs ni el detalle recibido.
-- El primer rojo de ese test fue un falso positivo del test: buscaba la palabra
-  `Conversacion`, que forma parte del código genérico permitido. Tras limitar la
-  comprobación a valores sensibles recibidos, quedó verde sin cambio productivo.
-- Se agregó `ChatFlujoTests.Reportar_objetivo_duplicado_devuelve_409_generico`;
-  quedó verde con el contrato genérico existente y sin eco de argumentos.
-- Se agregó `ChatFlujoTests.Reportar_sin_autenticacion_devuelve_401`; quedó
-  verde con la autorización del grupo participante.
-- Se creó `ModeracionChatTests`.
-- Se agregó `Cola_sin_permiso_chat_moderar_devuelve_403`. El rojo causal fue
-  `404` porque no existía la ruta. Se creó
-  `Host/Endpoints/ModeracionChatEndpoints.cs`, protegido con
-  `PoliticasAutorizacion.Permiso(Permisos.ChatModerar)`, y se mapeó en
-  `Program.cs`; quedó verde.
+  `ModeracionChatTests.Tomar_y_liberar_reporte_actualiza_cola_y_auditoria`.
+- El rojo causal fue `404` en `POST /reportes/{id}/tomar` porque la ruta no
+  existía.
+- Se publicaron `POST /reportes/{id}/tomar` y `/liberar` bajo
+  `/api/admin/moderacion/chat`, dentro del grupo protegido por
+  `PoliticasAutorizacion.Permiso(Permisos.ChatModerar)`.
+- El test quedó verde y comprueba `204`, estados `EnRevision`/`Pendiente`,
+  asignación persistida/limpia, auditoría append-only `Tomar`/`Liberar` y cola
+  sin contenido ni participantes.
 - Se agregó
-  `Cola_administrativa_devuelve_referencias_sin_contenido_ni_participantes`.
-  El rojo causal fue una colección vacía del stub. La ruta ahora envía
-  `ListarReportesChatQuery` y devuelve `ReporteChatColaDto`; quedó verde y
-  comprueba ausencia de detalle y reportante.
+  `ModeracionChatTests.Consultar_evidencia_audita_antes_de_devolver_contenido`.
+- El rojo causal fue `404` porque no existía la ruta de evidencia.
+- Se publicó `GET /reportes/{id}/evidencia`; delega en el handler existente,
+  que persiste `ConsultarEvidencia` antes de consultar contenido.
+- El test quedó verde y comprueba respuesta autorizada sin IDs de participantes
+  y un único registro auditado con el moderador autenticado.
+- Los errores administrativos agregados son genéricos y no reflejan argumentos.
 - La tarea 7 sigue incompleta. No usar aún el commit final
   `feat(chat): publica endpoints de seguridad y moderacion`.
 
 ## Tests ejecutados
 
-- Rojo de prueba:
-  `dotnet test tests/CaseritoApp.IntegrationTests --filter FullyQualifiedName~ChatFlujoTests.Reportar_recurso_inexistente_o_ajeno_devuelve_404_indistinguible`
-  (falso positivo por coincidencia con el código genérico).
+- Rojo:
+  `dotnet test tests/CaseritoApp.IntegrationTests --filter FullyQualifiedName~ModeracionChatTests.Tomar_y_liberar_reporte_actualiza_cola_y_auditoria`
+  (esperado `204`, real `404`).
 - Verde del test anterior: mismo comando (1/1).
-- Verde:
-  `... --filter FullyQualifiedName~ChatFlujoTests.Reportar_objetivo_duplicado_devuelve_409_generico`
-  (1/1).
-- Verde:
-  `... --filter FullyQualifiedName~ChatFlujoTests.Reportar_sin_autenticacion_devuelve_401`
-  (1/1).
 - Rojo:
-  `... --filter FullyQualifiedName~ModeracionChatTests.Cola_sin_permiso_chat_moderar_devuelve_403`
-  (esperado `403`, real `404`).
-- Verde del rojo anterior: mismo comando (1/1).
-- Rojo:
-  `... --filter FullyQualifiedName~ModeracionChatTests.Cola_administrativa_devuelve_referencias_sin_contenido_ni_participantes`
-  (la colección del stub estaba vacía).
-- Verde del rojo anterior: mismo comando (1/1).
+  `dotnet test tests/CaseritoApp.IntegrationTests --filter FullyQualifiedName~ModeracionChatTests.Consultar_evidencia_audita_antes_de_devolver_contenido`
+  (esperado `200`, real `404`).
+- Verde del test anterior: mismo comando (1/1).
+- Formato aplicado con `dotnet format CaseritoApp.sln`.
+- `git diff --check` verde antes de actualizar este handoff.
 
 ## Continuación exacta
 
 Próximo test a escribir, uno solo:
 
-`ModeracionChatTests.Tomar_y_liberar_reporte_actualiza_cola_y_auditoria`
+`ModeracionChatTests.Atender_y_descartar_actualizan_estado_y_auditoria`
 
-Debe crear un reporte pendiente, autenticar un moderador, tomarlo y comprobar
-`204`, estado `EnRevision`, asignación persistida y un único registro auditado
-`Tomar`; luego liberarlo, comprobar `204`, retorno a `Pendiente`, asignación
-limpia y un único registro adicional `Liberar`. Los cuerpos y DTO públicos no
-deben exponer contenido ni participantes.
+Debe crear dos reportes, tomarlos con el moderador autenticado y comprobar:
 
-Después continuar secuencialmente con evidencia auditada, atender/descartar,
-cierre/reapertura por moderación, conflictos/transiciones administrativas
-genéricas, rate limit de baja frecuencia y OpenAPI completo. No avanzar a tarea
-8 antes de cerrar, probar, commitear y publicar la 7.
+- `POST /reportes/{id}/atender` con `cerrarConversacion: false` devuelve `204`,
+  deja el primero en `Atendido` y agrega exactamente `Atender`;
+- `POST /reportes/{id}/descartar` devuelve `204`, deja el segundo en
+  `Descartado` y agrega exactamente `Descartar`;
+- ambos requieren al moderador asignado;
+- cuerpos y cola no exponen contenido ni participantes.
+
+Después continuar, un rojo por vez, con cierre/reapertura por moderación,
+conflictos/transiciones administrativas genéricas, `404` administrativo
+genérico, rate limit de baja frecuencia y OpenAPI completo. No avanzar a tarea
+8.
 
 ## Puntas
 
 - Padre exacto del checkpoint:
-  `f0fa5cec0dc642084576191e0c1c574133cc16d9`.
+  `19ae1f2cd0bd39ce432627a655427262bfcbdd12`.
 - La punta local/remota final será el commit de checkpoint que contiene este
   handoff; verificar el hash exacto con `git rev-parse HEAD` y
   `git rev-parse '@{upstream}'` al retomar.

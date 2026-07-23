@@ -10,6 +10,7 @@ using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CaseritoApp.IntegrationTests;
@@ -45,6 +46,110 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
         var cola = await respuesta.Content.ReadFromJsonAsync<IReadOnlyList<ReporteChatColaDto>>();
         Assert.Contains(cola!, item => item.Id == reporte.Id);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(reporte.Detalle!, cuerpo, StringComparison.Ordinal);
+        Assert.DoesNotContain(reporte.ReportanteId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Tomar_y_liberar_reporte_actualiza_cola_y_auditoria()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-tomar-liberar", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+
+        using var tomar = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/tomar");
+        tomar.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaTomar = await cliente.SendAsync(tomar);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaTomar.StatusCode);
+        Assert.Empty(await respuestaTomar.Content.ReadAsStringAsync());
+        await ComprobarEstadoYAuditoriaAsync(
+            reporte.Id,
+            EstadoReporteChat.EnRevision,
+            moderador.UsuarioId,
+            [AccionModeracionChat.Tomar]);
+        await ComprobarColaSinContenidoNiParticipantesAsync(
+            cliente, moderador.Token, reporte, EstadoReporteChat.EnRevision);
+
+        using var liberar = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/liberar");
+        liberar.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaLiberar = await cliente.SendAsync(liberar);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaLiberar.StatusCode);
+        Assert.Empty(await respuestaLiberar.Content.ReadAsStringAsync());
+        await ComprobarEstadoYAuditoriaAsync(
+            reporte.Id,
+            EstadoReporteChat.Pendiente,
+            null,
+            [AccionModeracionChat.Tomar, AccionModeracionChat.Liberar]);
+        await ComprobarColaSinContenidoNiParticipantesAsync(
+            cliente, moderador.Token, reporte, EstadoReporteChat.Pendiente);
+    }
+
+    [Fact]
+    public async Task Consultar_evidencia_audita_antes_de_devolver_contenido()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-evidencia", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/evidencia");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var evidencia = await respuesta.Content.ReadFromJsonAsync<EvidenciaReporteChatDto>();
+        Assert.Equal(reporte.Id, evidencia!.ReporteId);
+        Assert.Equal(reporte.Detalle, evidencia.Detalle);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(reporte.ReportanteId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var auditoria = await db.RegistrosModeracion.AsNoTracking()
+            .Where(r => r.ReporteId == reporte.Id)
+            .ToListAsync();
+        var registro = Assert.Single(auditoria);
+        Assert.Equal(AccionModeracionChat.ConsultarEvidencia, registro.Accion);
+        Assert.Equal(moderador.UsuarioId, registro.ModeradorId);
+    }
+
+    private async Task ComprobarEstadoYAuditoriaAsync(
+        Guid reporteId,
+        EstadoReporteChat estado,
+        Guid? moderadorAsignadoId,
+        IReadOnlyList<AccionModeracionChat> acciones)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var persistido = await db.Reportes.AsNoTracking().SingleAsync(r => r.Id == reporteId);
+        Assert.Equal(estado, persistido.Estado);
+        Assert.Equal(moderadorAsignadoId, persistido.ModeradorAsignadoId);
+        var auditoria = await db.RegistrosModeracion.AsNoTracking()
+            .Where(r => r.ReporteId == reporteId)
+            .OrderBy(r => r.CreadoEn)
+            .Select(r => r.Accion)
+            .ToListAsync();
+        Assert.Equal(acciones, auditoria);
+    }
+
+    private static async Task ComprobarColaSinContenidoNiParticipantesAsync(
+        HttpClient cliente,
+        string token,
+        ReporteChat reporte,
+        EstadoReporteChat estado)
+    {
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes?estado={estado}&limite=20");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var cola = await respuesta.Content.ReadFromJsonAsync<IReadOnlyList<ReporteChatColaDto>>();
+        Assert.Contains(cola!, item => item.Id == reporte.Id && item.Estado == estado);
         var cuerpo = await respuesta.Content.ReadAsStringAsync();
         Assert.DoesNotContain(reporte.Detalle!, cuerpo, StringComparison.Ordinal);
         Assert.DoesNotContain(reporte.ReportanteId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
