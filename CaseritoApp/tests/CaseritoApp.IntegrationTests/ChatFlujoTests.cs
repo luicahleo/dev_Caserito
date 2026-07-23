@@ -260,6 +260,87 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
     }
 
     [Fact]
+    public async Task Reportar_mensaje_de_la_conversacion_devuelve_201()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-mensaje-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-mensaje-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var envio = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/mensajes", comprador.Token,
+            new EnviarMensajeRequest(Guid.NewGuid(), "Mensaje reportado"));
+        var mensaje = (await envio.Content.ReadFromJsonAsync<MensajeDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token,
+            new
+            {
+                TipoObjetivo = TipoObjetivoReporteChat.Mensaje,
+                MensajeId = mensaje.Id,
+                Categoria = CategoriaReporteChat.Acoso,
+                Detalle = "Detalle mínimo",
+            });
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
+        Assert.Equal("id", Assert.Single(cuerpo!).Key, StringComparer.OrdinalIgnoreCase);
+        Assert.NotEqual(Guid.Empty, cuerpo!["id"]);
+    }
+
+    [Fact]
+    public async Task Reportar_contraparte_rechaza_identificador_de_usuario_objetivo()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-contraparte-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-contraparte-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token,
+            new
+            {
+                TipoObjetivo = TipoObjetivoReporteChat.Participante,
+                UsuarioObjetivoId = vendedor.UsuarioId,
+                Categoria = CategoriaReporteChat.Acoso,
+                Detalle = "Detalle mínimo",
+            });
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reportar_contraparte_derivada_devuelve_201()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-derivado-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-derivado-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+
+        var respuesta = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token,
+            new
+            {
+                TipoObjetivo = TipoObjetivoReporteChat.Participante,
+                Categoria = CategoriaReporteChat.Acoso,
+                Detalle = "Detalle mínimo",
+            });
+
+        Assert.Equal(HttpStatusCode.Created, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
+        Assert.Equal("id", Assert.Single(cuerpo!).Key, StringComparer.OrdinalIgnoreCase);
+        Assert.NotEqual(Guid.Empty, cuerpo!["id"]);
+    }
+
+    [Fact]
     public async Task Cerrar_conversacion_participante_devuelve_204()
     {
         using var cliente = factory.CreateClient();

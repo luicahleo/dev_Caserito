@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Conversaciones;
@@ -22,6 +23,7 @@ public sealed record EnviarMensajeRequest(Guid ClaveIdempotencia, string Texto);
 
 public sealed record MarcarLecturaRequest(long HastaSecuencia);
 
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ReportarChatRequest(
     TipoObjetivoReporteChat TipoObjetivo,
     Guid? MensajeId,
