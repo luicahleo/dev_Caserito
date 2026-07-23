@@ -28,6 +28,10 @@ public sealed class ConsultasChatHandlerTests
         public Task<bool> PuedeAccederAsync(
             Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(PuedeAcceder);
+
+        public Task<bool> PuedeRecibirTiempoRealAsync(
+            Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(PuedeAcceder);
     }
 
     [Fact]

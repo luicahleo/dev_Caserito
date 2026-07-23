@@ -24,7 +24,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(CaseritoApp.BuildingBlocks.Application.Abstractions.IUnitOfWork).Assembly,
         typeof(ObtenerPerfilQuery).Assembly,
         typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly,
-        typeof(IniciarConversacionCommand).Assembly));
+        typeof(IniciarConversacionCommand).Assembly,
+        typeof(RevocarAccesoTiempoRealHandler).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -51,6 +52,8 @@ builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Validate(o => o.MaximoInvocacionesPorMinuto is > 0 and <= 600)
     .ValidateOnStart();
 builder.Services.AddSingleton<EstadoSuscripcionesChat>();
+builder.Services.AddSingleton<RegistroConexionesChat>();
+builder.Services.AddScoped<IRevocadorTiempoRealChat, RevocadorTiempoRealChat>();
 builder.Services.AddScoped<IPublicadorMensajesTiempoReal, PublicadorSignalRMensajes>();
 if (!builder.Environment.IsEnvironment("Testing"))
 {

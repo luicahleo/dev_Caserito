@@ -360,6 +360,7 @@ public static class ChatEndpoints
         Guid id,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublisher publisher,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -374,9 +375,13 @@ public static class ChatEndpoints
             return ConflictoPersistencia();
         }
 
-        return ejecucion.Valor!.EsExito
-            ? Results.NoContent()
-            : DesdeError(ejecucion.Valor.Error);
+        if (!ejecucion.Valor!.EsExito)
+        {
+            return DesdeError(ejecucion.Valor.Error);
+        }
+
+        await publisher.Publish(new AccesoTiempoRealRevocado(id), ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> ReabrirAsync(
@@ -406,6 +411,7 @@ public static class ChatEndpoints
         Guid id,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublisher publisher,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -420,9 +426,13 @@ public static class ChatEndpoints
             return ConflictoPersistencia();
         }
 
-        return ejecucion.Valor!.EsExito
-            ? Results.NoContent()
-            : DesdeError(ejecucion.Valor.Error);
+        if (!ejecucion.Valor!.EsExito)
+        {
+            return DesdeError(ejecucion.Valor.Error);
+        }
+
+        await publisher.Publish(new BloqueoTiempoRealConfirmado(id), ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> DesbloquearAsync(

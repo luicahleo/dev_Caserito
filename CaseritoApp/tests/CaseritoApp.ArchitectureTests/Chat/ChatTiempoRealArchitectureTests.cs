@@ -52,6 +52,7 @@ public sealed class ChatTiempoRealArchitectureTests
                 System.Reflection.BindingFlags.Instance
                 | System.Reflection.BindingFlags.Public
                 | System.Reflection.BindingFlags.DeclaredOnly)
+            .Where(x => x.GetBaseDefinition().DeclaringType == typeof(ChatHub))
             .Select(x => x.Name)
             .Order()
             .ToArray();

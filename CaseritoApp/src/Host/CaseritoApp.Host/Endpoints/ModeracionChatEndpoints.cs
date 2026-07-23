@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Moderacion;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Domain.Moderacion;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
@@ -95,18 +96,27 @@ public static class ModeracionChatEndpoints
         Guid id, ClaimsPrincipal usuario, ISender sender, CancellationToken ct) =>
         EjecutarAsync(usuario, moderadorId => new LiberarReporteChatCommand(id, moderadorId), sender, ct);
 
-    private static Task<IResult> AtenderAsync(
+    private static async Task<IResult> AtenderAsync(
         Guid id,
         AtenderReporteChatRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
-        CancellationToken ct) =>
-        EjecutarAsync(
+        IPublisher publisher,
+        CancellationToken ct)
+    {
+        var resultado = await EjecutarAsync(
             usuario,
             moderadorId => new AtenderReporteChatCommand(
                 id, moderadorId, request.CerrarConversacion),
             sender,
             ct);
+        if (request.CerrarConversacion && resultado is IStatusCodeHttpResult { StatusCode: StatusCodes.Status204NoContent })
+        {
+            await publisher.Publish(new AccesoTiempoRealRevocadoPorReporte(id), ct);
+        }
+
+        return resultado;
+    }
 
     private static Task<IResult> DescartarAsync(
         Guid id, ClaimsPrincipal usuario, ISender sender, CancellationToken ct) =>
@@ -116,13 +126,25 @@ public static class ModeracionChatEndpoints
             sender,
             ct);
 
-    private static Task<IResult> CerrarConversacionAsync(
-        Guid id, ClaimsPrincipal usuario, ISender sender, CancellationToken ct) =>
-        EjecutarAsync(
+    private static async Task<IResult> CerrarConversacionAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        IPublisher publisher,
+        CancellationToken ct)
+    {
+        var resultado = await EjecutarAsync(
             usuario,
             moderadorId => new CerrarPorModeracionCommand(id, moderadorId),
             sender,
             ct);
+        if (resultado is IStatusCodeHttpResult { StatusCode: StatusCodes.Status204NoContent })
+        {
+            await publisher.Publish(new AccesoTiempoRealRevocadoPorReporte(id), ct);
+        }
+
+        return resultado;
+    }
 
     private static Task<IResult> ReabrirConversacionAsync(
         Guid id, ClaimsPrincipal usuario, ISender sender, CancellationToken ct) =>
