@@ -12,6 +12,7 @@ import { NotFoundPage } from '../routes/NotFoundPage';
 import { KycPage } from '../routes/KycPage';
 import { AdminKycPage } from '../routes/AdminKycPage';
 import { AdminModeracionPage } from '../routes/AdminModeracionPage';
+import { AdminModeracionChatPage } from '../routes/AdminModeracionChatPage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
 
@@ -79,6 +80,16 @@ export const router = createBrowserRouter([
           <ProtectedRoute>
             <RequierePermiso permiso="kyc.revisar">
               <AdminKycPage />
+            </RequierePermiso>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/moderacion-chat',
+        element: (
+          <ProtectedRoute>
+            <RequierePermiso permiso="chat.moderar">
+              <AdminModeracionChatPage />
             </RequierePermiso>
           </ProtectedRoute>
         ),
