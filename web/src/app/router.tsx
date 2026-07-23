@@ -15,6 +15,8 @@ import { AdminModeracionPage } from '../routes/AdminModeracionPage';
 import { AdminModeracionChatPage } from '../routes/AdminModeracionChatPage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
+import { ConversacionesPage } from '../routes/ConversacionesPage';
+import { ConversacionPage } from '../routes/ConversacionPage';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +26,14 @@ export const router = createBrowserRouter([
       { path: '/avisos/:id', element: <DetalleAvisoPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/registro', element: <RegistroPage /> },
+      {
+        path: '/mensajes',
+        element: <ProtectedRoute><ConversacionesPage /></ProtectedRoute>,
+      },
+      {
+        path: '/mensajes/:id',
+        element: <ProtectedRoute><ConversacionPage /></ProtectedRoute>,
+      },
       {
         path: '/publicar',
         element: (
