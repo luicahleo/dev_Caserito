@@ -2,5 +2,5 @@
 # Uso: ./rebuild.ps1        -> levanta en background
 #      ./rebuild.ps1 -Logs  -> levanta y sigue los logs
 param([switch]$Logs)
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build --renew-anon-volumes
 if ($Logs) { docker compose -f docker-compose.dev.yml logs -f }
