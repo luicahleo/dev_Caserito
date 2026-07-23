@@ -1,6 +1,6 @@
 # Chat 3D — UI de participantes y notificación básica
 
-Fecha: 2026-07-23  
+Fecha: 2026-07-23
 Estado: aprobado
 
 ## Objetivo
