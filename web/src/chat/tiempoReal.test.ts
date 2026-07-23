@@ -53,4 +53,23 @@ describe('cliente de tiempo real de chat', () => {
     expect(recuperar).toHaveBeenCalledWith('conversacion-1');
     expect(recuperar).not.toHaveBeenCalledWith('conversacion-2');
   });
+
+  it('exige una suscripción explícita nueva después de una revocación', async () => {
+    const conexion = new ConexionFake();
+    const cliente = crearClienteTiempoReal({
+      getAccessToken: () => 'token',
+      crearConexion: () => conexion,
+    });
+    await cliente.suscribir('conversacion-1');
+
+    cliente.revocar('conversacion-1');
+    conexion.invocaciones = [];
+    await conexion.reconectado?.();
+
+    expect(conexion.invocaciones).toEqual([]);
+
+    await cliente.suscribir('conversacion-1');
+
+    expect(conexion.invocaciones).toEqual([['SuscribirConversacion', 'conversacion-1']]);
+  });
 });

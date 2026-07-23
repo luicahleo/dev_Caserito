@@ -92,6 +92,9 @@ export function crearClienteTiempoReal(opciones: OpcionesClienteTiempoReal) {
       }
       suscripciones.delete(conversacionId);
     },
+    revocar(conversacionId: string): void {
+      suscripciones.delete(conversacionId);
+    },
     alRecibirMensaje(handler: (mensaje: MensajeChat) => void): void {
       conexion.off('MensajeCreado');
       conexion.on('MensajeCreado', (payload) => handler(payload as MensajeChat));
