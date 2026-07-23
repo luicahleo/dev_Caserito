@@ -117,6 +117,151 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         Assert.Equal(moderador.UsuarioId, registro.ModeradorId);
     }
 
+    [Fact]
+    public async Task Atender_y_descartar_actualizan_estado_y_auditoria()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-resolver", RolesApp.Moderador);
+        var reporteAtendido = await CrearReporteAsync();
+        var reporteDescartado = await CrearReporteAsync();
+        await TomarReporteAsync(cliente, moderador.Token, reporteAtendido.Id);
+        await TomarReporteAsync(cliente, moderador.Token, reporteDescartado.Id);
+
+        using var atender = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/admin/moderacion/chat/reportes/{reporteAtendido.Id}/atender")
+        {
+            Content = JsonContent.Create(new { cerrarConversacion = false }),
+        };
+        atender.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaAtender = await cliente.SendAsync(atender);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaAtender.StatusCode);
+        Assert.Empty(await respuestaAtender.Content.ReadAsStringAsync());
+        await ComprobarEstadoYAuditoriaAsync(
+            reporteAtendido.Id,
+            EstadoReporteChat.Atendido,
+            moderador.UsuarioId,
+            [AccionModeracionChat.Tomar, AccionModeracionChat.Atender]);
+        await ComprobarColaSinContenidoNiParticipantesAsync(
+            cliente, moderador.Token, reporteAtendido, EstadoReporteChat.Atendido);
+
+        using var descartar = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/admin/moderacion/chat/reportes/{reporteDescartado.Id}/descartar");
+        descartar.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaDescartar = await cliente.SendAsync(descartar);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaDescartar.StatusCode);
+        Assert.Empty(await respuestaDescartar.Content.ReadAsStringAsync());
+        await ComprobarEstadoYAuditoriaAsync(
+            reporteDescartado.Id,
+            EstadoReporteChat.Descartado,
+            moderador.UsuarioId,
+            [AccionModeracionChat.Tomar, AccionModeracionChat.Descartar]);
+        await ComprobarColaSinContenidoNiParticipantesAsync(
+            cliente, moderador.Token, reporteDescartado, EstadoReporteChat.Descartado);
+    }
+
+    [Fact]
+    public async Task Cerrar_y_reabrir_por_moderacion_actualizan_conversacion_y_auditoria()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-cierre", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+        await TomarReporteAsync(cliente, moderador.Token, reporte.Id);
+
+        using var cerrar = new HttpRequestMessage(
+            HttpMethod.Put,
+            $"/api/admin/moderacion/chat/reportes/{reporte.Id}/cierre-conversacion");
+        cerrar.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaCerrar = await cliente.SendAsync(cerrar);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaCerrar.StatusCode);
+        Assert.Empty(await respuestaCerrar.Content.ReadAsStringAsync());
+        await ComprobarEstadoConversacionYAuditoriaAsync(
+            reporte,
+            EstadoConversacion.CerradaPorModeracion,
+            [AccionModeracionChat.Tomar, AccionModeracionChat.CerrarConversacion]);
+
+        using var reabrir = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"/api/admin/moderacion/chat/reportes/{reporte.Id}/cierre-conversacion");
+        reabrir.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuestaReabrir = await cliente.SendAsync(reabrir);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuestaReabrir.StatusCode);
+        Assert.Empty(await respuestaReabrir.Content.ReadAsStringAsync());
+        await ComprobarEstadoConversacionYAuditoriaAsync(
+            reporte,
+            EstadoConversacion.Activa,
+            [
+                AccionModeracionChat.Tomar,
+                AccionModeracionChat.CerrarConversacion,
+                AccionModeracionChat.ReabrirConversacion,
+            ]);
+    }
+
+    [Fact]
+    public async Task Resolver_reporte_asignado_a_otro_moderador_devuelve_409_generico()
+    {
+        using var cliente = factory.CreateClient();
+        var asignado = await RegistrarAsync(cliente, "chat-moderacion-asignado", RolesApp.Moderador);
+        var otro = await RegistrarAsync(cliente, "chat-moderacion-otro", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+        await TomarReporteAsync(cliente, asignado.Token, reporte.Id);
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/admin/moderacion/chat/reportes/{reporte.Id}/descartar");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", otro.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.Conflict, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(reporte.Id.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(reporte.Detalle!, cuerpo, StringComparison.Ordinal);
+        Assert.DoesNotContain(asignado.UsuarioId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Accion_sobre_reporte_inexistente_devuelve_404_generico()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-inexistente", RolesApp.Moderador);
+        var reporteId = Guid.NewGuid();
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"/api/admin/moderacion/chat/reportes/{reporteId}/tomar");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(reporteId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Limite_de_acciones_administrativas_devuelve_429_en_la_solicitud_once()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-limite", RolesApp.Moderador);
+        var estados = new List<HttpStatusCode>();
+
+        for (var i = 0; i < 11; i++)
+        {
+            using var solicitud = new HttpRequestMessage(
+                HttpMethod.Post,
+                $"/api/admin/moderacion/chat/reportes/{Guid.NewGuid()}/tomar");
+            solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+            estados.Add((await cliente.SendAsync(solicitud)).StatusCode);
+        }
+
+        Assert.All(estados.Take(10), estado => Assert.Equal(HttpStatusCode.NotFound, estado));
+        Assert.Equal(HttpStatusCode.TooManyRequests, estados[10]);
+    }
+
     private async Task ComprobarEstadoYAuditoriaAsync(
         Guid reporteId,
         EstadoReporteChat estado,
@@ -153,6 +298,33 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         var cuerpo = await respuesta.Content.ReadAsStringAsync();
         Assert.DoesNotContain(reporte.Detalle!, cuerpo, StringComparison.Ordinal);
         Assert.DoesNotContain(reporte.ReportanteId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task TomarReporteAsync(HttpClient cliente, string token, Guid reporteId)
+    {
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/admin/moderacion/chat/reportes/{reporteId}/tomar");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var respuesta = await cliente.SendAsync(solicitud);
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+    }
+
+    private async Task ComprobarEstadoConversacionYAuditoriaAsync(
+        ReporteChat reporte,
+        EstadoConversacion estado,
+        IReadOnlyList<AccionModeracionChat> acciones)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var conversacion = await db.Conversaciones.AsNoTracking()
+            .SingleAsync(c => c.Id == reporte.ConversacionId);
+        Assert.Equal(estado, conversacion.Estado);
+        var auditoria = await db.RegistrosModeracion.AsNoTracking()
+            .Where(r => r.ReporteId == reporte.Id)
+            .OrderBy(r => r.CreadoEn)
+            .Select(r => r.Accion)
+            .ToListAsync();
+        Assert.Equal(acciones, auditoria);
     }
 
     private async Task<UsuarioPrueba> RegistrarAsync(

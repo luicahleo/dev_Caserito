@@ -83,11 +83,13 @@ public static class ChatEndpoints
             .Produces(StatusCodes.Status429TooManyRequests);
 
         grupo.MapPost("/conversaciones/{id:guid}/reportes", ReportarAsync)
+            .RequireRateLimiting("chat-seguridad-acciones")
             .Produces(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesValidationProblem()
-            .Produces(StatusCodes.Status401Unauthorized);
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
 
         grupo.MapPut("/conversaciones/{id:guid}/cierre", CerrarAsync)
             .Produces(StatusCodes.Status204NoContent)

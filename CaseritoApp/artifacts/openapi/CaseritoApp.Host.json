@@ -1698,6 +1698,403 @@
         }
       }
     },
+    "/api/admin/moderacion/chat/reportes": {
+      "get": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EstadoReporteChat"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReporteChatColaDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/tomar": {
+      "post": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/liberar": {
+      "post": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/evidencia": {
+      "get": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenciaReporteChatDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/atender": {
+      "post": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtenderReporteChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/descartar": {
+      "post": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/admin/moderacion/chat/reportes/{id}/cierre-conversacion": {
+      "put": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ModeracionChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
     "/api/chat/conversaciones": {
       "post": {
         "tags": [
@@ -2068,6 +2465,255 @@
           }
         }
       }
+    },
+    "/api/chat/conversaciones/{id}/reportes": {
+      "post": {
+        "tags": [
+          "ChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportarChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "429": {
+            "description": "Too Many Requests"
+          }
+        }
+      }
+    },
+    "/api/chat/conversaciones/{id}/cierre": {
+      "put": {
+        "tags": [
+          "ChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/chat/conversaciones/{id}/bloqueo": {
+      "put": {
+        "tags": [
+          "ChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ChatEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2095,6 +2741,17 @@
         "properties": {
           "rol": {
             "type": "string"
+          }
+        }
+      },
+      "AtenderReporteChatRequest": {
+        "required": [
+          "cerrarConversacion"
+        ],
+        "type": "object",
+        "properties": {
+          "cerrarConversacion": {
+            "type": "boolean"
           }
         }
       },
@@ -2463,6 +3120,9 @@
           }
         }
       },
+      "CategoriaReporteChat": {
+        "type": "integer"
+      },
       "CiudadDto": {
         "required": [
           "id",
@@ -2487,7 +3147,10 @@
           "vendedorId",
           "creadaEn",
           "ultimaActividadEn",
-          "ultimaSecuencia"
+          "ultimaSecuencia",
+          "estado",
+          "origenCierre",
+          "puedeEnviar"
         ],
         "type": "object",
         "properties": {
@@ -2522,6 +3185,18 @@
               "string"
             ],
             "format": "int64"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoConversacion"
+          },
+          "origenCierre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "puedeEnviar": {
+            "type": "boolean"
           }
         }
       },
@@ -2534,7 +3209,10 @@
           "creadaEn",
           "ultimaActividadEn",
           "ultimaSecuencia",
-          "noLeidos"
+          "noLeidos",
+          "estado",
+          "origenCierre",
+          "puedeEnviar"
         ],
         "type": "object",
         "properties": {
@@ -2576,6 +3254,18 @@
               "string"
             ],
             "format": "int32"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoConversacion"
+          },
+          "origenCierre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "puedeEnviar": {
+            "type": "boolean"
           }
         }
       },
@@ -2671,6 +3361,9 @@
           }
         }
       },
+      "EstadoConversacion": {
+        "type": "integer"
+      },
       "EstadoKycDto": {
         "required": [
           "estado",
@@ -2686,6 +3379,51 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "EstadoReporteChat": {
+        "type": "integer"
+      },
+      "EvidenciaReporteChatDto": {
+        "required": [
+          "reporteId",
+          "tipoObjetivo",
+          "categoria",
+          "detalle",
+          "rolReportante",
+          "rolObjetivo",
+          "mensajes"
+        ],
+        "type": "object",
+        "properties": {
+          "reporteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipoObjetivo": {
+            "$ref": "#/components/schemas/TipoObjetivoReporteChat"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaReporteChat"
+          },
+          "detalle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "rolReportante": {
+            "type": "string"
+          },
+          "rolObjetivo": {
+            "type": "string"
+          },
+          "mensajes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MensajeEvidenciaChatDto"
+            }
           }
         }
       },
@@ -2860,6 +3598,44 @@
           }
         }
       },
+      "MensajeEvidenciaChatDto": {
+        "required": [
+          "id",
+          "secuencia",
+          "autorRol",
+          "texto",
+          "enviadoEn",
+          "esObjetivo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "secuencia": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "autorRol": {
+            "type": "string"
+          },
+          "texto": {
+            "type": "string"
+          },
+          "enviadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "esObjetivo": {
+            "type": "boolean"
+          }
+        }
+      },
       "PaginaChatResponseOfConversacionResumenDto": {
         "required": [
           "items",
@@ -3020,6 +3796,37 @@
           }
         }
       },
+      "ReportarChatRequest": {
+        "required": [
+          "tipoObjetivo",
+          "mensajeId",
+          "categoria",
+          "detalle"
+        ],
+        "type": "object",
+        "properties": {
+          "tipoObjetivo": {
+            "$ref": "#/components/schemas/TipoObjetivoReporteChat"
+          },
+          "mensajeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaReporteChat"
+          },
+          "detalle": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "ReporteAvisoDto": {
         "required": [
           "id",
@@ -3052,6 +3859,64 @@
             "format": "date-time"
           },
           "fechaResolucion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "ReporteChatColaDto": {
+        "required": [
+          "id",
+          "conversacionId",
+          "tipoObjetivo",
+          "mensajeId",
+          "categoria",
+          "estado",
+          "creadoEn",
+          "tomadoEn",
+          "resueltoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conversacionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tipoObjetivo": {
+            "$ref": "#/components/schemas/TipoObjetivoReporteChat"
+          },
+          "mensajeId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "categoria": {
+            "$ref": "#/components/schemas/CategoriaReporteChat"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/EstadoReporteChat"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tomadoEn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "resueltoEn": {
             "type": [
               "null",
               "string"
@@ -3333,6 +4198,9 @@
           }
         }
       },
+      "TipoObjetivoReporteChat": {
+        "type": "integer"
+      },
       "TokenAccesoResponse": {
         "required": [
           "accessToken"
@@ -3413,6 +4281,9 @@
     },
     {
       "name": "PublicoEndpoints"
+    },
+    {
+      "name": "ModeracionChatEndpoints"
     },
     {
       "name": "ChatEndpoints"

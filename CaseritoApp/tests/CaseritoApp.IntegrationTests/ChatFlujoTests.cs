@@ -439,6 +439,32 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
     }
 
     [Fact]
+    public async Task Limite_de_reportes_devuelve_429_en_la_solicitud_once()
+    {
+        using var cliente = factory.CreateClient();
+        var usuario = await RegistrarAsync(cliente, "chat-reporte-limite");
+        var estados = new List<HttpStatusCode>();
+
+        for (var i = 0; i < 11; i++)
+        {
+            var respuesta = await EnviarAsync(
+                cliente,
+                HttpMethod.Post,
+                $"/api/chat/conversaciones/{Guid.NewGuid()}/reportes",
+                usuario.Token,
+                new
+                {
+                    TipoObjetivo = TipoObjetivoReporteChat.Conversacion,
+                    Categoria = CategoriaReporteChat.Spam,
+                });
+            estados.Add(respuesta.StatusCode);
+        }
+
+        Assert.All(estados.Take(10), estado => Assert.Equal(HttpStatusCode.NotFound, estado));
+        Assert.Equal(HttpStatusCode.TooManyRequests, estados[10]);
+    }
+
+    [Fact]
     public async Task Cerrar_conversacion_participante_devuelve_204()
     {
         using var cliente = factory.CreateClient();
