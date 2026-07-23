@@ -166,6 +166,7 @@ app.MapCatalogoEndpoints();
 app.MapPublicoEndpoints();
 app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
+app.MapModeracionChatEndpoints();
 app.MapChatEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {

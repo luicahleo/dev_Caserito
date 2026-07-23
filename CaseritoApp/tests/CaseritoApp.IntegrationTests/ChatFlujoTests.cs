@@ -11,6 +11,7 @@ using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -338,6 +339,103 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
         var cuerpo = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, Guid>>();
         Assert.Equal("id", Assert.Single(cuerpo!).Key, StringComparer.OrdinalIgnoreCase);
         Assert.NotEqual(Guid.Empty, cuerpo!["id"]);
+    }
+
+    [Fact]
+    public async Task Reportar_recurso_inexistente_o_ajeno_devuelve_404_indistinguible()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-oculto-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-oculto-vendedor");
+        var compradorAjeno = await RegistrarAsync(cliente, "chat-reporte-oculto-comprador-ajeno");
+        var vendedorAjeno = await RegistrarAsync(cliente, "chat-reporte-oculto-vendedor-ajeno");
+        var avisoPropio = await CrearAvisoAsync(vendedor.UsuarioId);
+        var avisoAjeno = await CrearAvisoAsync(vendedorAjeno.UsuarioId);
+        var inicioPropio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(avisoPropio.Id));
+        var inicioAjeno = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            compradorAjeno.Token, new IniciarConversacionRequest(avisoAjeno.Id));
+        var conversacionPropia = (await inicioPropio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var conversacionAjena = (await inicioAjeno.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var inexistente = Guid.NewGuid();
+        var request = new
+        {
+            TipoObjetivo = TipoObjetivoReporteChat.Conversacion,
+            Categoria = CategoriaReporteChat.Acoso,
+            Detalle = "argumento secreto irrepetible",
+        };
+
+        var respuestaInexistente = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{inexistente}/reportes", comprador.Token, request);
+        var respuestaAjena = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacionAjena.Id}/reportes", comprador.Token, request);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuestaInexistente.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, respuestaAjena.StatusCode);
+        var problemaInexistente = (await respuestaInexistente.Content.ReadFromJsonAsync<ProblemDetails>())!;
+        var problemaAjeno = (await respuestaAjena.Content.ReadFromJsonAsync<ProblemDetails>())!;
+        Assert.Equal(problemaInexistente.Status, problemaAjeno.Status);
+        Assert.Equal(problemaInexistente.Title, problemaAjeno.Title);
+        Assert.Equal(problemaInexistente.Detail, problemaAjeno.Detail);
+        Assert.Equal(problemaInexistente.Type, problemaAjeno.Type);
+        Assert.Equal("chat_conversacion_no_encontrada", problemaInexistente.Title);
+        Assert.Equal("La conversación no está disponible.", problemaInexistente.Detail);
+
+        var cuerpos = string.Concat(
+            await respuestaInexistente.Content.ReadAsStringAsync(),
+            await respuestaAjena.Content.ReadAsStringAsync());
+        Assert.DoesNotContain(inexistente.ToString(), cuerpos, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(conversacionPropia.Id.ToString(), cuerpos, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(conversacionAjena.Id.ToString(), cuerpos, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(request.Detalle, cuerpos, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Reportar_objetivo_duplicado_devuelve_409_generico()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "chat-reporte-duplicado-comprador");
+        var vendedor = await RegistrarAsync(cliente, "chat-reporte-duplicado-vendedor");
+        var aviso = await CrearAvisoAsync(vendedor.UsuarioId);
+        var inicio = await EnviarAsync(cliente, HttpMethod.Post, "/api/chat/conversaciones",
+            comprador.Token, new IniciarConversacionRequest(aviso.Id));
+        var conversacion = (await inicio.Content.ReadFromJsonAsync<ConversacionDto>())!;
+        var request = new
+        {
+            TipoObjetivo = TipoObjetivoReporteChat.Conversacion,
+            Categoria = CategoriaReporteChat.Spam,
+            Detalle = "detalle duplicado confidencial",
+        };
+        var primero = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token, request);
+        Assert.Equal(HttpStatusCode.Created, primero.StatusCode);
+
+        var duplicado = await EnviarAsync(cliente, HttpMethod.Post,
+            $"/api/chat/conversaciones/{conversacion.Id}/reportes", comprador.Token, request);
+
+        Assert.Equal(HttpStatusCode.Conflict, duplicado.StatusCode);
+        var problema = (await duplicado.Content.ReadFromJsonAsync<ProblemDetails>())!;
+        Assert.Equal("chat_reporte_transicion_invalida", problema.Title);
+        Assert.Equal("El reporte no está disponible para esa acción.", problema.Detail);
+        var cuerpo = await duplicado.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(conversacion.Id.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(request.Detalle, cuerpo, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Reportar_sin_autenticacion_devuelve_401()
+    {
+        using var cliente = factory.CreateClient();
+
+        var respuesta = await cliente.PostAsJsonAsync(
+            $"/api/chat/conversaciones/{Guid.NewGuid()}/reportes",
+            new
+            {
+                TipoObjetivo = TipoObjetivoReporteChat.Conversacion,
+                Categoria = CategoriaReporteChat.Acoso,
+            });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, respuesta.StatusCode);
     }
 
     [Fact]
