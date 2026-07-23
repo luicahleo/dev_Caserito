@@ -3,6 +3,8 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import * as authCtx from '../auth/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import * as chat from '../api/chat';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -21,10 +23,13 @@ function mockAuth(estaAutenticado: boolean, permisos: string[] = []) {
 }
 
 function montar() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
-    <MemoryRouter>
-      <AppLayout />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -58,5 +63,21 @@ describe('AppLayout', () => {
     expect(
       screen.queryByRole('link', { name: /^moderación de chat$/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it('muestra el contador global básico de mensajes no leídos', async () => {
+    mockAuth(true);
+    vi.spyOn(chat, 'listarConversaciones').mockResolvedValue({
+      siguienteCursor: null,
+      items: [
+        {
+          id: 'c1', avisoId: 'a1', contraparteId: 'u2', rol: 'Comprador',
+          creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 3, noLeidos: 3,
+          estado: 0, origenCierre: null, puedeEnviar: true,
+        },
+      ],
+    });
+    montar();
+    expect(await screen.findByRole('link', { name: 'Mensajes, 3 no leídos' })).toBeInTheDocument();
   });
 });

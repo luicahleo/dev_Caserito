@@ -3,6 +3,8 @@ import { api, desempaquetar } from './http';
 import type { components } from './schema';
 
 export type CrearReporteChatRequest = components['schemas']['ReportarChatRequest'];
+type ConversacionDto = components['schemas']['ConversacionDto'];
+type PaginaMensajesDto = components['schemas']['PaginaChatResponseOfMensajeDto'];
 type ConversacionResumenDto = components['schemas']['ConversacionResumenDto'];
 type PaginaConversacionesDto = components['schemas']['PaginaChatResponseOfConversacionResumenDto'];
 export type ConversacionResumen = Omit<ConversacionResumenDto, 'ultimaSecuencia' | 'noLeidos'> & {
@@ -12,6 +14,22 @@ export type ConversacionResumen = Omit<ConversacionResumenDto, 'ultimaSecuencia'
 export type PaginaConversaciones = Omit<PaginaConversacionesDto, 'items'> & {
   items: ConversacionResumen[];
 };
+export type Conversacion = Omit<ConversacionDto, 'ultimaSecuencia'> & {
+  ultimaSecuencia: number;
+};
+export type PaginaMensajes = Omit<PaginaMensajesDto, 'items'> & {
+  items: MensajeChat[];
+};
+
+function convertirConversacion(conversacion: ConversacionDto): Conversacion {
+  return { ...conversacion, ultimaSecuencia: Number(conversacion.ultimaSecuencia) };
+}
+
+export async function iniciarConversacion(avisoId: string): Promise<Conversacion> {
+  return convertirConversacion(
+    desempaquetar(await api.POST('/api/chat/conversaciones', { body: { avisoId } })),
+  );
+}
 
 export async function listarConversaciones(
   cursor?: string,
@@ -93,4 +111,62 @@ export async function recuperarMensajes(
     ...mensaje,
     secuencia: Number(mensaje.secuencia),
   }));
+}
+
+export async function buscarConversacionPropia(
+  conversacionId: string,
+): Promise<ConversacionResumen | undefined> {
+  let cursor: string | undefined;
+  const cursoresVisitados = new Set<string>();
+  do {
+    const pagina = await listarConversaciones(cursor, 50);
+    const encontrada = pagina.items.find((conversacion) => conversacion.id === conversacionId);
+    if (encontrada) return encontrada;
+    cursor = pagina.siguienteCursor ?? undefined;
+    if (cursor && cursoresVisitados.has(cursor)) return undefined;
+    if (cursor) cursoresVisitados.add(cursor);
+  } while (cursor);
+  return undefined;
+}
+
+export async function obtenerMensajes(
+  conversacionId: string,
+  cursor?: string,
+  limite = 50,
+): Promise<PaginaMensajes> {
+  const pagina = desempaquetar(
+    await api.GET('/api/chat/conversaciones/{id}/mensajes', {
+      params: { path: { id: conversacionId }, query: { cursor, limite } },
+    }),
+  );
+  return {
+    ...pagina,
+    items: pagina.items.map((mensaje) => ({ ...mensaje, secuencia: Number(mensaje.secuencia) })),
+  };
+}
+
+export async function enviarMensaje(
+  conversacionId: string,
+  claveIdempotencia: string,
+  texto: string,
+): Promise<MensajeChat> {
+  const mensaje = desempaquetar(
+    await api.POST('/api/chat/conversaciones/{id}/mensajes', {
+      params: { path: { id: conversacionId } },
+      body: { claveIdempotencia, texto },
+    }),
+  );
+  return { ...mensaje, secuencia: Number(mensaje.secuencia) };
+}
+
+export async function marcarLectura(
+  conversacionId: string,
+  hastaSecuencia: number,
+): Promise<void> {
+  desempaquetar(
+    await api.PUT('/api/chat/conversaciones/{id}/lectura', {
+      params: { path: { id: conversacionId } },
+      body: { hastaSecuencia },
+    }),
+  );
 }

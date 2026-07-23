@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import {
   Alert,
   Box,
@@ -12,23 +12,39 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { obtenerAvisoPublico, reportarAviso } from '../api/avisos';
-import { getAccessToken } from '../auth/session';
+import { obtenerAvisoPublico, obtenerMiAviso, reportarAviso } from '../api/avisos';
+import { iniciarConversacion } from '../api/chat';
+import { useAuth } from '../auth/AuthContext';
 import { formatearBob } from '../lib/formato';
 import { HttpError } from '../api/http';
 
 export function DetalleAvisoPage() {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
+  const { estaAutenticado } = useAuth();
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [reporteAbierto, setReporteAbierto] = useState(false);
   const [motivo, setMotivo] = useState('EstafaOEngano');
   const [detalle, setDetalle] = useState('');
-  const estaAutenticado = getAccessToken() !== null;
   const reporte = useMutation({ mutationFn: () => reportarAviso(id, { motivo, detalle: detalle.trim() || null }), onSuccess: () => setReporteAbierto(false) });
+  const contacto = useMutation({
+    mutationFn: () => iniciarConversacion(id),
+    onSuccess: (conversacion) => navigate(`/mensajes/${conversacion.id}`),
+  });
+  const propiedad = useQuery({
+    queryKey: ['mi-aviso', id],
+    queryFn: () => obtenerMiAviso(id),
+    enabled: estaAutenticado,
+    retry: false,
+  });
   const { data, isLoading, error } = useQuery({
     queryKey: ['aviso-publico', id],
     queryFn: () => obtenerAvisoPublico(id),
   });
+  const esAvisoAjeno =
+    estaAutenticado &&
+    propiedad.error instanceof HttpError &&
+    propiedad.error.status === 404;
 
   if (isLoading) {
     return (
@@ -112,6 +128,27 @@ export function DetalleAvisoPage() {
       <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
         {data.descripcion}
       </Typography>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 3 }}>
+        {esAvisoAjeno && (
+          <Button
+            variant="contained"
+            onClick={() => contacto.mutate()}
+            disabled={contacto.isPending}
+          >
+            {contacto.isPending ? 'Abriendo conversación…' : 'Contactar al vendedor'}
+          </Button>
+        )}
+        {!estaAutenticado && (
+          <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }}>
+            Inicia sesión para contactar
+          </Button>
+        )}
+      </Stack>
+      {contacto.isError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          No se pudo abrir la conversación. Inténtalo nuevamente.
+        </Alert>
+      )}
       {estaAutenticado ? <Button color="error" onClick={() => setReporteAbierto(true)} sx={{ mt: 3 }}>Reportar aviso</Button> : <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }} sx={{ mt: 3 }}>Inicia sesión para reportar</Button>}
       <Dialog open={reporteAbierto} onClose={() => setReporteAbierto(false)} fullWidth>
         <DialogTitle>Reportar aviso</DialogTitle>
