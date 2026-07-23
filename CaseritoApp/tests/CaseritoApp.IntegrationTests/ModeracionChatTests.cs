@@ -10,8 +10,10 @@ using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace CaseritoApp.IntegrationTests;
 
@@ -90,6 +92,34 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
     }
 
     [Fact]
+    public async Task Reporte_solo_puede_ser_tomado_por_un_moderador_concurrente()
+    {
+        using var cliente = factory.CreateClient();
+        var primero = await RegistrarAsync(cliente, "chat-moderacion-toma-primero", RolesApp.Moderador);
+        var segundo = await RegistrarAsync(cliente, "chat-moderacion-toma-segundo", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+
+        var respuestas = await Task.WhenAll(
+            EnviarAccionAsync(cliente, primero.Token, reporte.Id, "tomar"),
+            EnviarAccionAsync(cliente, segundo.Token, reporte.Id, "tomar"));
+
+        Assert.Single(respuestas, respuesta => respuesta.StatusCode == HttpStatusCode.NoContent);
+        Assert.Single(respuestas, respuesta => respuesta.StatusCode == HttpStatusCode.Conflict);
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var persistido = await db.Reportes.AsNoTracking().SingleAsync(r => r.Id == reporte.Id);
+        Assert.Equal(EstadoReporteChat.EnRevision, persistido.Estado);
+        Assert.True(
+            persistido.ModeradorAsignadoId == primero.UsuarioId ||
+            persistido.ModeradorAsignadoId == segundo.UsuarioId);
+        Assert.Equal(
+            1,
+            await db.RegistrosModeracion.AsNoTracking().CountAsync(
+                r => r.ReporteId == reporte.Id && r.Accion == AccionModeracionChat.Tomar));
+    }
+
+    [Fact]
     public async Task Consultar_evidencia_audita_antes_de_devolver_contenido()
     {
         using var cliente = factory.CreateClient();
@@ -115,6 +145,100 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         var registro = Assert.Single(auditoria);
         Assert.Equal(AccionModeracionChat.ConsultarEvidencia, registro.Accion);
         Assert.Equal(moderador.UsuarioId, registro.ModeradorId);
+    }
+
+    [Fact]
+    public async Task Evidencia_de_mensaje_incluye_hasta_cinco_anteriores_y_cinco_posteriores()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-ventana-mensaje", RolesApp.Moderador);
+        var (reporte, mensajes) = await CrearReporteConMensajesAsync(
+            TipoObjetivoReporteChat.Mensaje, 13, 7);
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/evidencia");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var evidencia = (await respuesta.Content.ReadFromJsonAsync<EvidenciaReporteChatDto>())!;
+        Assert.Equal(11, evidencia.Mensajes.Count);
+        Assert.Equal(
+            mensajes.Skip(1).Take(11).Select(m => m.Id),
+            evidencia.Mensajes.Select(m => m.Id));
+        Assert.Equal(7, Assert.Single(evidencia.Mensajes, m => m.EsObjetivo).Secuencia);
+    }
+
+    [Fact]
+    public async Task Evidencia_de_conversacion_incluye_ultimos_diez_sin_participantes()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-ventana-conversacion", RolesApp.Moderador);
+        var (reporte, mensajes) = await CrearReporteConMensajesAsync(
+            TipoObjetivoReporteChat.Conversacion, 13);
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/evidencia");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var evidencia = (await respuesta.Content.ReadFromJsonAsync<EvidenciaReporteChatDto>())!;
+        Assert.Equal(mensajes.Skip(3).Select(m => m.Id), evidencia.Mensajes.Select(m => m.Id));
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        using var scope = factory.Services.CreateScope();
+        var conversacion = await scope.ServiceProvider.GetRequiredService<ChatDbContext>()
+            .Conversaciones.AsNoTracking().SingleAsync(c => c.Id == reporte.ConversacionId);
+        Assert.DoesNotContain(conversacion.CompradorId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain(conversacion.VendedorId.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Evidencia_de_participante_incluye_ultimos_diez_con_roles_relativos()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-ventana-participante", RolesApp.Moderador);
+        var (reporte, mensajes) = await CrearReporteConMensajesAsync(
+            TipoObjetivoReporteChat.Participante, 13);
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/evidencia");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var evidencia = (await respuesta.Content.ReadFromJsonAsync<EvidenciaReporteChatDto>())!;
+        Assert.Equal(mensajes.Skip(3).Select(m => m.Id), evidencia.Mensajes.Select(m => m.Id));
+        Assert.Equal("Comprador", evidencia.RolReportante);
+        Assert.Equal("Vendedor", evidencia.RolObjetivo);
+        Assert.All(evidencia.Mensajes, mensaje =>
+            Assert.True(mensaje.AutorRol is "Comprador" or "Vendedor"));
+    }
+
+    [Fact]
+    public async Task Evidencia_no_se_devuelve_cuando_falla_la_auditoria()
+    {
+        await using var hostSinAuditoria = factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(servicios =>
+            {
+                servicios.RemoveAll<IAuditorModeracionChat>();
+                servicios.AddSingleton<IAuditorModeracionChat, AuditorQueFalla>();
+            }));
+        using var cliente = hostSinAuditoria.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-auditoria-fallida", RolesApp.Moderador);
+        var (reporte, _) = await CrearReporteConMensajesAsync(
+            TipoObjetivoReporteChat.Conversacion, 3);
+
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/evidencia");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.Conflict, respuesta.StatusCode);
+        var cuerpo = await respuesta.Content.ReadAsStringAsync();
+        Assert.DoesNotContain(reporte.Detalle!, cuerpo, StringComparison.Ordinal);
+        Assert.DoesNotContain("mensaje 1", cuerpo, StringComparison.Ordinal);
+        Assert.DoesNotContain(reporte.Id.ToString(), cuerpo, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -161,6 +285,68 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
             [AccionModeracionChat.Tomar, AccionModeracionChat.Descartar]);
         await ComprobarColaSinContenidoNiParticipantesAsync(
             cliente, moderador.Token, reporteDescartado, EstadoReporteChat.Descartado);
+    }
+
+    [Fact]
+    public async Task Atender_con_cierre_confirma_reporte_conversacion_y_auditoria_juntos()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-atender-cierre", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+        await TomarReporteAsync(cliente, moderador.Token, reporte.Id);
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/admin/moderacion/chat/reportes/{reporte.Id}/atender")
+        {
+            Content = JsonContent.Create(new { cerrarConversacion = true }),
+        };
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", moderador.Token);
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var persistido = await db.Reportes.AsNoTracking().SingleAsync(r => r.Id == reporte.Id);
+        var conversacion = await db.Conversaciones.AsNoTracking()
+            .SingleAsync(c => c.Id == reporte.ConversacionId);
+        var acciones = await db.RegistrosModeracion.AsNoTracking()
+            .Where(r => r.ReporteId == reporte.Id)
+            .OrderBy(r => r.CreadoEn)
+            .Select(r => r.Accion)
+            .ToListAsync();
+        Assert.Equal(EstadoReporteChat.Atendido, persistido.Estado);
+        Assert.Equal(EstadoConversacion.CerradaPorModeracion, conversacion.Estado);
+        Assert.Equal(3, acciones.Count);
+        Assert.Contains(AccionModeracionChat.Tomar, acciones);
+        Assert.Contains(AccionModeracionChat.CerrarConversacion, acciones);
+        Assert.Contains(AccionModeracionChat.Atender, acciones);
+    }
+
+    [Fact]
+    public async Task Descartar_reporte_no_cierra_la_conversacion()
+    {
+        using var cliente = factory.CreateClient();
+        var moderador = await RegistrarAsync(cliente, "chat-moderacion-descartar-activa", RolesApp.Moderador);
+        var reporte = await CrearReporteAsync();
+        await TomarReporteAsync(cliente, moderador.Token, reporte.Id);
+
+        var respuesta = await EnviarAccionAsync(
+            cliente, moderador.Token, reporte.Id, "descartar");
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        var persistido = await db.Reportes.AsNoTracking().SingleAsync(r => r.Id == reporte.Id);
+        var conversacion = await db.Conversaciones.AsNoTracking()
+            .SingleAsync(c => c.Id == reporte.ConversacionId);
+        Assert.Equal(EstadoReporteChat.Descartado, persistido.Estado);
+        Assert.Equal(EstadoConversacion.Activa, conversacion.Estado);
+        Assert.DoesNotContain(
+            await db.RegistrosModeracion.AsNoTracking()
+                .Where(r => r.ReporteId == reporte.Id)
+                .Select(r => r.Accion)
+                .ToListAsync(),
+            accion => accion == AccionModeracionChat.CerrarConversacion);
     }
 
     [Fact]
@@ -309,6 +495,18 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
     }
 
+    private static async Task<HttpResponseMessage> EnviarAccionAsync(
+        HttpClient cliente,
+        string token,
+        Guid reporteId,
+        string accion)
+    {
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Post, $"/api/admin/moderacion/chat/reportes/{reporteId}/{accion}");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return await cliente.SendAsync(solicitud);
+    }
+
     private async Task ComprobarEstadoConversacionYAuditoriaAsync(
         ReporteChat reporte,
         EstadoConversacion estado,
@@ -366,5 +564,55 @@ public sealed class ModeracionChatTests(CaseritoApiFactory factory) : IClassFixt
         return reporte;
     }
 
+    private async Task<(ReporteChat Reporte, IReadOnlyList<Mensaje> Mensajes)>
+        CrearReporteConMensajesAsync(
+            TipoObjetivoReporteChat tipoObjetivo,
+            int cantidad,
+            long? secuenciaObjetivo = null)
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, DateTimeOffset.UtcNow).Valor;
+        var mensajes = Enumerable.Range(1, cantidad)
+            .Select(secuencia => conversacion.CrearMensaje(
+                secuencia % 2 == 0 ? vendedorId : compradorId,
+                Guid.NewGuid(),
+                secuencia,
+                $"mensaje {secuencia}",
+                DateTimeOffset.UtcNow.AddSeconds(secuencia)).Valor)
+            .ToArray();
+        var mensajeId = secuenciaObjetivo.HasValue
+            ? mensajes.Single(m => m.Secuencia == secuenciaObjetivo.Value).Id
+            : (Guid?)null;
+        var reporte = ReporteChat.Crear(
+            conversacion.Id,
+            compradorId,
+            tipoObjetivo,
+            mensajeId,
+            CategoriaReporteChat.Acoso,
+            "detalle reservado",
+            DateTimeOffset.UtcNow).Valor;
+
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        db.Conversaciones.Add(conversacion);
+        db.Mensajes.AddRange(mensajes);
+        db.Reportes.Add(reporte);
+        await db.SaveChangesAsync();
+        return (reporte, mensajes);
+    }
+
     private sealed record UsuarioPrueba(Guid UsuarioId, string Token);
+
+    private sealed class AuditorQueFalla : IAuditorModeracionChat
+    {
+        public Task<bool> RegistrarConsultaEvidenciaAsync(
+            Guid reporteId,
+            Guid conversacionId,
+            Guid moderadorId,
+            DateTimeOffset fecha,
+            CancellationToken ct) =>
+            Task.FromResult(false);
+    }
 }

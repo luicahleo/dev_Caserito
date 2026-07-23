@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Moderacion;
 using CaseritoApp.Chat.Application.Seguridad;
@@ -178,8 +179,15 @@ public static class ModeracionChatEndpoints
             return Results.Unauthorized();
         }
 
-        var resultado = await sender.Send(crearComando(moderadorId), ct);
-        return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
+        try
+        {
+            var resultado = await sender.Send(crearComando(moderadorId), ct);
+            return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
+        }
+        catch (ConflictoConcurrenciaException)
+        {
+            return ConflictoGenerico();
+        }
     }
 
     private static bool TryUserId(ClaimsPrincipal usuario, out Guid usuarioId)
@@ -195,11 +203,13 @@ public static class ModeracionChatEndpoints
             title: ErroresModeracionChat.NoEncontrado,
             detail: "El reporte no está disponible.",
             statusCode: StatusCodes.Status404NotFound),
-        _ => Results.Problem(
-            title: ErroresModeracionChat.TransicionInvalida,
-            detail: "No se pudo completar la acción.",
-            statusCode: StatusCodes.Status409Conflict),
+        _ => ConflictoGenerico(),
     };
+
+    private static IResult ConflictoGenerico() => Results.Problem(
+        title: ErroresModeracionChat.TransicionInvalida,
+        detail: "No se pudo completar la acción.",
+        statusCode: StatusCodes.Status409Conflict);
 }
 
 public sealed record AtenderReporteChatRequest(bool CerrarConversacion);
