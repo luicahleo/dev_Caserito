@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from './http';
 import {
   bloquearParticipante,
+  buscarConversacionPropia,
   cerrarConversacion,
   crearReporteChat,
   desbloquearParticipante,
@@ -176,6 +177,32 @@ describe('api/chat', () => {
     expect(put).toHaveBeenCalledWith('/api/chat/conversaciones/{id}/lectura', {
       params: { path: { id: 'c1' } },
       body: { hastaSecuencia: 4 },
+    });
+  });
+
+  it('encuentra una conversación propia recorriendo cursores opacos', async () => {
+    vi.spyOn(api, 'GET')
+      .mockResolvedValueOnce({
+        data: { items: [], siguienteCursor: 'pagina-2' },
+        response: new Response(null, { status: 200 }),
+      } as never)
+      .mockResolvedValueOnce({
+        data: {
+          items: [{
+            id: 'buscada', avisoId: 'a1', contraparteId: 'u2', rol: 'Vendedor',
+            creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: '2', noLeidos: '0',
+            estado: 0, origenCierre: null, puedeEnviar: true,
+          }],
+          siguienteCursor: null,
+        },
+        response: new Response(null, { status: 200 }),
+      } as never);
+
+    const encontrada = await buscarConversacionPropia('buscada');
+
+    expect(encontrada?.id).toBe('buscada');
+    expect(api.GET).toHaveBeenLastCalledWith('/api/chat/conversaciones', {
+      params: { query: { cursor: 'pagina-2', limite: 50 } },
     });
   });
 });

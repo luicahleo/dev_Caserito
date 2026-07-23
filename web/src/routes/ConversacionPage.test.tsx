@@ -30,13 +30,10 @@ function montar() {
 
 describe('ConversacionPage', () => {
   it('muestra historial y deshabilita el compositor cuando no puede enviar', async () => {
-    vi.spyOn(chat, 'listarConversaciones').mockResolvedValue({
-      siguienteCursor: null,
-      items: [{
+    vi.spyOn(chat, 'buscarConversacionPropia').mockResolvedValue({
         id: 'c1', avisoId: 'a1', contraparteId: 'otra-persona', rol: 'Comprador',
         creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 1, noLeidos: 1,
         estado: 0, origenCierre: null, puedeEnviar: false,
-      }],
     });
     vi.spyOn(chat, 'obtenerMensajes').mockResolvedValue({
       siguienteCursor: null,

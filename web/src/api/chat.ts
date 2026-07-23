@@ -113,6 +113,22 @@ export async function recuperarMensajes(
   }));
 }
 
+export async function buscarConversacionPropia(
+  conversacionId: string,
+): Promise<ConversacionResumen | undefined> {
+  let cursor: string | undefined;
+  const cursoresVisitados = new Set<string>();
+  do {
+    const pagina = await listarConversaciones(cursor, 50);
+    const encontrada = pagina.items.find((conversacion) => conversacion.id === conversacionId);
+    if (encontrada) return encontrada;
+    cursor = pagina.siguienteCursor ?? undefined;
+    if (cursor && cursoresVisitados.has(cursor)) return undefined;
+    if (cursor) cursoresVisitados.add(cursor);
+  } while (cursor);
+  return undefined;
+}
+
 export async function obtenerMensajes(
   conversacionId: string,
   cursor?: string,

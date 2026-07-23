@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
   bloquearParticipante, cerrarConversacion, crearReporteChat, desbloquearParticipante,
-  enviarMensaje, listarConversaciones, marcarLectura, obtenerMensajes,
+  buscarConversacionPropia, enviarMensaje, marcarLectura, obtenerMensajes,
   reabrirConversacion, recuperarMensajes, type CrearReporteChatRequest,
 } from '../api/chat';
 import type { MensajeChat } from '../chat/sincronizacionMensajes';
@@ -53,11 +53,11 @@ export function ConversacionPage() {
   const [categoria, setCategoria] = useState(1);
   const [detalle, setDetalle] = useState('');
 
-  const conversaciones = useQuery({
-    queryKey: ['chat-conversaciones', 50],
-    queryFn: () => listarConversaciones(undefined, 50),
+  const consultaConversacion = useQuery({
+    queryKey: ['chat-conversacion', id],
+    queryFn: () => buscarConversacionPropia(id),
   });
-  const conversacion = conversaciones.data?.items.find((item) => item.id === id);
+  const conversacion = consultaConversacion.data;
   const historial = useQuery({
     queryKey: ['chat-mensajes', id],
     queryFn: () => obtenerMensajes(id),
@@ -124,6 +124,7 @@ export function ConversacionPage() {
       cliente.revocar(id);
       void queryClient.invalidateQueries({ queryKey: ['chat-conversaciones'] });
       void queryClient.invalidateQueries({ queryKey: ['chat-bandeja'] });
+      void queryClient.invalidateQueries({ queryKey: ['chat-conversacion', id] });
     },
   });
   const reportar = useMutation({
@@ -140,10 +141,10 @@ export function ConversacionPage() {
     onSuccess: () => { setReporte(null); setDetalle(''); },
   });
 
-  if (conversaciones.isLoading || (conversacion && historial.isLoading)) {
+  if (consultaConversacion.isLoading || (conversacion && historial.isLoading)) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
   }
-  if (conversaciones.error || historial.error || !conversacion) {
+  if (consultaConversacion.error || historial.error || !conversacion) {
     return <Container maxWidth="sm" sx={{ py: 4 }}><Alert severity="error">No se pudo cargar la conversación.</Alert><Button component={RouterLink} to="/mensajes" sx={{ mt: 2 }}>Volver a mensajes</Button></Container>;
   }
 
