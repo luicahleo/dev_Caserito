@@ -25,6 +25,9 @@ public sealed class EnviarMensajeCommandHandlerTests
 
     private sealed class MensajesFake : IRepositorioMensajes
     {
+        public Task<Mensaje?> ObtenerAsync(Guid id, CancellationToken ct) =>
+            Task.FromResult<Mensaje?>(null);
+
         public Mensaje? Existente { get; set; }
 
         public int Reservas { get; private set; }

@@ -1,9 +1,11 @@
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
+using CaseritoApp.Chat.Application.Moderacion;
 using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Infrastructure.Conversaciones;
 using CaseritoApp.Chat.Infrastructure.Mensajes;
+using CaseritoApp.Chat.Infrastructure.Moderacion;
 using CaseritoApp.Chat.Infrastructure.Seguridad;
 using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +32,10 @@ public static class DependencyInjection
         servicios.AddScoped<IRepositorioMensajes, RepositorioMensajesEfCore>();
         servicios.AddScoped<IConsultaMensajes, ConsultaMensajesEfCore>();
         servicios.AddScoped<IRepositorioBloqueosUsuario, RepositorioBloqueosUsuarioEfCore>();
+        servicios.AddScoped<IRepositorioReportesChat, RepositorioReportesChatEfCore>();
+        servicios.AddScoped<IRepositorioRegistrosModeracionChat, RepositorioRegistrosModeracionChatEfCore>();
+        servicios.AddScoped<IConsultaModeracionChat, ConsultaModeracionChatEfCore>();
+        servicios.AddScoped<IAuditorModeracionChat, AuditorModeracionChatEfCore>();
         servicios.TryAddSingleton(TimeProvider.System);
         servicios.AddScoped<IAlmacenEntregasTiempoReal, AlmacenEntregasTiempoRealSql>();
         servicios.AddScoped<IUnitOfWork, UnitOfWorkChat>();

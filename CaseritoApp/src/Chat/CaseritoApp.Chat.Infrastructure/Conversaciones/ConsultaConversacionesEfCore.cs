@@ -16,6 +16,19 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                 && (c.CompradorId == usuarioId || c.VendedorId == usuarioId),
             ct);
 
+    public Task<bool> PuedeRecibirTiempoRealAsync(
+        Guid conversacionId,
+        Guid usuarioId,
+        CancellationToken ct) =>
+        db.Conversaciones.AsNoTracking().AnyAsync(
+            c => c.Id == conversacionId
+                && c.Estado == EstadoConversacion.Activa
+                && (c.CompradorId == usuarioId || c.VendedorId == usuarioId)
+                && !db.BloqueosUsuario.Any(b =>
+                    (b.BloqueadorId == c.CompradorId && b.BloqueadoId == c.VendedorId)
+                    || (b.BloqueadorId == c.VendedorId && b.BloqueadoId == c.CompradorId)),
+            ct);
+
     public async Task<PaginaCursor<ConversacionResumenDto, FronteraConversaciones>> ListarAsync(
         Guid usuarioId,
         FronteraConversaciones? frontera,
@@ -50,7 +63,7 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                         ? c.UltimaSecuenciaLeidaComprador
                         : c.UltimaSecuenciaLeidaVendedor)),
                 c.Estado,
-#pragma warning disable S3358 // La expresiÃ³n debe permanecer traducible por EF Core.
+#pragma warning disable S3358 // La expresión debe permanecer traducible por EF Core.
                 c.Estado == EstadoConversacion.Cerrada
                     ? "Participante"
                     : c.Estado == EstadoConversacion.CerradaPorModeracion

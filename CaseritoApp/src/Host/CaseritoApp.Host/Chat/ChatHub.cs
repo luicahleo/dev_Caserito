@@ -11,6 +11,7 @@ namespace CaseritoApp.Host.Chat;
 public sealed class ChatHub(
     ISender sender,
     EstadoSuscripcionesChat estado,
+    RegistroConexionesChat registro,
     IOptions<OpcionesTiempoRealChat> opciones) : Hub
 {
     public const string Politica = "chat-hub";
@@ -27,30 +28,55 @@ public sealed class ChatHub(
             throw new HubException(ErrorGenerico);
         }
 
-        var autorizado = await sender.Send(
-            new PuedeAccederConversacionQuery(conversacionId, usuarioId),
+        var autorizado = false;
+        await registro.EjecutarExclusivoAsync(
+            conversacionId,
+            async () =>
+            {
+                autorizado = await sender.Send(
+                    new PuedeRecibirTiempoRealQuery(conversacionId, usuarioId),
+                    Context.ConnectionAborted);
+                if (!autorizado)
+                {
+                    return;
+                }
+
+                await Groups.AddToGroupAsync(
+                    Context.ConnectionId,
+                    GruposChat.ParaConversacion(conversacionId),
+                    Context.ConnectionAborted);
+                EstadoSuscripcionesChat.Agregar(Context, conversacionId);
+                registro.Registrar(usuarioId, conversacionId, Context.ConnectionId);
+            },
             Context.ConnectionAborted);
         if (!autorizado)
         {
             throw new HubException(ErrorGenerico);
         }
-
-        await Groups.AddToGroupAsync(
-            Context.ConnectionId,
-            GruposChat.ParaConversacion(conversacionId),
-            Context.ConnectionAborted);
-        EstadoSuscripcionesChat.Agregar(Context, conversacionId);
     }
 
     public async Task DesuscribirConversacion(Guid conversacionId)
     {
         _ = ObtenerUsuarioId();
         ValidarInvocacion(conversacionId);
-        await Groups.RemoveFromGroupAsync(
-            Context.ConnectionId,
-            GruposChat.ParaConversacion(conversacionId),
+        await registro.EjecutarExclusivoAsync(
+            conversacionId,
+            async () =>
+            {
+                await Groups.RemoveFromGroupAsync(
+                    Context.ConnectionId,
+                    GruposChat.ParaConversacion(conversacionId),
+                    Context.ConnectionAborted);
+                EstadoSuscripcionesChat.Quitar(Context, conversacionId);
+                registro.Quitar(conversacionId, Context.ConnectionId);
+            },
             Context.ConnectionAborted);
-        EstadoSuscripcionesChat.Quitar(Context, conversacionId);
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        registro.QuitarConexion(Context.ConnectionId);
+        return base.OnDisconnectedAsync(exception);
     }
 
     private Guid ObtenerUsuarioId()

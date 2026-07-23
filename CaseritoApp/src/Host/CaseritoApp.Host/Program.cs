@@ -24,7 +24,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(CaseritoApp.BuildingBlocks.Application.Abstractions.IUnitOfWork).Assembly,
         typeof(ObtenerPerfilQuery).Assembly,
         typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly,
-        typeof(IniciarConversacionCommand).Assembly));
+        typeof(IniciarConversacionCommand).Assembly,
+        typeof(RevocarAccesoTiempoRealHandler).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -51,6 +52,8 @@ builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Validate(o => o.MaximoInvocacionesPorMinuto is > 0 and <= 600)
     .ValidateOnStart();
 builder.Services.AddSingleton<EstadoSuscripcionesChat>();
+builder.Services.AddSingleton<RegistroConexionesChat>();
+builder.Services.AddScoped<IRevocadorTiempoRealChat, RevocadorTiempoRealChat>();
 builder.Services.AddScoped<IPublicadorMensajesTiempoReal, PublicadorSignalRMensajes>();
 if (!builder.Environment.IsEnvironment("Testing"))
 {
@@ -101,6 +104,15 @@ builder.Services.AddRateLimiter(opciones =>
         {
             PermitLimit = 120,
             Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("chat-seguridad-acciones", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromHours(1),
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
@@ -166,6 +178,7 @@ app.MapCatalogoEndpoints();
 app.MapPublicoEndpoints();
 app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
+app.MapModeracionChatEndpoints();
 app.MapChatEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {

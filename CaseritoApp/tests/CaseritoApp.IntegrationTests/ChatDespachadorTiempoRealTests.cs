@@ -1,3 +1,5 @@
+using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Chat.Application.Paginacion;
 using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using CaseritoApp.Host.Chat;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,17 +51,51 @@ public sealed class ChatDespachadorTiempoRealTests
         Assert.Equal(1, almacen.Reprogramadas);
     }
 
+    [Fact]
+    public async Task Entrega_revocada_se_marca_procesada_sin_publicar()
+    {
+        var almacen = new AlmacenFake(Trabajo());
+        var publicador = new PublicadorFake();
+        var despachador = CrearDespachador(almacen, publicador, elegible: false);
+
+        await despachador.ProcesarLoteAsync(CancellationToken.None);
+
+        Assert.Empty(publicador.Publicados);
+        Assert.Equal(1, almacen.Procesadas);
+        Assert.Equal(0, almacen.Reprogramadas);
+    }
+
     private static DespachadorEntregasTiempoReal CrearDespachador(
         IAlmacenEntregasTiempoReal almacen,
-        IPublicadorMensajesTiempoReal publicador)
+        IPublicadorMensajesTiempoReal publicador,
+        bool elegible = true)
     {
         var servicios = new ServiceCollection();
         servicios.AddScoped(_ => almacen);
         servicios.AddScoped(_ => publicador);
+        servicios.AddScoped<IConsultaConversaciones>(_ => new ConversacionesFake(elegible));
         var proveedor = servicios.BuildServiceProvider();
         return new DespachadorEntregasTiempoReal(
             proveedor.GetRequiredService<IServiceScopeFactory>(),
             Options.Create(new OpcionesTiempoRealChat()));
+    }
+
+    private sealed class ConversacionesFake(bool elegible) : IConsultaConversaciones
+    {
+        public Task<bool> PuedeRecibirTiempoRealAsync(
+            Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(elegible);
+
+        public Task<bool> PuedeAccederAsync(
+            Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(elegible);
+
+        public Task<PaginaCursor<ConversacionResumenDto, FronteraConversaciones>> ListarAsync(
+            Guid usuarioId,
+            FronteraConversaciones? frontera,
+            int limite,
+            CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 
     private static EntregaTiempoRealReclamada Trabajo() => new(

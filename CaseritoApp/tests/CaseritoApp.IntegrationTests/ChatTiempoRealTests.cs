@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using CaseritoApp.Chat.Domain.Conversaciones;
@@ -122,6 +123,62 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
     }
 
     [Fact]
+    public async Task Bloquear_retira_todas_las_conexiones_de_la_conversacion()
+    {
+        var token = await RegistrarYObtenerTokenAsync();
+        var conversacionId = await CrearConversacionAsync(UsuarioId(token));
+        await using var primera = CrearConexion(token);
+        await using var segunda = CrearConexion(token);
+        var primeraRecibio = 0;
+        var segundaRecibio = 0;
+        primera.On<MensajeTiempoRealDto>("MensajeCreado", _ => Interlocked.Increment(ref primeraRecibio));
+        segunda.On<MensajeTiempoRealDto>("MensajeCreado", _ => Interlocked.Increment(ref segundaRecibio));
+        await primera.StartAsync();
+        await segunda.StartAsync();
+        await primera.InvokeAsync("SuscribirConversacion", conversacionId);
+        await segunda.InvokeAsync("SuscribirConversacion", conversacionId);
+        using var scope = factory.Services.CreateScope();
+        var publicador = scope.ServiceProvider.GetRequiredService<IPublicadorMensajesTiempoReal>();
+        var mensaje = new MensajeTiempoRealDto(
+            Guid.NewGuid(), conversacionId, Guid.NewGuid(), 1, "control", DateTimeOffset.UtcNow);
+        await publicador.PublicarAsync(mensaje, CancellationToken.None);
+        await EsperarAsync(() => Volatile.Read(ref primeraRecibio) == 1
+            && Volatile.Read(ref segundaRecibio) == 1);
+        using var cliente = factory.CreateClient();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var respuesta = await cliente.PutAsync(
+            $"/api/chat/conversaciones/{conversacionId}/bloqueo", null);
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        await publicador.PublicarAsync(mensaje with { Id = Guid.NewGuid(), Secuencia = 2 }, CancellationToken.None);
+        await Task.Delay(TimeSpan.FromMilliseconds(500));
+
+        Assert.Equal(1, Volatile.Read(ref primeraRecibio));
+        Assert.Equal(1, Volatile.Read(ref segundaRecibio));
+    }
+
+    [Fact]
+    public async Task Suscripcion_rechaza_conversacion_cerrada()
+    {
+        var token = await RegistrarYObtenerTokenAsync();
+        var usuarioId = UsuarioId(token);
+        var conversacionId = await CrearConversacionAsync(usuarioId);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+            var conversacion = await db.Conversaciones.FindAsync(conversacionId);
+            Assert.True(conversacion!.CerrarPorParticipante(usuarioId, DateTimeOffset.UtcNow).EsExito);
+            await db.SaveChangesAsync();
+        }
+
+        await using var conexion = CrearConexion(token);
+        await conexion.StartAsync();
+
+        await Assert.ThrowsAsync<HubException>(() =>
+            conexion.InvokeAsync("SuscribirConversacion", conversacionId));
+    }
+
+    [Fact]
     public async Task Token_en_query_no_autentica_endpoints_http_ajenos_al_hub()
     {
         var token = await RegistrarYObtenerTokenAsync();
@@ -139,6 +196,7 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
                 System.Reflection.BindingFlags.Instance
                 | System.Reflection.BindingFlags.Public
                 | System.Reflection.BindingFlags.DeclaredOnly)
+            .Where(x => x.GetBaseDefinition().DeclaringType == typeof(ChatHub))
             .Select(x => x.Name)
             .Order()
             .ToArray();
@@ -238,4 +296,15 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
 
     private static Guid UsuarioId(string token) =>
         Guid.Parse(new JwtSecurityTokenHandler().ReadJwtToken(token).Subject);
+
+    private static async Task EsperarAsync(Func<bool> condicion)
+    {
+        var limite = DateTimeOffset.UtcNow.AddSeconds(5);
+        while (!condicion() && DateTimeOffset.UtcNow < limite)
+        {
+            await Task.Delay(20);
+        }
+
+        Assert.True(condicion());
+    }
 }

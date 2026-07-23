@@ -38,6 +38,11 @@ export function AppLayout() {
                 {tienePermiso('publicaciones.moderar') && (
                   <Button color="inherit" component={RouterLink} to="/admin/moderacion">Moderación</Button>
                 )}
+                {tienePermiso('chat.moderar') && (
+                  <Button color="inherit" component={RouterLink} to="/admin/moderacion-chat">
+                    Moderación de chat
+                  </Button>
+                )}
               </>
             )}
           </Box>

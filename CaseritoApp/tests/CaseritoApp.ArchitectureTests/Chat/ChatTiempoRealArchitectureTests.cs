@@ -1,3 +1,5 @@
+using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Chat.Application.Seguridad;
 using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using CaseritoApp.Host.Chat;
 using Microsoft.AspNetCore.SignalR;
@@ -8,6 +10,64 @@ public sealed class ChatTiempoRealArchitectureTests
 {
     private static readonly string[] _camposMensaje =
         ["ConversacionId", "EnviadoEn", "Id", "RemitenteId", "Secuencia", "Texto"];
+
+    [Fact]
+    public void EventosDeRevocacion_NoTransportanParticipantesNiContenido()
+    {
+        Type[] eventos =
+        [
+            typeof(AccesoTiempoRealRevocado),
+            typeof(BloqueoTiempoRealConfirmado),
+            typeof(AccesoTiempoRealRevocadoPorReporte)
+        ];
+        string[] camposProhibidos =
+        [
+            "Usuario",
+            "Participante",
+            "Comprador",
+            "Vendedor",
+            "Remitente",
+            "Destinatario",
+            "Texto",
+            "Contenido",
+            "Detalle",
+            "Payload"
+        ];
+
+        Assert.All(eventos, tipo =>
+            Assert.DoesNotContain(tipo.GetProperties(), propiedad =>
+                camposProhibidos.Any(campo =>
+                    propiedad.Name.Contains(campo, StringComparison.OrdinalIgnoreCase))));
+    }
+
+    [Fact]
+    public void Despachador_ConsultaElegibilidadAntesDePublicarSignalR()
+    {
+        var metodo = typeof(DespachadorEntregasTiempoReal)
+            .GetMethod(nameof(DespachadorEntregasTiempoReal.ProcesarLoteAsync))!;
+        var maquinaEstados = metodo.GetCustomAttributes(
+                typeof(System.Runtime.CompilerServices.AsyncStateMachineAttribute),
+                inherit: false)
+            .Cast<System.Runtime.CompilerServices.AsyncStateMachineAttribute>()
+            .Single()
+            .StateMachineType;
+        var moverSiguiente = maquinaEstados.GetMethod(
+            nameof(System.Runtime.CompilerServices.IAsyncStateMachine.MoveNext),
+            System.Reflection.BindingFlags.Instance
+            | System.Reflection.BindingFlags.NonPublic
+            | System.Reflection.BindingFlags.Public)!;
+        var referencias = ReferenciasDeMetodos(moverSiguiente).ToArray();
+
+        var consulta = Array.FindIndex(referencias, referencia =>
+            referencia.Metodo.DeclaringType == typeof(IConsultaConversaciones)
+            && referencia.Metodo.Name == nameof(IConsultaConversaciones.PuedeRecibirTiempoRealAsync));
+        var publicacion = Array.FindIndex(referencias, referencia =>
+            referencia.Metodo.DeclaringType == typeof(IPublicadorMensajesTiempoReal)
+            && referencia.Metodo.Name == nameof(IPublicadorMensajesTiempoReal.PublicarAsync));
+
+        Assert.True(consulta >= 0, "El despachador debe consultar la elegibilidad.");
+        Assert.True(publicacion > consulta, "La publicación debe ocurrir después de consultar la elegibilidad.");
+    }
 
     [Fact]
     public void Outbox_no_contiene_payload_ni_identidades()
@@ -52,6 +112,7 @@ public sealed class ChatTiempoRealArchitectureTests
                 System.Reflection.BindingFlags.Instance
                 | System.Reflection.BindingFlags.Public
                 | System.Reflection.BindingFlags.DeclaredOnly)
+            .Where(x => x.GetBaseDefinition().DeclaringType == typeof(ChatHub))
             .Select(x => x.Name)
             .Order()
             .ToArray();
@@ -73,5 +134,29 @@ public sealed class ChatTiempoRealArchitectureTests
         Assert.All(tipos, tipo => Assert.DoesNotContain(
             tipo.GetConstructors().SelectMany(x => x.GetParameters()),
             parametro => parametro.ParameterType.FullName?.Contains("ILogger", StringComparison.Ordinal) == true));
+    }
+
+    private static IEnumerable<(int Desplazamiento, System.Reflection.MethodBase Metodo)> ReferenciasDeMetodos(
+        System.Reflection.MethodInfo metodo)
+    {
+        var il = metodo.GetMethodBody()!.GetILAsByteArray()!;
+        for (var desplazamiento = 0; desplazamiento <= il.Length - sizeof(int); desplazamiento++)
+        {
+            var token = BitConverter.ToInt32(il, desplazamiento);
+            System.Reflection.MethodBase? referencia;
+            try
+            {
+                referencia = metodo.Module.ResolveMethod(token);
+            }
+            catch (ArgumentException)
+            {
+                continue;
+            }
+
+            if (referencia is not null)
+            {
+                yield return (desplazamiento, referencia);
+            }
+        }
     }
 }

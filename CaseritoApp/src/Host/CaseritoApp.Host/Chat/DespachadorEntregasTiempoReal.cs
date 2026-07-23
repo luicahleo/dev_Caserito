@@ -1,3 +1,4 @@
+using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure.TiempoReal;
 using Microsoft.Extensions.Options;
 
@@ -14,6 +15,7 @@ public sealed class DespachadorEntregasTiempoReal(
         using var scope = scopes.CreateScope();
         var almacen = scope.ServiceProvider.GetRequiredService<IAlmacenEntregasTiempoReal>();
         var publicador = scope.ServiceProvider.GetRequiredService<IPublicadorMensajesTiempoReal>();
+        var conversaciones = scope.ServiceProvider.GetRequiredService<IConsultaConversaciones>();
         var entregas = await almacen.ReclamarAsync(
             _opciones.TamanoLote,
             TimeSpan.FromSeconds(_opciones.SegundosLease),
@@ -24,6 +26,16 @@ public sealed class DespachadorEntregasTiempoReal(
             try
             {
                 var mensaje = entrega.Mensaje;
+                var elegible = await conversaciones.PuedeRecibirTiempoRealAsync(
+                    mensaje.ConversacionId,
+                    mensaje.RemitenteId,
+                    cancellationToken);
+                if (!elegible)
+                {
+                    await almacen.MarcarProcesadaAsync(entrega, cancellationToken);
+                    continue;
+                }
+
                 await publicador.PublicarAsync(
                     new MensajeTiempoRealDto(
                         mensaje.Id,

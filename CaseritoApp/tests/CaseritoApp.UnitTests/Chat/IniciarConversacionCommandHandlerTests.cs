@@ -167,6 +167,9 @@ public sealed class IniciarConversacionCommandHandlerTests
 
         Assert.False(resultado.EsExito);
         Assert.Equal(ErroresConversacion.NoDisponibleParaEnvio, resultado.Error.Code);
+        Assert.Equal(
+            "La conversación no está disponible para enviar mensajes.",
+            resultado.Error.Message);
         Assert.Equal((compradorId, vendedorId), bloqueos.UltimaPareja);
     }
 
