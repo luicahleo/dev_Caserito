@@ -63,7 +63,7 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                         ? c.UltimaSecuenciaLeidaComprador
                         : c.UltimaSecuenciaLeidaVendedor)),
                 c.Estado,
-#pragma warning disable S3358 // La expresiÃ³n debe permanecer traducible por EF Core.
+#pragma warning disable S3358 // La expresión debe permanecer traducible por EF Core.
                 c.Estado == EstadoConversacion.Cerrada
                     ? "Participante"
                     : c.Estado == EstadoConversacion.CerradaPorModeracion

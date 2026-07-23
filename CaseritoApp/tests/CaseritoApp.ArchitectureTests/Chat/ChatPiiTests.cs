@@ -11,6 +11,30 @@ namespace CaseritoApp.ArchitectureTests.Chat;
 public sealed class ChatPiiTests
 {
     [Fact]
+    public void FuentesDeChat_NoContienenMojibake()
+    {
+        var raiz = new DirectoryInfo(AppContext.BaseDirectory);
+        while (raiz is not null && !File.Exists(Path.Combine(raiz.FullName, "CaseritoApp.sln")))
+        {
+            raiz = raiz.Parent;
+        }
+
+        Assert.NotNull(raiz);
+        var archivos = Directory.GetFiles(
+            Path.Combine(raiz.FullName, "src", "Chat"),
+            "*.cs",
+            SearchOption.AllDirectories);
+
+        Assert.All(archivos, archivo =>
+        {
+            var contenido = File.ReadAllText(archivo);
+            Assert.DoesNotContain("Ã", contenido, StringComparison.Ordinal);
+            Assert.DoesNotContain("â", contenido, StringComparison.Ordinal);
+            Assert.DoesNotContain("�", contenido, StringComparison.Ordinal);
+        });
+    }
+
+    [Fact]
     public void DtosDeColaYRegistrosDeAuditoria_NoExponenCamposProhibidos()
     {
         string[] nombresProhibidos =

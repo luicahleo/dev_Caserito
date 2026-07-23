@@ -34,7 +34,7 @@ public sealed class IniciarConversacionCommandHandler(
             {
                 return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
                     ErroresConversacion.NoDisponibleParaEnvio,
-                    "La conversaciÃ³n no estÃ¡ disponible para enviar mensajes."));
+                    "La conversación no está disponible para enviar mensajes."));
             }
 
             return Result.Exito(new IniciarConversacionResultadoDto(
