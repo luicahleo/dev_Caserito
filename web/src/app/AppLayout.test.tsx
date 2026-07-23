@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import * as authCtx from '../auth/AuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -21,10 +22,13 @@ function mockAuth(estaAutenticado: boolean, permisos: string[] = []) {
 }
 
 function montar() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
-    <MemoryRouter>
-      <AppLayout />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

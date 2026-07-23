@@ -1,6 +1,7 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { ContadorChat } from '../chat/ContadorChat';
 
 export function AppLayout() {
   const { estaAutenticado, cerrarSesion, tienePermiso } = useAuth();
@@ -35,6 +36,7 @@ export function AppLayout() {
                 <Button color="inherit" component={RouterLink} to="/mis-avisos">
                   Mis avisos
                 </Button>
+                <ContadorChat />
                 {tienePermiso('publicaciones.moderar') && (
                   <Button color="inherit" component={RouterLink} to="/admin/moderacion">Moderación</Button>
                 )}
