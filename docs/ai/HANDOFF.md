@@ -14,8 +14,12 @@ presentar el diseño y recibir aprobación.
 - La rama contiene el bootstrap Development, documentación de pruebas y dos
   correcciones encontradas manualmente.
 - No se hizo push ni merge.
-- No crear la rama de Fase 4 hasta verificar Git y acordar cómo integrar o usar
-  como base esta rama. No mergear sin autorización explícita.
+- El usuario confirmó que las pruebas manuales realizadas bastan por el momento
+  y que Fase 4 debe continuar sobre los bugs ya corregidos.
+- Tras verificar Git, usar el `HEAD` actual de esta rama como base para la rama
+  dedicada del primer bloque de Fase 4. No volver a `master`, descartar commits
+  ni repetir las pruebas manuales pendientes.
+- No mergear ni pushear sin autorización explícita.
 
 Commits propios de esta rama:
 
@@ -54,3 +58,5 @@ ni registrar sus valores. `.env.example` permanece sin credenciales.
 7. Tras aprobar: spec, plan, TDD, integración y documentación.
 
 Mantener fuera de alcance reputación, Fase 5/6 y cualquier custodia de dinero.
+Las pruebas manuales pendientes de Fases 1–3 quedan diferidas por decisión del
+usuario y no bloquean el inicio de Fase 4.
