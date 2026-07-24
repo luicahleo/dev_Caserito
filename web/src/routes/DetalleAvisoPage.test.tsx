@@ -62,7 +62,7 @@ describe('DetalleAvisoPage', () => {
       nombreCategoria: 'Deportes', nombreCiudad: 'Cochabamba', condicion: 'Usado',
       fechaCreacion: '2026-07-18T10:00:00Z', fotos: [],
     });
-    vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(new HttpError(404, null, 'No encontrado'));
+    vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(new HttpError(403, null, 'No autorizado'));
     vi.spyOn(chat, 'iniciarConversacion').mockResolvedValue({
       id: 'c1', avisoId: 'a1', compradorId: 'comprador', vendedorId: 'vendedor',
       creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 0, estado: 0,

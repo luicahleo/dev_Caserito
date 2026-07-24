@@ -44,7 +44,7 @@ export function DetalleAvisoPage() {
   const esAvisoAjeno =
     estaAutenticado &&
     propiedad.error instanceof HttpError &&
-    propiedad.error.status === 404;
+    propiedad.error.status === 403;
 
   if (isLoading) {
     return (
