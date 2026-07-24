@@ -29,6 +29,7 @@
     <ProjectReference Include="..\..\src\Catalog\CaseritoApp.Catalog.Application\CaseritoApp.Catalog.Application.csproj" />
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Domain\CaseritoApp.Chat.Domain.csproj" />
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Application\CaseritoApp.Chat.Application.csproj" />
+    <ProjectReference Include="..\..\src\Orders\CaseritoApp.Orders.Domain\CaseritoApp.Orders.Domain.csproj" />
   </ItemGroup>
 
 </Project>
