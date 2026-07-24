@@ -31,7 +31,7 @@ Desde la raíz del repo (PowerShell):
 Equivalente directo (o `rebuild.sh` en Bash):
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build --renew-anon-volumes
 ```
 
 El **primer** build tarda (compila la imagen .NET y la de la web); los siguientes
@@ -44,18 +44,161 @@ sola**.
 - API → http://localhost:8080 (health: `http://localhost:8080/health`)
 - SQL Server → `localhost:1433` (usuario `sa`, contraseña = `SA_PASSWORD` del `.env`)
 
-### Probar el flujo end-to-end
+### Preparar cuentas para las pruebas manuales de fases 1–3
 
-1. Abrí http://localhost:5173 → pantalla **Explorar** (pública, sin login).
-2. Registrate / iniciá sesión.
-3. Para **publicar** hace falta identidad verificada: subí documento y selfie en
-   `/kyc` y aprobá la solicitud desde `/admin/kyc` con un usuario que tenga el
-   permiso `kyc.revisar`.
-4. Ya verificado, publicá un aviso; aparecerá en **Explorar** y en **Mis avisos**
-   (donde podés editar/pausar/reactivar/eliminar).
+El bootstrap es exclusivo de `Development`, está deshabilitado por defecto y no
+modifica usuarios existentes. No funciona en Production ni Testing.
 
-> Nota: los avisos se muestran **sin foto** (placeholder) hasta que se implemente
-> el bloque 2C (fotos del aviso).
+1. Copiá `.env.example` como `.env`.
+2. Definí una contraseña local fuerte para `SA_PASSWORD`.
+3. Cambiá `CASERITO_BOOTSTRAP_ENABLED=true`.
+4. Completá las cuatro variables de cada cuenta con datos sintéticos:
+   administrador, vendedor y comprador.
+5. Usá correos reservados para pruebas y contraseñas diferentes de cualquier
+   cuenta real. No pegues esos valores en Git, logs, capturas ni reportes.
+
+El administrador recibe únicamente `AdminPlataforma`; vendedor y comprador
+reciben únicamente `Cliente`. El vendedor empieza sin verificar para ejercitar
+el flujo KYC real. Si falta una variable, no se crea ninguna cuenta.
+
+Prepará también tres imágenes sintéticas JPG o PNG menores de 5 MiB:
+
+- documento ficticio, marcado de forma visible como `PRUEBA — SIN VALIDEZ`;
+- selfie sintética que no represente una persona real;
+- foto sintética del artículo.
+
+No uses documentos, rostros, correos ni nombres reales.
+
+### Verificar el entorno
+
+Desde la raíz:
+
+```powershell
+.\rebuild.ps1
+docker compose -f docker-compose.dev.yml ps
+Invoke-WebRequest http://localhost:8080/health -UseBasicParsing
+Invoke-WebRequest http://localhost:5173 -UseBasicParsing
+```
+
+Los tres contenedores deben estar levantados, SQL Server debe figurar saludable
+y ambas peticiones HTTP deben responder `200`. El bootstrap es idempotente:
+repetir `.\rebuild.ps1` no duplica ni altera las cuentas.
+
+### Guion manual reproducible en PC1
+
+Usá una ventana normal como **sesión A** y una ventana de incógnito u otro
+navegador como **sesión B**. Consultá las credenciales únicamente en el `.env`
+local. Cerrá sesión antes de cambiar de actor dentro de una misma ventana.
+
+#### 1. Registro, login y perfil
+
+1. En sesión B, registrá una cuarta cuenta sintética desde **Registrarse**.
+2. Iniciá sesión con ella y abrí **Perfil**.
+3. Editá nombre y ciudad con valores sintéticos, guardá y recargá la página.
+4. Resultado esperado: los cambios persisten y la sesión se recupera tras recargar.
+5. Cerrá sesión. Resultado esperado: Perfil vuelve a requerir autenticación.
+
+#### 2. Solicitud y aprobación KYC
+
+1. En sesión B, iniciá como vendedor y abrí **Verificar identidad**.
+2. Subí el documento ficticio y la selfie sintética.
+3. Resultado esperado: el estado pasa a `En revisión` y no permite otra solicitud.
+4. En sesión A, iniciá como administrador y abrí **Revisar verificaciones**.
+5. Abrí la solicitud pendiente, comprobá ambas imágenes y aprobala.
+6. En sesión B, recargá o volvé a iniciar sesión.
+7. Resultado esperado: Perfil muestra `Identidad verificada`.
+
+#### 3. Publicación, búsqueda y detalle
+
+1. Como vendedor en sesión B, abrí **Publicar aviso**.
+2. Creá un aviso sintético con título distinguible, descripción sin PII, precio,
+   categoría, condición y ciudad; añadí la foto sintética.
+3. Resultado esperado: aparece en **Mis avisos** y en **Explorar**.
+4. Buscalo por una palabra del título y aplicá filtros de categoría, ciudad,
+   precio y condición.
+5. Abrí el detalle y comprobá texto, precio, ubicación y foto.
+
+#### 4. Contacto y mensajes en tiempo real
+
+1. Dejá al vendedor autenticado en sesión B.
+2. En sesión A, cerrá la sesión administrativa e iniciá como comprador.
+3. Buscá el aviso, abrí el detalle y pulsá **Contactar al vendedor**.
+4. Resultado esperado: se abre una conversación asociada al aviso.
+5. Abrí la misma conversación como vendedor en sesión B.
+6. Enviá mensajes sintéticos alternando ambas ventanas.
+7. Resultado esperado: cada mensaje aparece en la otra ventana sin recargar y
+   una repetición/reintento no crea duplicados.
+
+#### 5. Lectura, no leídos y recuperación
+
+1. Sacá una sesión de la conversación, por ejemplo navegando a **Explorar**.
+2. Desde la otra sesión enviá dos mensajes.
+3. Resultado esperado: aumenta el contador de no leídos de navegación y bandeja.
+4. Abrí la conversación receptora.
+5. Resultado esperado: los mensajes aparecen y el contador vuelve a cero tras
+   marcarse la lectura.
+6. En la conversación, abrí DevTools → Network y activá **Offline**.
+7. Enviá desde la otra ventana uno o más mensajes y comprobá el indicador de
+   desconexión.
+8. Volvé a **Online**.
+9. Resultado esperado: reconecta, recupera los mensajes faltantes, mantiene el
+   orden y no duplica ninguno.
+
+#### 6. Cierre, reapertura, bloqueo y desbloqueo
+
+1. Cerrá la conversación desde un participante.
+2. Resultado esperado: el historial sigue visible y el compositor queda inactivo.
+3. Reabrila. Resultado esperado: el compositor vuelve a estar disponible tras
+   la nueva suscripción.
+4. Bloqueá a la contraparte.
+5. Resultado esperado: no se puede enviar ni iniciar otra conversación entre
+   ambos, pero el historial sigue legible.
+6. Desbloqueá y comprobá que vuelve a ser posible enviar.
+
+#### 7. Reportes
+
+Usá únicamente detalles sintéticos y sin información personal:
+
+1. Desde el detalle del aviso, reportá el aviso.
+2. Desde el chat, creá por separado reportes de:
+   - conversación;
+   - un mensaje concreto;
+   - contraparte.
+3. Resultado esperado: cada reporte válido se confirma; repetir el mismo reporte
+   pendiente produce un conflicto genérico y no crea un duplicado.
+
+#### 8. Moderación
+
+1. Cerrá sesión A como comprador e iniciá nuevamente como administrador.
+2. En **Moderación de avisos**, localizá el reporte, tomalo, revisalo y aplicá la
+   acción elegida. Comprobá en Explorar el efecto sobre el aviso.
+3. En **Moderación de chat**, localizá cada reporte, tomalo y abrí la evidencia.
+4. Comprobá que la evidencia muestra solo la ventana mínima autorizada y roles
+   relativos, sin identidades técnicas.
+5. Atendé o descartá reportes; en uno de ellos probá cerrar la conversación por
+   moderación y luego reabrirla desde el expediente.
+6. Resultado esperado: los estados de cola cambian correctamente y un
+   participante no puede revertir por sí mismo un cierre de moderación.
+
+Anotá por paso únicamente `correcto` o una descripción genérica del fallo. No
+copies textos de mensajes/reportes, imágenes, tokens, credenciales ni IDs.
+Estas pruebas no se consideran superadas hasta confirmar los resultados
+observados en ambos navegadores.
+
+### Cerrar o reiniciar la prueba
+
+```powershell
+docker compose -f docker-compose.dev.yml down
+```
+
+Esto conserva la base. Para empezar realmente desde cero, después de confirmar
+que no necesitás los datos locales de prueba:
+
+```powershell
+docker compose -f docker-compose.dev.yml down -v
+```
+
+El segundo comando elimina el volumen local de SQL Server y no es reversible.
 
 ### Comandos útiles
 
