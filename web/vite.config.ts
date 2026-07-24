@@ -33,6 +33,10 @@ export default defineConfig({
     proxy: {
       '/health': apiTarget,
       '/api': apiTarget,
+      '/hubs': {
+        target: apiTarget,
+        ws: true,
+      },
     },
   },
   test: {
