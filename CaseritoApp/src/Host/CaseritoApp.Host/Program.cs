@@ -150,6 +150,17 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
 
     await app.Services.SembrarRolesAsync();
 
+    using (var scopeBootstrap = app.Services.CreateScope())
+    {
+        var opcionesBootstrap = app.Configuration
+            .GetSection("BootstrapPruebas")
+            .Get<OpcionesBootstrapUsuariosPrueba>() ?? new OpcionesBootstrapUsuariosPrueba();
+        var bootstrap = new BootstrapUsuariosPrueba(
+            scopeBootstrap.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>(),
+            scopeBootstrap.ServiceProvider.GetRequiredService<ILogger<BootstrapUsuariosPrueba>>());
+        await bootstrap.EjecutarAsync(opcionesBootstrap, app.Environment.IsDevelopment());
+    }
+
     using (var scopeCatalog = app.Services.CreateScope())
     {
         var dbCatalog = scopeCatalog.ServiceProvider.GetRequiredService<CatalogDbContext>();
