@@ -73,4 +73,49 @@ describe('MisAcuerdosPage', () => {
     expect(await screen.findByText('Cancelado')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /cancelar acuerdo/i })).not.toBeInTheDocument();
   });
+
+  it('el comprador cancela un acuerdo tras confirmar', async () => {
+    vi.spyOn(orders, 'listarOrdenes').mockResolvedValue({
+      items: [{
+        id: 'o1', avisoId: 'a1', estado: 'Agreed', montoAcordado: 150,
+        moneda: 'BOB', rol: 'comprador', actualizadaEn: '2026-07-25T10:30:00Z',
+      }],
+      pagina: 1, tamano: 20, total: 1,
+    });
+    const cancelar = vi.spyOn(orders, 'cancelarOrden').mockResolvedValue();
+    const cliente = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={cliente}>
+        <MemoryRouter><MisAcuerdosPage /></MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: /cancelar acuerdo/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /confirmar/i }));
+
+    await vi.waitFor(() => expect(cancelar).toHaveBeenCalledWith('o1'));
+  });
+
+  it('el vendedor cancela un acuerdo tras confirmar', async () => {
+    vi.spyOn(orders, 'listarOrdenes').mockResolvedValue({
+      items: [{
+        id: 'o1', avisoId: 'a1', estado: 'Agreed', montoAcordado: 200,
+        moneda: 'BOB', rol: 'vendedor', actualizadaEn: '2026-07-25T11:00:00Z',
+      }],
+      pagina: 1, tamano: 20, total: 1,
+    });
+    const cancelar = vi.spyOn(orders, 'cancelarOrden').mockResolvedValue();
+    const cliente = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={cliente}>
+        <MemoryRouter><MisAcuerdosPage /></MemoryRouter>
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByRole('tab', { name: 'Ventas' }));
+
+    fireEvent.click(await screen.findByRole('button', { name: /cancelar acuerdo/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /confirmar/i }));
+
+    await vi.waitFor(() => expect(cancelar).toHaveBeenCalledWith('o1'));
+  });
 });
