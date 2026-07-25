@@ -45,6 +45,12 @@ public sealed class Orden : AggregateRoot
 
     public DateTimeOffset ActualizadaEn { get; private set; }
 
+    public DateTimeOffset? MarcadaVendidaEn { get; private set; }
+
+    public DateTimeOffset? CompradorConfirmoEn { get; private set; }
+
+    public DateTimeOffset? CompletadaEn { get; private set; }
+
     public byte[] Version { get; private set; }
 
     public static Result<Orden> Crear(
@@ -107,15 +113,7 @@ public sealed class Orden : AggregateRoot
                 "La orden no admite esta transición."));
         }
 
-        var fechaUtc = ocurrioEn.ToUniversalTime();
-        var estadoAnterior = Estado;
-        Estado = EstadoOrden.Agreed;
-        ActualizadaEn = fechaUtc;
-        AgregarEvento(new EstadoOrdenCambiado(
-            Id,
-            estadoAnterior,
-            Estado,
-            fechaUtc));
+        RegistrarTransicion(EstadoOrden.Agreed, ocurrioEn);
         return Result.Exito();
     }
 
@@ -138,15 +136,54 @@ public sealed class Orden : AggregateRoot
                 "La orden no admite esta transición."));
         }
 
+        RegistrarTransicion(EstadoOrden.Cancelled, ocurrioEn);
+        return Result.Exito();
+    }
+
+    public Result MarcarComoVendida(Guid actorId, DateTimeOffset ocurrioEn)
+    {
+        if (actorId == Guid.Empty || actorId != VendedorId)
+        {
+            return NoEncontrada();
+        }
+
+        if (Estado is EstadoOrden.MarkedAsSold or EstadoOrden.Completed)
+        {
+            return Result.Exito();
+        }
+
+        if (Estado != EstadoOrden.Agreed)
+        {
+            return TransicionInvalida();
+        }
+
         var fechaUtc = ocurrioEn.ToUniversalTime();
-        var estadoAnterior = Estado;
-        Estado = EstadoOrden.Cancelled;
-        ActualizadaEn = fechaUtc;
-        AgregarEvento(new EstadoOrdenCambiado(
-            Id,
-            estadoAnterior,
-            Estado,
-            fechaUtc));
+        MarcadaVendidaEn = fechaUtc;
+        RegistrarTransicion(EstadoOrden.MarkedAsSold, fechaUtc);
+        return Result.Exito();
+    }
+
+    public Result ConfirmarCierre(Guid actorId, DateTimeOffset ocurrioEn)
+    {
+        if (actorId == Guid.Empty || actorId != CompradorId)
+        {
+            return NoEncontrada();
+        }
+
+        if (Estado == EstadoOrden.Completed)
+        {
+            return Result.Exito();
+        }
+
+        if (Estado != EstadoOrden.MarkedAsSold)
+        {
+            return TransicionInvalida();
+        }
+
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        CompradorConfirmoEn = fechaUtc;
+        CompletadaEn = fechaUtc;
+        RegistrarTransicion(EstadoOrden.Completed, fechaUtc);
         return Result.Exito();
     }
 
@@ -162,4 +199,22 @@ public sealed class Orden : AggregateRoot
         Result.Fallo(new Error(
             ErroresOrden.NoEncontrada,
             "La orden no está disponible."));
+
+    private static Result TransicionInvalida() =>
+        Result.Fallo(new Error(
+            ErroresOrden.TransicionInvalida,
+            "La orden no admite esta transición."));
+
+    private void RegistrarTransicion(EstadoOrden nuevoEstado, DateTimeOffset ocurrioEn)
+    {
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        var estadoAnterior = Estado;
+        Estado = nuevoEstado;
+        ActualizadaEn = fechaUtc;
+        AgregarEvento(new EstadoOrdenCambiado(
+            Id,
+            estadoAnterior,
+            Estado,
+            fechaUtc));
+    }
 }
