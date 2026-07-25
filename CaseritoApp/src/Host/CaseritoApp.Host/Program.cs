@@ -10,6 +10,7 @@ using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Orders.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +46,7 @@ builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
 builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
+builder.Services.AgregarOrders(builder.Configuration);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
@@ -173,6 +175,12 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
     {
         var dbChat = scopeChat.ServiceProvider.GetRequiredService<ChatDbContext>();
         await dbChat.Database.MigrateAsync();
+    }
+
+    using (var scopeOrders = app.Services.CreateScope())
+    {
+        var dbOrders = scopeOrders.ServiceProvider.GetRequiredService<OrdersDbContext>();
+        await dbOrders.Database.MigrateAsync();
     }
 }
 

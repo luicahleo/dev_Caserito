@@ -7,6 +7,8 @@
     <ProjectReference Include="..\..\Catalog\CaseritoApp.Catalog.Infrastructure\CaseritoApp.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Chat\CaseritoApp.Chat.Application\CaseritoApp.Chat.Application.csproj" />
     <ProjectReference Include="..\..\Chat\CaseritoApp.Chat.Infrastructure\CaseritoApp.Chat.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Orders\CaseritoApp.Orders.Application\CaseritoApp.Orders.Application.csproj" />
+    <ProjectReference Include="..\..\Orders\CaseritoApp.Orders.Infrastructure\CaseritoApp.Orders.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

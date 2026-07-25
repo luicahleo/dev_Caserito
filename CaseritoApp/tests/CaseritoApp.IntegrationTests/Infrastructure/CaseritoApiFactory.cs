@@ -2,6 +2,7 @@ using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using CaseritoApp.Orders.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,9 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             servicios.RemoveAll<DbContextOptions<ChatDbContext>>();
             servicios.AddDbContext<ChatDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
+
+            servicios.RemoveAll<DbContextOptions<OrdersDbContext>>();
+            servicios.AddDbContext<OrdersDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
         });
     }
 
@@ -59,10 +63,21 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             var dbChat = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
             await dbChat.Database.MigrateAsync();
+
+            var dbOrders = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
+            await dbOrders.Database.MigrateAsync();
         }
 
         await Services.SembrarRolesAsync();
         await Services.SembrarCatalogoAsync();
+    }
+
+    public OrdersDbContext CrearOrdersDbContext()
+    {
+        var opciones = new DbContextOptionsBuilder<OrdersDbContext>()
+            .UseSqlServer(_sql.GetConnectionString())
+            .Options;
+        return new OrdersDbContext(opciones);
     }
 
     // El WebApplicationFactory base expone DisposeAsync() -> ValueTask (de IAsyncDisposable).
