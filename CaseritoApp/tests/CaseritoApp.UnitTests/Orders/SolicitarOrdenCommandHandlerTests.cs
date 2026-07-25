@@ -78,6 +78,15 @@ public sealed class SolicitarOrdenCommandHandlerTests
         public Task<Orden?> ObtenerAsync(Guid ordenId, CancellationToken ct) =>
             Task.FromResult<Orden?>(null);
 
+        public Task<IReadOnlyList<Orden>> ObtenerAbiertasPorAvisoAsync(
+            Guid avisoId,
+            Guid excluirOrdenId,
+            CancellationToken ct)
+        {
+            _ = (avisoId, excluirOrdenId, ct);
+            return Task.FromResult<IReadOnlyList<Orden>>([]);
+        }
+
         public void Agregar(Orden orden) => Agregada = orden;
     }
 

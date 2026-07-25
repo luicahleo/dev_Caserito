@@ -36,7 +36,13 @@ public sealed class ListarOrdenesQueryValidator : AbstractValidator<ListarOrdene
 {
     private static readonly string[] _rolesPermitidos = ["comprador", "vendedor"];
     private static readonly string[] _estadosPermitidos =
-        [nameof(EstadoOrden.Requested), nameof(EstadoOrden.Agreed), nameof(EstadoOrden.Cancelled)];
+    [
+        nameof(EstadoOrden.Requested),
+        nameof(EstadoOrden.Agreed),
+        nameof(EstadoOrden.Cancelled),
+        nameof(EstadoOrden.MarkedAsSold),
+        nameof(EstadoOrden.Completed),
+    ];
 
     public ListarOrdenesQueryValidator()
     {

@@ -42,7 +42,7 @@ public sealed class ConsultasOrdenesHandlerTests
     [Theory]
     [InlineData("", "Requested", 1, 20)]
     [InlineData("tercero", "Requested", 1, 20)]
-    [InlineData("comprador", "Completed", 1, 20)]
+    [InlineData("comprador", "Desconocido", 1, 20)]
     [InlineData("comprador", "Requested", 0, 20)]
     [InlineData("comprador", "Requested", 1, 101)]
     public void Listar_rechaza_filtros_o_paginacion_invalidos(
@@ -65,6 +65,17 @@ public sealed class ConsultasOrdenesHandlerTests
 
         Assert.False(resultado.IsValid);
         Assert.Equal(2, resultado.Errors.Count);
+    }
+
+    [Theory]
+    [InlineData("MarkedAsSold")]
+    [InlineData("Completed")]
+    public void Listar_admite_estados_de_cierre(string estado)
+    {
+        var resultado = new ListarOrdenesQueryValidator().Validate(
+            new ListarOrdenesQuery(Guid.NewGuid(), "comprador", estado, 1, 20));
+
+        Assert.True(resultado.IsValid);
     }
 
     private sealed class ConsultaFake : IConsultaOrdenes

@@ -25,7 +25,10 @@ public sealed record OrdenDetalleDto(
     string Moneda,
     string Rol,
     DateTimeOffset CreadaEn,
-    DateTimeOffset ActualizadaEn);
+    DateTimeOffset ActualizadaEn,
+    DateTimeOffset? MarcadaVendidaEn,
+    DateTimeOffset? CompradorConfirmoEn,
+    DateTimeOffset? CompletadaEn);
 
 public sealed record ResultadoPaginadoOrdenes(
     IReadOnlyList<OrdenResumenDto> Items,

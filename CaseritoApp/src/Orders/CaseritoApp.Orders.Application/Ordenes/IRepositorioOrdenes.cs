@@ -8,5 +8,10 @@ public interface IRepositorioOrdenes
 
     public Task<Orden?> ObtenerAsync(Guid ordenId, CancellationToken ct);
 
+    public Task<IReadOnlyList<Orden>> ObtenerAbiertasPorAvisoAsync(
+        Guid avisoId,
+        Guid excluirOrdenId,
+        CancellationToken ct);
+
     public void Agregar(Orden orden);
 }
