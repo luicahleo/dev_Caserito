@@ -119,6 +119,37 @@ public sealed class Orden : AggregateRoot
         return Result.Exito();
     }
 
+    public Result Cancelar(Guid actorId, DateTimeOffset ocurrioEn)
+    {
+        if (!EsParticipante(actorId))
+        {
+            return NoEncontrada();
+        }
+
+        if (Estado == EstadoOrden.Cancelled)
+        {
+            return Result.Exito();
+        }
+
+        if (Estado is not (EstadoOrden.Requested or EstadoOrden.Agreed))
+        {
+            return Result.Fallo(new Error(
+                ErroresOrden.TransicionInvalida,
+                "La orden no admite esta transición."));
+        }
+
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        var estadoAnterior = Estado;
+        Estado = EstadoOrden.Cancelled;
+        ActualizadaEn = fechaUtc;
+        AgregarEvento(new EstadoOrdenCambiado(
+            Id,
+            estadoAnterior,
+            Estado,
+            fechaUtc));
+        return Result.Exito();
+    }
+
     public bool EsParticipante(Guid usuarioId) =>
         usuarioId != Guid.Empty && (usuarioId == CompradorId || usuarioId == VendedorId);
 

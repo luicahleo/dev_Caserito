@@ -4,4 +4,5 @@ public enum EstadoOrden
 {
     Requested = 1,
     Agreed = 2,
+    Cancelled = 3,
 }
