@@ -177,6 +177,15 @@ builder.Services.AddRateLimiter(opciones =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    opciones.AddPolicy("reputation-publico", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
@@ -261,6 +270,7 @@ app.MapKycEndpoints();
 app.MapAvisosEndpoints();
 app.MapCatalogoEndpoints();
 app.MapPublicoEndpoints();
+app.MapPerfilesPublicosEndpoints();
 app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
 app.MapModeracionChatEndpoints();

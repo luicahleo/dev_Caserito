@@ -84,6 +84,7 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
                 a.EstadoModeracion == EstadoModeracionAviso.Visible)
             .Select(a => new AvisoPublicoDto(
                 a.Id,
+                a.VendedorId,
                 a.Titulo,
                 a.Descripcion,
                 a.Precio.Monto,

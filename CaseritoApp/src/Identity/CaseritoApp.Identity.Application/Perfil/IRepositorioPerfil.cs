@@ -18,6 +18,11 @@ public interface IRepositorioPerfil
     /// <summary>Obtiene el perfil del usuario indicado, o <c>null</c> si no existe.</summary>
     public Task<PerfilDto?> ObtenerAsync(Guid userId, CancellationToken cancellationToken);
 
+    /// <summary>Obtiene únicamente los datos aptos para exposición pública.</summary>
+    public Task<PerfilPublicoDto?> ObtenerPublicoAsync(
+        Guid userId,
+        CancellationToken cancellationToken);
+
     /// <summary>Actualiza nombre y ciudad del usuario indicado.</summary>
     public Task<Result> ActualizarAsync(Guid userId, string nombre, string ciudad, CancellationToken cancellationToken);
 }

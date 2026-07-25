@@ -25,6 +25,20 @@ public sealed class RepositorioPerfilUserManager(
         return new PerfilDto(usuario.Id, usuario.Email ?? string.Empty, usuario.Nombre, usuario.Ciudad, verificado);
     }
 
+    public async Task<PerfilPublicoDto?> ObtenerPublicoAsync(
+        Guid userId,
+        CancellationToken cancellationToken)
+    {
+        var usuario = await userManager.FindByIdAsync(userId.ToString());
+        if (usuario is null)
+        {
+            return null;
+        }
+
+        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, cancellationToken);
+        return new PerfilPublicoDto(usuario.Id, usuario.Nombre, usuario.Ciudad, verificado);
+    }
+
     public async Task<Result> ActualizarAsync(
         Guid userId, string nombre, string ciudad, CancellationToken cancellationToken)
     {

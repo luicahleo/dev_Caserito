@@ -14,9 +14,10 @@ public sealed record AvisoPublicoResumenDto(
     DateTime FechaCreacion,
     IReadOnlyList<FotoAvisoDto> Fotos);
 
-/// <summary>Detalle p&#xfa;blico de un aviso Activo. No expone vendedor ni estado.</summary>
+/// <summary>Detalle público de un aviso Activo. Expone solo el identificador opaco del vendedor.</summary>
 public sealed record AvisoPublicoDto(
     Guid Id,
+    Guid VendedorId,
     string Titulo,
     string Descripcion,
     decimal Monto,

@@ -177,6 +177,7 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
 
         var dto = await cliente.GetFromJsonAsync<AvisoPublicoDetalle>($"/api/publico/avisos/{id}");
         Assert.Equal(id, dto!.Id);
+        Assert.NotEqual(Guid.Empty, dto.VendedorId);
         Assert.Equal("Cochabamba", dto.NombreCiudad);
 
         using (var e = Con(HttpMethod.Delete, $"/api/avisos/{id}", token))
@@ -210,7 +211,7 @@ sealed file record AvisoPublicoResumen(
     string NombreCategoria, string NombreCiudad, string Condicion, DateTime FechaCreacion);
 sealed file record PaginaPublica(AvisoPublicoResumen[] Items, int Pagina, int Tamano, int Total);
 sealed file record AvisoPublicoDetalle(
-    Guid Id, string Titulo, string Descripcion, decimal Monto, string Moneda,
+    Guid Id, Guid VendedorId, string Titulo, string Descripcion, decimal Monto, string Moneda,
     string NombreCategoria, string NombreCiudad, string Condicion, DateTime FechaCreacion);
 sealed file record TokenAccesoDisc(string AccessToken);
 sealed file record SolicitudKycDisc(Guid SolicitudId, Guid UsuarioId, string Estado);
