@@ -11,7 +11,12 @@ public sealed record FiltroBusquedaAvisos(
     decimal? PrecioMax,
     CondicionArticulo? Condicion);
 
-public sealed record ReferenciaAvisoContactableDto(Guid AvisoId, Guid VendedorId);
+public sealed record ReferenciaAvisoContactableDto(
+    Guid AvisoId,
+    Guid VendedorId,
+    string Titulo,
+    decimal Monto,
+    string Moneda);
 
 /// <summary>Puerto de lectura pública de avisos (solo estado Activo).</summary>
 public interface IConsultaAvisosPublica

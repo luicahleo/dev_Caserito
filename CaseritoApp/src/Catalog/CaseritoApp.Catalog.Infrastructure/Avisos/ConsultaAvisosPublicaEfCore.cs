@@ -104,7 +104,12 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
             .Where(a => a.Id == id &&
                 a.Estado == EstadoAviso.Activo &&
                 a.EstadoModeracion == EstadoModeracionAviso.Visible)
-            .Select(a => new ReferenciaAvisoContactableDto(a.Id, a.VendedorId))
+            .Select(a => new ReferenciaAvisoContactableDto(
+                a.Id,
+                a.VendedorId,
+                a.Titulo,
+                a.Precio.Monto,
+                a.Precio.Moneda.ToString()))
             .FirstOrDefaultAsync(ct);
 
     // Neutraliza los comodines de LIKE en el término del usuario usando clases de caracteres.

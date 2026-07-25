@@ -8,8 +8,10 @@ using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
+using CaseritoApp.Host.Orders;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
 using FluentValidation;
 using MediatR;
@@ -48,6 +50,8 @@ builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
 builder.Services.AgregarOrders(builder.Configuration);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
+builder.Services.AddScoped<IConsultaAvisoParaOrden, ConsultaAvisoParaOrdenAdapter>();
+builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
 builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
     .Validate(o => o.MaximoConversaciones is > 0 and <= 100)
