@@ -22,7 +22,9 @@ public static class ConfiguracionCatalog
             e.Property(a => a.CategoriaId).IsRequired();
             e.Property(a => a.CiudadId).IsRequired();
             e.Property(a => a.Condicion).HasConversion<string>().HasMaxLength(20).IsRequired();
-            e.Property(a => a.Estado).HasConversion<string>().HasMaxLength(20).IsRequired();
+            e.Property(a => a.Estado).HasConversion<string>().HasMaxLength(20).IsRequired()
+                .IsConcurrencyToken();
+            e.Property(a => a.OrdenVentaId).IsConcurrencyToken();
             e.Property(a => a.EstadoModeracion).HasConversion<string>().HasMaxLength(30).IsRequired()
                 .HasDefaultValue(EstadoModeracionAviso.Visible).IsConcurrencyToken();
             e.Property(a => a.FechaCreacion).IsRequired();
