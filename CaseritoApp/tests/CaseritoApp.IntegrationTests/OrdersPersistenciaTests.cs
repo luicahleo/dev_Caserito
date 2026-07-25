@@ -5,6 +5,7 @@ using CaseritoApp.IntegrationTests.Infrastructure;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Domain.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
+using CaseritoApp.Orders.Infrastructure.Ordenes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -147,6 +148,49 @@ public sealed class OrdersPersistenciaTests(CaseritoApiFactory factory)
         db.Orders.Add(CrearOrden(compradorId, Guid.NewGuid(), avisoId));
 
         await Assert.ThrowsAnyAsync<DbUpdateException>(() => db.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Persiste_ganadora_competidoras_y_fechas_de_cierre_en_un_commit()
+    {
+        var avisoId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var compradorId = Guid.NewGuid();
+        var ganadora = CrearOrden(compradorId, vendedorId, avisoId);
+        var competidoraSolicitada = CrearOrden(Guid.NewGuid(), vendedorId, avisoId);
+        var competidoraAcordada = CrearOrden(Guid.NewGuid(), vendedorId, avisoId);
+        Assert.True(ganadora.Aceptar(vendedorId, DateTimeOffset.UtcNow).EsExito);
+        Assert.True(competidoraAcordada.Aceptar(vendedorId, DateTimeOffset.UtcNow).EsExito);
+
+        using var scope = factory.Services.CreateScope();
+        var repositorio = scope.ServiceProvider.GetRequiredService<IRepositorioOrdenes>();
+        repositorio.Agregar(ganadora);
+        repositorio.Agregar(competidoraSolicitada);
+        repositorio.Agregar(competidoraAcordada);
+        var unidad = scope.ServiceProvider.GetRequiredService<UnitOfWorkOrders>();
+        await unidad.GuardarCambiosAsync(CancellationToken.None);
+
+        var resultado = await new MarcarOrdenVendidaCommandHandler(repositorio).Handle(
+            new MarcarOrdenVendidaCommand(ganadora.Id, vendedorId),
+            CancellationToken.None);
+        await unidad.GuardarCambiosAsync(CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        await using var verificacion = factory.CrearOrdersDbContext();
+        var estados = await verificacion.Orders
+            .Where(orden => orden.AvisoId == avisoId)
+            .ToDictionaryAsync(orden => orden.Id, orden => orden.Estado);
+        Assert.Equal(EstadoOrden.MarkedAsSold, estados[ganadora.Id]);
+        Assert.Equal(EstadoOrden.Cancelled, estados[competidoraSolicitada.Id]);
+        Assert.Equal(EstadoOrden.Cancelled, estados[competidoraAcordada.Id]);
+
+        var consultas = new ConsultaOrdenesEfCore(verificacion);
+        var detalle = await consultas.ObtenerAsync(
+            ganadora.Id, compradorId, CancellationToken.None);
+        Assert.NotNull(detalle);
+        Assert.NotNull(detalle.MarcadaVendidaEn);
+        Assert.Null(detalle.CompradorConfirmoEn);
+        Assert.Null(detalle.CompletadaEn);
     }
 
     private static Orden CrearOrden(

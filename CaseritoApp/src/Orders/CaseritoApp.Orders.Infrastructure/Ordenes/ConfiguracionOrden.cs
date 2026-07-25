@@ -25,6 +25,9 @@ public static class ConfiguracionOrden
             entidad.Property(orden => orden.Moneda).HasMaxLength(3).IsRequired();
             entidad.Property(orden => orden.CreadaEn).IsRequired();
             entidad.Property(orden => orden.ActualizadaEn).IsRequired();
+            entidad.Property(orden => orden.MarcadaVendidaEn);
+            entidad.Property(orden => orden.CompradorConfirmoEn);
+            entidad.Property(orden => orden.CompletadaEn);
             entidad.Property(orden => orden.Version).IsRowVersion();
             entidad.Ignore(orden => orden.EventosDeDominio);
             entidad.HasIndex(orden => new { orden.AvisoId, orden.CompradorId })

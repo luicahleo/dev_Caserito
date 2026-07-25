@@ -59,6 +59,9 @@ public sealed class ConsultaOrdenesEfCore(OrdersDbContext db) : IConsultaOrdenes
                 orden.Moneda,
                 orden.CompradorId == actorId ? "comprador" : "vendedor",
                 orden.CreadaEn,
-                orden.ActualizadaEn))
+                orden.ActualizadaEn,
+                orden.MarcadaVendidaEn,
+                orden.CompradorConfirmoEn,
+                orden.CompletadaEn))
             .FirstOrDefaultAsync(ct);
 }
