@@ -35,6 +35,7 @@ describe('DetalleAvisoPage', () => {
   it('muestra el detalle de un aviso', async () => {
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
       id: 'a1',
+      vendedorId: 'vendedor',
       titulo: 'Bicicleta',
       descripcion: 'Rodado 26, poco uso',
       monto: 800,
@@ -60,15 +61,30 @@ describe('DetalleAvisoPage', () => {
 
   it('contacta al vendedor de un aviso ajeno y navega a la conversación', async () => {
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
-      id: 'a1', titulo: 'Bicicleta', descripcion: 'Poco uso', monto: 800, moneda: 'BOB',
-      nombreCategoria: 'Deportes', nombreCiudad: 'Cochabamba', condicion: 'Usado',
-      fechaCreacion: '2026-07-18T10:00:00Z', fotos: [],
+      id: 'a1',
+      vendedorId: 'vendedor',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
     });
     vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(new HttpError(403, null, 'No autorizado'));
     vi.spyOn(chat, 'iniciarConversacion').mockResolvedValue({
-      id: 'c1', avisoId: 'a1', compradorId: 'comprador', vendedorId: 'vendedor',
-      creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 0, estado: 0,
-      origenCierre: null, puedeEnviar: true,
+      id: 'c1',
+      avisoId: 'a1',
+      compradorId: 'comprador',
+      vendedorId: 'vendedor',
+      creadaEn: '',
+      ultimaActividadEn: '',
+      ultimaSecuencia: 0,
+      estado: 0,
+      origenCierre: null,
+      puedeEnviar: true,
     });
 
     montar('a1');
@@ -79,15 +95,33 @@ describe('DetalleAvisoPage', () => {
 
   it('no ofrece contactar en un aviso propio', async () => {
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
-      id: 'a1', titulo: 'Bicicleta', descripcion: 'Poco uso', monto: 800, moneda: 'BOB',
-      nombreCategoria: 'Deportes', nombreCiudad: 'Cochabamba', condicion: 'Usado',
-      fechaCreacion: '2026-07-18T10:00:00Z', fotos: [],
+      id: 'a1',
+      vendedorId: 'comprador',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
     });
     vi.spyOn(avisos, 'obtenerMiAviso').mockResolvedValue({
-      id: 'a1', vendedorId: 'comprador', titulo: 'Bicicleta', descripcion: 'Poco uso',
-      monto: 800, moneda: 'BOB', categoriaId: 'cat', ciudadId: 'ciu', condicion: 'Usado',
-      estado: 'Activo', estadoModeracion: 'Visible', fechaCreacion: '',
-      fechaActualizacion: '', fotos: [],
+      id: 'a1',
+      vendedorId: 'comprador',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      categoriaId: 'cat',
+      ciudadId: 'ciu',
+      condicion: 'Usado',
+      estado: 'Activo',
+      estadoModeracion: 'Visible',
+      fechaCreacion: '',
+      fechaActualizacion: '',
+      fotos: [],
     });
 
     montar('a1');
@@ -98,16 +132,26 @@ describe('DetalleAvisoPage', () => {
 
   it('advierte que proponer compra no paga ni reserva', async () => {
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
-      id: 'a1', titulo: 'Bicicleta', descripcion: 'Poco uso', monto: 800, moneda: 'BOB',
-      nombreCategoria: 'Deportes', nombreCiudad: 'Cochabamba', condicion: 'Usado',
-      fechaCreacion: '2026-07-18T10:00:00Z', fotos: [],
+      id: 'a1',
+      vendedorId: 'vendedor',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
     });
-    vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(
-      new HttpError(403, null, 'No autorizado'),
-    );
+    vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(new HttpError(403, null, 'No autorizado'));
     vi.spyOn(orders, 'solicitarOrden').mockResolvedValue({
-      id: 'o1', avisoId: 'a1', estado: 'Requested', montoAcordado: 800,
-      moneda: 'BOB', creadaEn: '',
+      id: 'o1',
+      avisoId: 'a1',
+      estado: 'Requested',
+      montoAcordado: 800,
+      moneda: 'BOB',
+      creadaEn: '',
     });
     montar('a1');
 
