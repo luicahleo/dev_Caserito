@@ -6,12 +6,16 @@ import {
   Typography,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { cancelarOrden, listarOrdenes, type OrdenResumen, type RolOrden } from '../api/orders';
+import {
+  cancelarOrden, listarOrdenes, marcarOrdenVendida, type OrdenResumen, type RolOrden,
+} from '../api/orders';
 import { formatearBob } from '../lib/formato';
 
 function estadoVisible(estado: string) {
   if (estado === 'Agreed') return 'Acordado';
   if (estado === 'Cancelled') return 'Cancelado';
+  if (estado === 'MarkedAsSold') return 'Marcado como vendido';
+  if (estado === 'Completed') return 'Completado';
   return 'Solicitado';
 }
 
@@ -24,6 +28,7 @@ function etiquetaAccion(estado: string, rol: RolOrden): string | null {
 export function MisAcuerdosPage() {
   const [rol, setRol] = useState<RolOrden>('comprador');
   const [aCancelar, setACancelar] = useState<OrdenResumen | null>(null);
+  const [aVender, setAVender] = useState<OrdenResumen | null>(null);
   const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['orders', rol],
@@ -35,6 +40,19 @@ export function MisAcuerdosPage() {
     onSuccess: async () => {
       setACancelar(null);
       await qc.invalidateQueries({ queryKey: ['orders'] });
+    },
+  });
+  const vender = useMutation({
+    mutationFn: (id: string) => marcarOrdenVendida(id),
+    onSuccess: async () => {
+      const avisoId = aVender?.avisoId;
+      setAVender(null);
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['orders'] }),
+        qc.invalidateQueries({ queryKey: ['mis-avisos'] }),
+        qc.invalidateQueries({ queryKey: ['avisos-publicos'] }),
+        qc.invalidateQueries({ queryKey: ['aviso-publico', avisoId] }),
+      ]);
     },
   });
 
@@ -73,6 +91,11 @@ export function MisAcuerdosPage() {
                   <Button size="small" onClick={() => setACancelar(orden)}>
                     {etiqueta}
                   </Button>
+                  {rol === 'vendedor' && orden.estado === 'Agreed' && (
+                    <Button size="small" variant="contained" onClick={() => setAVender(orden)}>
+                      Marcar como vendido
+                    </Button>
+                  )}
                 </Box>
               )}
             </Box>
@@ -98,6 +121,25 @@ export function MisAcuerdosPage() {
             variant="contained"
             disabled={cancelar.isPending}
             onClick={() => aCancelar && cancelar.mutate(aCancelar.id)}
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={aVender !== null} onClose={() => !vender.isPending && setAVender(null)}>
+        <DialogTitle>Marcar como vendido</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Esta acción es irreversible y cancelará las demás solicitudes y acuerdos del aviso.
+            Caserito no verifica el pago ni la entrega.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={vender.isPending} onClick={() => setAVender(null)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            disabled={vender.isPending}
+            onClick={() => aVender && vender.mutate(aVender.id)}
           >
             Confirmar
           </Button>

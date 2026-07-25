@@ -75,4 +75,18 @@ describe('MisAvisosPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /confirmar/i }));
     await waitFor(() => expect(eliminar).toHaveBeenCalledWith('a1'));
   });
+
+  it('muestra vendido sin acciones de mutación', async () => {
+    vi.spyOn(avisos, 'listarMisAvisos').mockResolvedValue({
+      items: [{ ...activo, estado: 'Vendido' }],
+      pagina: 1,
+      tamano: 20,
+      total: 1,
+    });
+    montar();
+
+    expect(await screen.findByText('Vendido')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /editar|pausar|reactivar|eliminar/i }))
+      .not.toBeInTheDocument();
+  });
 });

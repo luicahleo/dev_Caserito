@@ -104,7 +104,7 @@ export function MisAvisosPage() {
                   <TableCell>
                     <Chip
                       size="small"
-                      label={a.estado}
+                      label={a.estado === 'Vendido' ? 'Vendido' : a.estado}
                       color={a.estado === 'Activo' ? 'success' : 'default'}
                     />
                     {a.estadoModeracion !== 'Visible' && (
@@ -112,6 +112,7 @@ export function MisAvisosPage() {
                     )}
                   </TableCell>
                   <TableCell align="right">
+                    {a.estado !== 'Vendido' && (
                     <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
                       <Button size="small" onClick={() => navigate(`/mis-avisos/${a.id}/editar`)}>
                         Editar
@@ -137,6 +138,7 @@ export function MisAvisosPage() {
                         Eliminar
                       </Button>
                     </Stack>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
