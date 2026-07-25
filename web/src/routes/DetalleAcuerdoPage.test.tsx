@@ -14,6 +14,9 @@ describe('DetalleAcuerdoPage', () => {
       id: 'o1', avisoId: 'a1', estado: 'Requested', montoAcordado: 75,
       moneda: 'BOB', rol: 'vendedor', creadaEn: '2026-07-25T10:00:00Z',
       actualizadaEn: '2026-07-25T10:00:00Z',
+      marcadaVendidaEn: null,
+      compradorConfirmoEn: null,
+      completadaEn: null,
     });
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
       id: 'a1', titulo: 'Bicicleta', descripcion: '', monto: 75, moneda: 'BOB',
