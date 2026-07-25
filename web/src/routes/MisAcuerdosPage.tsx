@@ -38,6 +38,12 @@ export function MisAcuerdosPage() {
     },
   });
 
+  const cerrarDialogo = () => {
+    if (!cancelar.isPending) {
+      setACancelar(null);
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>Mis acuerdos</Typography>
@@ -78,7 +84,7 @@ export function MisAcuerdosPage() {
         <Alert severity="error" sx={{ mt: 2 }}>No se pudo procesar la cancelación.</Alert>
       )}
 
-      <Dialog open={aCancelar !== null} onClose={() => setACancelar(null)}>
+      <Dialog open={aCancelar !== null} onClose={cerrarDialogo}>
         <DialogTitle>{aCancelar ? etiquetaAccion(aCancelar.estado, rol) : ''}</DialogTitle>
         <DialogContent>
           <Typography>
@@ -86,7 +92,7 @@ export function MisAcuerdosPage() {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setACancelar(null)}>Cancelar</Button>
+          <Button disabled={cancelar.isPending} onClick={cerrarDialogo}>Cancelar</Button>
           <Button
             color="error"
             variant="contained"
