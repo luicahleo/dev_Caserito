@@ -2,6 +2,7 @@ using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
+#pragma warning disable CA1861 // Código generado por EF usa arrays inline para columnas de índices.
 
 namespace CaseritoApp.Reputation.Infrastructure.Migrations;
 

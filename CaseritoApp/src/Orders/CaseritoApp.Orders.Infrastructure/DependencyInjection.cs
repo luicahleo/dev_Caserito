@@ -21,6 +21,7 @@ public static class DependencyInjection
 
         servicios.AddScoped<IRepositorioOrdenes, RepositorioOrdenesEfCore>();
         servicios.AddScoped<IConsultaOrdenes, ConsultaOrdenesEfCore>();
+        servicios.AddScoped<IConsultaOrdenParaReputacion, ConsultaOrdenParaReputacionEfCore>();
         servicios.AddScoped<UnitOfWorkOrders>();
         servicios.AddScoped<IUnitOfWork>(
             proveedor => proveedor.GetRequiredService<UnitOfWorkOrders>());

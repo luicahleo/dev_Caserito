@@ -9,10 +9,13 @@ using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Host.Orders;
+using CaseritoApp.Host.Reputation;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
+using CaseritoApp.Reputation.Application.Resenas;
+using CaseritoApp.Reputation.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +32,7 @@ builder.Services.AddMediatR(cfg =>
         typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly,
         typeof(IniciarConversacionCommand).Assembly,
         typeof(SolicitarOrdenCommand).Assembly,
+        typeof(CrearResenaCommand).Assembly,
         typeof(RevocarAccesoTiempoRealHandler).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
@@ -41,6 +45,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(IniciarConversacionCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(SolicitarOrdenCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CrearResenaCommand).Assembly);
 
 // El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
@@ -51,10 +56,12 @@ builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environm
 builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
 builder.Services.AgregarOrders(builder.Configuration);
+builder.Services.AgregarReputation(builder.Configuration);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddScoped<IConsultaAvisoParaOrden, ConsultaAvisoParaOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
 builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
+builder.Services.AddScoped<IConsultaOrdenCalificable, ConsultaOrdenCalificableAdapter>();
 builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
     .Validate(o => o.MaximoConversaciones is > 0 and <= 100)
@@ -152,6 +159,24 @@ builder.Services.AddRateLimiter(opciones =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    opciones.AddPolicy("reputation-crear", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("reputation-consultas", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
@@ -216,6 +241,13 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
         var dbOrders = scopeOrders.ServiceProvider.GetRequiredService<OrdersDbContext>();
         await dbOrders.Database.MigrateAsync();
     }
+
+    using (var scopeReputation = app.Services.CreateScope())
+    {
+        var dbReputation = scopeReputation.ServiceProvider
+            .GetRequiredService<ReputationDbContext>();
+        await dbReputation.Database.MigrateAsync();
+    }
 }
 
 app.UseAuthentication();
@@ -234,6 +266,7 @@ app.MapModeracionEndpoints();
 app.MapModeracionChatEndpoints();
 app.MapChatEndpoints();
 app.MapOrdersEndpoints();
+app.MapReputationEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration

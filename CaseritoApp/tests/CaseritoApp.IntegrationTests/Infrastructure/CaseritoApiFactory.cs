@@ -3,6 +3,7 @@ using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Orders.Infrastructure;
+using CaseritoApp.Reputation.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,9 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             servicios.RemoveAll<DbContextOptions<OrdersDbContext>>();
             servicios.AddDbContext<OrdersDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
+
+            servicios.RemoveAll<DbContextOptions<ReputationDbContext>>();
+            servicios.AddDbContext<ReputationDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
         });
     }
 
@@ -66,6 +70,9 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             var dbOrders = scope.ServiceProvider.GetRequiredService<OrdersDbContext>();
             await dbOrders.Database.MigrateAsync();
+
+            var dbReputation = scope.ServiceProvider.GetRequiredService<ReputationDbContext>();
+            await dbReputation.Database.MigrateAsync();
         }
 
         await Services.SembrarRolesAsync();
