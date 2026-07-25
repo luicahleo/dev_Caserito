@@ -16,3 +16,9 @@ public sealed record AvisoReactivado(Guid AvisoId) : IDomainEvent;
 
 /// <summary>Se eliminó (soft-delete) un aviso.</summary>
 public sealed record AvisoEliminado(Guid AvisoId) : IDomainEvent;
+
+/// <summary>El aviso se retiró del catálogo tras cerrar una orden.</summary>
+public sealed record AvisoMarcadoVendido(
+    Guid AvisoId,
+    Guid OrdenId,
+    DateTime OcurridoEn) : IDomainEvent;

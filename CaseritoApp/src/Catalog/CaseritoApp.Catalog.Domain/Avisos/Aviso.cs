@@ -58,6 +58,9 @@ public sealed class Aviso : AggregateRoot
     /// <summary>Estado actual del aviso.</summary>
     public EstadoAviso Estado { get; private set; }
 
+    /// <summary>Identificador opaco de la orden que cerró la venta; sin FK a Orders.</summary>
+    public Guid? OrdenVentaId { get; private set; }
+
     /// <summary>Restricción aplicada por moderación, independiente del estado decidido por el dueño.</summary>
     public EstadoModeracionAviso EstadoModeracion { get; private set; }
 
@@ -93,7 +96,7 @@ public sealed class Aviso : AggregateRoot
             return FalloEliminadoPorModeracion();
         }
 
-        if (Estado == EstadoAviso.Eliminado)
+        if (EsEstadoTerminalComercial())
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "No se puede editar un aviso eliminado."));
         }
@@ -155,7 +158,7 @@ public sealed class Aviso : AggregateRoot
             return FalloEliminadoPorModeracion();
         }
 
-        if (Estado == EstadoAviso.Eliminado)
+        if (EsEstadoTerminalComercial())
         {
             return Result.Fallo(new Error(ErroresAviso.TransicionInvalida, "El aviso ya está eliminado."));
         }
@@ -205,12 +208,58 @@ public sealed class Aviso : AggregateRoot
         return Result.Exito();
     }
 
+    /// <summary>Retira comercialmente el aviso de manera irreversible.</summary>
+    public Result MarcarVendido(Guid ordenId, Guid vendedorId, DateTime ocurrioEn)
+    {
+        if (ordenId == Guid.Empty)
+        {
+            return Result.Fallo(new Error(
+                ErroresAviso.TransicionInvalida,
+                "El aviso no admite esta transición."));
+        }
+
+        if (vendedorId == Guid.Empty || vendedorId != VendedorId)
+        {
+            return Result.Fallo(new Error(
+                ErroresAviso.NoEncontrado,
+                "El aviso no está disponible."));
+        }
+
+        if (Estado == EstadoAviso.Vendido)
+        {
+            return OrdenVentaId == ordenId
+                ? Result.Exito()
+                : Result.Fallo(new Error(
+                    ErroresAviso.VentaIncompatible,
+                    "El aviso ya no admite esta venta."));
+        }
+
+        if (Estado == EstadoAviso.Eliminado || EstaEliminadoPorModeracion())
+        {
+            return Result.Fallo(new Error(
+                ErroresAviso.TransicionInvalida,
+                "El aviso no admite esta transición."));
+        }
+
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        Estado = EstadoAviso.Vendido;
+        OrdenVentaId = ordenId;
+        Tocar(fechaUtc);
+        AgregarEvento(new AvisoMarcadoVendido(Id, ordenId, fechaUtc));
+        return Result.Exito();
+    }
+
     /// <summary>Agrega una foto al aviso. Máximo 5 fotos por aviso.</summary>
     public Result AgregarFoto(string clave, string contentType)
     {
         if (EstaEliminadoPorModeracion())
         {
             return FalloEliminadoPorModeracion();
+        }
+
+        if (EsEstadoTerminalComercial())
+        {
+            return FalloEstadoTerminal();
         }
 
         if (_fotos.Count >= 5)
@@ -238,6 +287,13 @@ public sealed class Aviso : AggregateRoot
                 "El aviso fue eliminado por moderación."));
         }
 
+        if (EsEstadoTerminalComercial())
+        {
+            return Result.Fallo<FotoAviso>(new Error(
+                ErroresAviso.TransicionInvalida,
+                "El aviso no admite esta transición."));
+        }
+
         var foto = _fotos.FirstOrDefault(f => f.Id == fotoId);
         if (foto is null)
         {
@@ -258,6 +314,14 @@ public sealed class Aviso : AggregateRoot
 
     private bool EstaEliminadoPorModeracion() =>
         EstadoModeracion == EstadoModeracionAviso.EliminadoPorModeracion;
+
+    private bool EsEstadoTerminalComercial() =>
+        Estado is EstadoAviso.Eliminado or EstadoAviso.Vendido;
+
+    private static Result FalloEstadoTerminal() =>
+        Result.Fallo(new Error(
+            ErroresAviso.TransicionInvalida,
+            "El aviso no admite esta transición."));
 
     private static Result FalloEliminadoPorModeracion() =>
         Result.Fallo(new Error(

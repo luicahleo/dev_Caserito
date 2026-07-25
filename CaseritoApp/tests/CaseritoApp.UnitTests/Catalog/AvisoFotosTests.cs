@@ -85,4 +85,22 @@ public sealed class AvisoFotosTests
         Assert.False(resultado.EsExito);
         Assert.Equal(ErroresAviso.FotoNoEncontrada, resultado.Error.Code);
     }
+
+    [Fact]
+    public void Vendido_rechaza_agregar_y_quitar_fotos()
+    {
+        var aviso = AvisoActivo();
+        Assert.True(aviso.AgregarFoto("clave1", "image/jpeg").EsExito);
+        var fotoId = aviso.Fotos[0].Id;
+        Assert.True(aviso.MarcarVendido(
+            Guid.NewGuid(), aviso.VendedorId, DateTime.UtcNow).EsExito);
+
+        var agregar = aviso.AgregarFoto("clave2", "image/jpeg");
+        var quitar = aviso.QuitarFoto(fotoId);
+
+        Assert.False(agregar.EsExito);
+        Assert.False(quitar.EsExito);
+        Assert.Equal(ErroresAviso.TransicionInvalida, agregar.Error.Code);
+        Assert.Equal(ErroresAviso.TransicionInvalida, quitar.Error.Code);
+    }
 }

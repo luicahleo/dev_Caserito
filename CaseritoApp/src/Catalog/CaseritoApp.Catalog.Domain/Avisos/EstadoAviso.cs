@@ -11,4 +11,7 @@ public enum EstadoAviso
 
     /// <summary>Eliminado (soft-delete); estado terminal.</summary>
     Eliminado,
+
+    /// <summary>Vendido; estado comercial terminal.</summary>
+    Vendido,
 }

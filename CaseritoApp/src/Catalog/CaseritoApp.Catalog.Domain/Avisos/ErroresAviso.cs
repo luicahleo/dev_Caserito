@@ -27,6 +27,9 @@ public static class ErroresAviso
     /// <summary>La transición de estado solicitada no es válida para el estado actual (409).</summary>
     public const string TransicionInvalida = "avisos.transicion_invalida";
 
+    /// <summary>El aviso ya fue vendido mediante otra orden (409).</summary>
+    public const string VentaIncompatible = "avisos.venta_incompatible";
+
     /// <summary>El aviso ya tiene el máximo de fotos permitidas — 5 (400).</summary>
     public const string LimiteFotosAlcanzado = "aviso.limite_fotos_alcanzado";
 
