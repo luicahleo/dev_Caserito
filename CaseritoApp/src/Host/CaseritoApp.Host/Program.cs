@@ -54,6 +54,7 @@ builder.Services.AgregarOrders(builder.Configuration);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddScoped<IConsultaAvisoParaOrden, ConsultaAvisoParaOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
+builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
 builder.Services.AddOptions<OpcionesTiempoRealChat>()
     .Bind(builder.Configuration.GetSection(OpcionesTiempoRealChat.Seccion))
     .Validate(o => o.MaximoConversaciones is > 0 and <= 100)

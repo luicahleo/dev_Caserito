@@ -197,6 +197,66 @@ public sealed class OrdersFlujoTests(CaseritoApiFactory factory)
         Assert.Equal(HttpStatusCode.NoContent, segunda.StatusCode);
     }
 
+    [Fact]
+    public async Task Vendedor_marca_vendido_y_comprador_confirma_el_cierre()
+    {
+        using var cliente = factory.CreateClient();
+        var vendedor = await RegistrarAsync(cliente, "cierre-vendedor");
+        var comprador = await RegistrarAsync(cliente, "cierre-comprador");
+        await VerificarAsync(vendedor.Id);
+        await VerificarAsync(comprador.Id);
+        var tokenVendedor = await LoguearAsync(cliente, vendedor.Email);
+        var tokenComprador = await LoguearAsync(cliente, comprador.Email);
+
+        var crearAviso = await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            "/api/avisos",
+            tokenVendedor,
+            new CrearAvisoRequest(
+                "Artículo para cierre",
+                "Descripción sintética",
+                75m,
+                "Usado",
+                _categoria,
+                _ciudad));
+        var aviso = await crearAviso.Content.ReadFromJsonAsync<AvisoCreadoResponse>();
+        var crearOrden = await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            "/api/orders",
+            tokenComprador,
+            new SolicitarOrdenRequest(aviso!.Id));
+        var orden = await crearOrden.Content.ReadFromJsonAsync<OrdenCreadaResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, (await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            $"/api/orders/{orden!.Id}/aceptar",
+            tokenVendedor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            $"/api/orders/{orden.Id}/marcar-vendido",
+            tokenVendedor)).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await EnviarAsync(
+            cliente,
+            HttpMethod.Get,
+            $"/api/publico/avisos/{aviso.Id}",
+            tokenComprador)).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            $"/api/orders/{orden.Id}/confirmar-completado",
+            tokenComprador)).StatusCode);
+
+        var detalle = await EnviarAsync(
+            cliente, HttpMethod.Get, $"/api/orders/{orden.Id}", tokenComprador);
+        Assert.Equal(
+            "Completed",
+            (await detalle.Content.ReadFromJsonAsync<OrdenDetalleResponse>())!.Estado);
+    }
+
     private async Task<(Guid Id, string Token, string Email)> RegistrarAsync(
         HttpClient cliente,
         string prefijo)
