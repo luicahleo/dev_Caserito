@@ -1,6 +1,6 @@
 # Bootstrap y pruebas manuales de las fases 1–3
 
-Fecha: 2026-07-24  
+Fecha: 2026-07-24
 Estado: aprobado
 
 ## Objetivo

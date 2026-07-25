@@ -1,6 +1,6 @@
 # Plan — Bootstrap y pruebas manuales de fases 1–3
 
-Fecha: 2026-07-24  
+Fecha: 2026-07-24
 Spec: `docs/superpowers/specs/2026-07-24-bootstrap-pruebas-manuales-design.md`
 
 ## 1. Contrato probado del bootstrap
