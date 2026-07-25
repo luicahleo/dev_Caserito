@@ -117,6 +117,86 @@ public sealed class OrdersFlujoTests(CaseritoApiFactory factory)
         Assert.Equal("Requested", orden.Estado);
     }
 
+    [Fact]
+    public async Task Comprador_cancela_solicitud_y_puede_resolicitar()
+    {
+        using var cliente = factory.CreateClient();
+        var vendedor = await RegistrarAsync(cliente, "cancelar-resolicitar-vendedor");
+        var comprador = await RegistrarAsync(cliente, "cancelar-resolicitar-comprador");
+        await VerificarAsync(vendedor.Id);
+        await VerificarAsync(comprador.Id);
+        var tokenVendedor = await LoguearAsync(cliente, vendedor.Email);
+        var tokenComprador = await LoguearAsync(cliente, comprador.Email);
+
+        var crearAviso = await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            "/api/avisos",
+            tokenVendedor,
+            new CrearAvisoRequest(
+                "Artículo sintético",
+                "Descripción sintética",
+                75m,
+                "Usado",
+                _categoria,
+                _ciudad));
+        var aviso = await crearAviso.Content.ReadFromJsonAsync<AvisoCreadoResponse>();
+
+        var crearOrden = await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            "/api/orders",
+            tokenComprador,
+            new SolicitarOrdenRequest(aviso!.Id));
+        var orden = await crearOrden.Content.ReadFromJsonAsync<OrdenCreadaResponse>();
+
+        var cancelar = await EnviarAsync(
+            cliente, HttpMethod.Post, $"/api/orders/{orden!.Id}/cancelar", tokenComprador);
+        var resolicitar = await EnviarAsync(
+            cliente,
+            HttpMethod.Post,
+            "/api/orders",
+            tokenComprador,
+            new SolicitarOrdenRequest(aviso.Id));
+
+        Assert.Equal(HttpStatusCode.NoContent, cancelar.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, resolicitar.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cancelar_por_un_tercero_devuelve_404()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "cancelar-tercero-comprador");
+        var vendedor = await RegistrarAsync(cliente, "cancelar-tercero-vendedor");
+        var tercero = await RegistrarAsync(cliente, "cancelar-tercero-tercero");
+        var orden = CrearOrden(comprador.Id, vendedor.Id);
+        await PersistirAsync(orden);
+
+        var respuesta = await EnviarAsync(
+            cliente, HttpMethod.Post, $"/api/orders/{orden.Id}/cancelar", tercero.Token);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Cancelar_dos_veces_es_idempotente()
+    {
+        using var cliente = factory.CreateClient();
+        var comprador = await RegistrarAsync(cliente, "cancelar-idempotente-comprador");
+        var vendedor = await RegistrarAsync(cliente, "cancelar-idempotente-vendedor");
+        var orden = CrearOrden(comprador.Id, vendedor.Id);
+        await PersistirAsync(orden);
+
+        var primera = await EnviarAsync(
+            cliente, HttpMethod.Post, $"/api/orders/{orden.Id}/cancelar", comprador.Token);
+        var segunda = await EnviarAsync(
+            cliente, HttpMethod.Post, $"/api/orders/{orden.Id}/cancelar", comprador.Token);
+
+        Assert.Equal(HttpStatusCode.NoContent, primera.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, segunda.StatusCode);
+    }
+
     private async Task<(Guid Id, string Token, string Email)> RegistrarAsync(
         HttpClient cliente,
         string prefijo)
@@ -204,6 +284,7 @@ public sealed class OrdersFlujoTests(CaseritoApiFactory factory)
     private sealed record OrdenDetalleResponse(string Estado);
 
     private sealed record OrdenCreadaResponse(
+        Guid Id,
         string Estado,
         decimal MontoAcordado,
         string Moneda);

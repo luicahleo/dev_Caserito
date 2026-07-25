@@ -37,6 +37,15 @@ public static class OrdersEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status429TooManyRequests);
 
+        grupo.MapPost("/{id:guid}/cancelar", CancelarAsync)
+            .RequireRateLimiting("orders-acciones")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
         grupo.MapGet("/", ListarAsync)
             .RequireRateLimiting("orders-consultas")
             .Produces<ResultadoPaginadoOrdenes>()
@@ -100,6 +109,32 @@ public static class OrdersEndpoints
         try
         {
             var resultado = await sender.Send(new AceptarOrdenCommand(id, actorId), ct);
+            return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
+        }
+        catch (Exception ex) when (EsConflictoPersistencia(ex))
+        {
+            return ConflictoPersistencia();
+        }
+        catch (ValidationException ex)
+        {
+            return ProblemaDeValidacion(ex);
+        }
+    }
+
+    private static async Task<IResult> CancelarAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var actorId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var resultado = await sender.Send(new CancelarOrdenCommand(id, actorId), ct);
             return resultado.EsExito ? Results.NoContent() : DesdeError(resultado.Error);
         }
         catch (Exception ex) when (EsConflictoPersistencia(ex))

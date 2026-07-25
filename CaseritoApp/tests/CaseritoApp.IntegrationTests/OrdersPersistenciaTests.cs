@@ -5,6 +5,7 @@ using CaseritoApp.IntegrationTests.Infrastructure;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Domain.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CaseritoApp.IntegrationTests;
@@ -105,6 +106,47 @@ public sealed class OrdersPersistenciaTests(CaseritoApiFactory factory)
         await Assert.ThrowsAsync<ConflictoConcurrenciaException>(
             () => new UnitOfWorkOrders(dbSegundo, new PublicadorFake())
                 .GuardarCambiosAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Puede_resolicitar_tras_cancelar_la_orden_previa()
+    {
+        var avisoId = Guid.NewGuid();
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+
+        await using (var db = factory.CrearOrdersDbContext())
+        {
+            var previa = CrearOrden(compradorId, vendedorId, avisoId);
+            previa.Cancelar(compradorId, DateTimeOffset.UtcNow);
+            db.Orders.Add(previa);
+            await db.SaveChangesAsync();
+        }
+
+        await using (var db = factory.CrearOrdersDbContext())
+        {
+            var nueva = CrearOrden(compradorId, vendedorId, avisoId);
+            db.Orders.Add(nueva);
+
+            var afectados = await db.SaveChangesAsync();
+
+            Assert.Equal(1, afectados);
+        }
+    }
+
+    [Fact]
+    public async Task Rechaza_dos_ordenes_no_canceladas_para_el_mismo_aviso_y_comprador()
+    {
+        var avisoId = Guid.NewGuid();
+        var compradorId = Guid.NewGuid();
+
+        await using var db = factory.CrearOrdersDbContext();
+        db.Orders.Add(CrearOrden(compradorId, Guid.NewGuid(), avisoId));
+        await db.SaveChangesAsync();
+
+        db.Orders.Add(CrearOrden(compradorId, Guid.NewGuid(), avisoId));
+
+        await Assert.ThrowsAnyAsync<DbUpdateException>(() => db.SaveChangesAsync());
     }
 
     private static Orden CrearOrden(

@@ -96,10 +96,102 @@ public sealed class OrdenTests
         Assert.Equal(EstadoOrden.Requested, orden.Estado);
     }
 
+    [Theory]
+    [InlineData(true)]  // comprador
+    [InlineData(false)] // vendedor
+    public void Cancelar_desde_requested_por_participante_cambia_estado_y_emite_evento(bool porComprador)
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var orden = CrearOrdenCon(compradorId, vendedorId);
+        orden.LimpiarEventos();
+        var actorId = porComprador ? compradorId : vendedorId;
+        var ocurrioEn = DateTimeOffset.Now;
+
+        var resultado = orden.Cancelar(actorId, ocurrioEn);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoOrden.Cancelled, orden.Estado);
+        Assert.Equal(ocurrioEn.ToUniversalTime(), orden.ActualizadaEn);
+        var evento = Assert.IsType<EstadoOrdenCambiado>(Assert.Single(orden.EventosDeDominio));
+        Assert.Equal(EstadoOrden.Requested, evento.EstadoAnterior);
+        Assert.Equal(EstadoOrden.Cancelled, evento.EstadoNuevo);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Cancelar_desde_agreed_por_participante_cambia_estado_y_emite_evento(bool porComprador)
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var orden = CrearOrdenCon(compradorId, vendedorId);
+        Assert.True(orden.Aceptar(vendedorId, DateTimeOffset.UtcNow).EsExito);
+        orden.LimpiarEventos();
+        var actorId = porComprador ? compradorId : vendedorId;
+
+        var resultado = orden.Cancelar(actorId, DateTimeOffset.UtcNow);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoOrden.Cancelled, orden.Estado);
+        var evento = Assert.IsType<EstadoOrdenCambiado>(Assert.Single(orden.EventosDeDominio));
+        Assert.Equal(EstadoOrden.Agreed, evento.EstadoAnterior);
+        Assert.Equal(EstadoOrden.Cancelled, evento.EstadoNuevo);
+    }
+
+    [Fact]
+    public void Cancelar_por_tercero_oculta_la_orden()
+    {
+        var orden = CrearOrden(Guid.NewGuid());
+        orden.LimpiarEventos();
+
+        var resultado = orden.Cancelar(Guid.NewGuid(), DateTimeOffset.UtcNow);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresOrden.NoEncontrada, resultado.Error.Code);
+        Assert.Equal(EstadoOrden.Requested, orden.Estado);
+        Assert.Empty(orden.EventosDeDominio);
+    }
+
+    [Fact]
+    public void Cancelar_reintento_es_idempotente()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var orden = CrearOrdenCon(compradorId, vendedorId);
+        Assert.True(orden.Cancelar(compradorId, DateTimeOffset.UtcNow).EsExito);
+        orden.LimpiarEventos();
+
+        var resultado = orden.Cancelar(vendedorId, DateTimeOffset.UtcNow.AddMinutes(1));
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoOrden.Cancelled, orden.Estado);
+        Assert.Empty(orden.EventosDeDominio);
+    }
+
+    [Fact]
+    public void Cancelar_con_actor_vacio_oculta_la_orden()
+    {
+        var orden = CrearOrden(Guid.NewGuid());
+
+        var resultado = orden.Cancelar(Guid.Empty, DateTimeOffset.UtcNow);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal(ErroresOrden.NoEncontrada, resultado.Error.Code);
+    }
+
     private static Orden CrearOrden(Guid vendedorId)
     {
         var resultado = Orden.Crear(
             Guid.NewGuid(), Guid.NewGuid(), vendedorId, 10m, "BOB", DateTimeOffset.UtcNow);
+        Assert.True(resultado.EsExito);
+        return resultado.Valor;
+    }
+
+    private static Orden CrearOrdenCon(Guid compradorId, Guid vendedorId)
+    {
+        var resultado = Orden.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, 10m, "BOB", DateTimeOffset.UtcNow);
         Assert.True(resultado.EsExito);
         return resultado.Valor;
     }

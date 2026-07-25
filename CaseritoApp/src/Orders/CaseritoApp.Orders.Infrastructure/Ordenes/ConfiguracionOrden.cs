@@ -27,7 +27,9 @@ public static class ConfiguracionOrden
             entidad.Property(orden => orden.ActualizadaEn).IsRequired();
             entidad.Property(orden => orden.Version).IsRowVersion();
             entidad.Ignore(orden => orden.EventosDeDominio);
-            entidad.HasIndex(orden => new { orden.AvisoId, orden.CompradorId }).IsUnique();
+            entidad.HasIndex(orden => new { orden.AvisoId, orden.CompradorId })
+                .IsUnique()
+                .HasFilter("[Estado] <> 'Cancelled'");
             entidad.HasIndex(orden => new { orden.CompradorId, orden.ActualizadaEn });
             entidad.HasIndex(orden => new { orden.VendedorId, orden.ActualizadaEn });
         });

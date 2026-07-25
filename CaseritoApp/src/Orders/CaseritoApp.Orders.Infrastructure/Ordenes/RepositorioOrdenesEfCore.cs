@@ -8,7 +8,9 @@ public sealed class RepositorioOrdenesEfCore(OrdersDbContext db) : IRepositorioO
 {
     public Task<bool> ExisteAbiertaAsync(Guid avisoId, Guid compradorId, CancellationToken ct) =>
         db.Orders.AnyAsync(
-            orden => orden.AvisoId == avisoId && orden.CompradorId == compradorId,
+            orden => orden.AvisoId == avisoId
+                && orden.CompradorId == compradorId
+                && orden.Estado != EstadoOrden.Cancelled,
             ct);
 
     public Task<Orden?> ObtenerAsync(Guid ordenId, CancellationToken ct) =>
