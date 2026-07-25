@@ -28,6 +28,7 @@ builder.Services.AddMediatR(cfg =>
         typeof(ObtenerPerfilQuery).Assembly,
         typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly,
         typeof(IniciarConversacionCommand).Assembly,
+        typeof(SolicitarOrdenCommand).Assembly,
         typeof(RevocarAccesoTiempoRealHandler).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
@@ -39,6 +40,7 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(UnitOfWorkBeh
 builder.Services.AddValidatorsFromAssembly(typeof(ObtenerPerfilQuery).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CaseritoApp.Catalog.Application.Avisos.CrearAvisoCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(IniciarConversacionCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(SolicitarOrdenCommand).Assembly);
 
 // El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
@@ -119,6 +121,33 @@ builder.Services.AddRateLimiter(opciones =>
         {
             PermitLimit = 10,
             Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("orders-crear", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("orders-acciones", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("orders-consultas", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
@@ -203,6 +232,7 @@ app.MapFotosEndpoints();
 app.MapModeracionEndpoints();
 app.MapModeracionChatEndpoints();
 app.MapChatEndpoints();
+app.MapOrdersEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration
