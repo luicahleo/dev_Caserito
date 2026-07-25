@@ -44,7 +44,10 @@ export function DetalleAcuerdoPage() {
         {aviso.data?.titulo ?? 'Acuerdo de compra'}
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-        <Chip label={data.estado === 'Agreed' ? 'Acordado' : 'Solicitado'} color="primary" />
+        <Chip
+          label={data.estado === 'Agreed' ? 'Acordado' : data.estado === 'Cancelled' ? 'Cancelado' : 'Solicitado'}
+          color="primary"
+        />
         <Chip label={data.rol === 'vendedor' ? 'Venta' : 'Compra'} variant="outlined" />
       </Stack>
       <Typography variant="h5">{formatearBob(Number(data.montoAcordado))}</Typography>
