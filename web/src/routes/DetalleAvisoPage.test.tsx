@@ -49,6 +49,10 @@ describe('DetalleAvisoPage', () => {
     montar('a1');
     expect(await screen.findByText('Bicicleta')).toBeInTheDocument();
     expect(screen.getByText('Rodado 26, poco uso')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ver perfil del vendedor' })).toHaveAttribute(
+      'href',
+      '/usuarios/vendedor',
+    );
   });
 
   it('muestra "no disponible" ante un 404', async () => {

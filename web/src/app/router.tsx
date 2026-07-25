@@ -19,6 +19,7 @@ import { ConversacionesPage } from '../routes/ConversacionesPage';
 import { ConversacionPage } from '../routes/ConversacionPage';
 import { MisAcuerdosPage } from '../routes/MisAcuerdosPage';
 import { DetalleAcuerdoPage } from '../routes/DetalleAcuerdoPage';
+import { PerfilPublicoPage } from '../routes/PerfilPublicoPage';
 
 export const router = createBrowserRouter([
   {
@@ -26,23 +27,40 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <ExplorarPage /> },
       { path: '/avisos/:id', element: <DetalleAvisoPage /> },
+      { path: '/usuarios/:id', element: <PerfilPublicoPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/registro', element: <RegistroPage /> },
       {
         path: '/mensajes',
-        element: <ProtectedRoute><ConversacionesPage /></ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            <ConversacionesPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/mensajes/:id',
-        element: <ProtectedRoute><ConversacionPage /></ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            <ConversacionPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/acuerdos',
-        element: <ProtectedRoute><MisAcuerdosPage /></ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            <MisAcuerdosPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/acuerdos/:id',
-        element: <ProtectedRoute><DetalleAcuerdoPage /></ProtectedRoute>,
+        element: (
+          <ProtectedRoute>
+            <DetalleAcuerdoPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/publicar',

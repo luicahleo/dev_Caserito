@@ -5,6 +5,15 @@ import { RequierePermiso } from '../auth/RequierePermiso';
 import { router } from './router';
 
 describe('router', () => {
+  it('expone el perfil público sin guard de sesión', () => {
+    const ruta = router.routes[0].children?.find((candidata) => candidata.path === '/usuarios/:id');
+    expect(ruta).toBeDefined();
+    expect(isValidElement(ruta?.element)).toBe(true);
+    expect(ruta?.element && isValidElement(ruta.element) ? ruta.element.type : null).not.toBe(
+      ProtectedRoute,
+    );
+  });
+
   it('protege la moderación de chat con chat.moderar', () => {
     const ruta = router.routes[0].children?.find(
       (candidata) => candidata.path === '/admin/moderacion-chat',
