@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from './http';
-import { aceptarOrden, listarOrdenes, obtenerOrden, solicitarOrden } from './orders';
+import { aceptarOrden, cancelarOrden, listarOrdenes, obtenerOrden, solicitarOrden } from './orders';
 
 describe('api/orders', () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -46,6 +46,19 @@ describe('api/orders', () => {
       params: { path: { id: 'o1' } },
     });
     expect(post).toHaveBeenCalledWith('/api/orders/{id}/aceptar', {
+      params: { path: { id: 'o1' } },
+    });
+  });
+
+  it('cancela una orden por identificador', async () => {
+    const post = vi.spyOn(api, 'POST').mockResolvedValue({
+      data: undefined,
+      response: new Response(null, { status: 204 }),
+    } as never);
+
+    await cancelarOrden('o1');
+
+    expect(post).toHaveBeenCalledWith('/api/orders/{id}/cancelar', {
       params: { path: { id: 'o1' } },
     });
   });
