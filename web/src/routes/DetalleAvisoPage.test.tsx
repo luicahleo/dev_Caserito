@@ -5,10 +5,12 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { DetalleAvisoPage } from './DetalleAvisoPage';
 import * as avisos from '../api/avisos';
 import * as chat from '../api/chat';
+import * as orders from '../api/orders';
 import { HttpError } from '../api/http';
 
 const estadoAuth = {
   estaAutenticado: true,
+  verificado: true,
   usuario: { id: 'comprador', email: '', nombre: 'Comprador', ciudad: '', verificado: false },
 };
 vi.mock('../auth/AuthContext', () => ({ useAuth: () => estadoAuth }));
@@ -92,5 +94,25 @@ describe('DetalleAvisoPage', () => {
 
     expect(await screen.findByText('Bicicleta')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Contactar al vendedor' })).not.toBeInTheDocument();
+  });
+
+  it('advierte que proponer compra no paga ni reserva', async () => {
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'a1', titulo: 'Bicicleta', descripcion: 'Poco uso', monto: 800, moneda: 'BOB',
+      nombreCategoria: 'Deportes', nombreCiudad: 'Cochabamba', condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z', fotos: [],
+    });
+    vi.spyOn(avisos, 'obtenerMiAviso').mockRejectedValue(
+      new HttpError(403, null, 'No autorizado'),
+    );
+    vi.spyOn(orders, 'solicitarOrden').mockResolvedValue({
+      id: 'o1', avisoId: 'a1', estado: 'Requested', montoAcordado: 800,
+      moneda: 'BOB', creadaEn: '',
+    });
+    montar('a1');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Proponer compra' }));
+
+    expect(screen.getByText(/no realiza ningún pago ni reserva/i)).toBeInTheDocument();
   });
 });

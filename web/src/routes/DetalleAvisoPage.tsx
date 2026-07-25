@@ -17,15 +17,21 @@ import { iniciarConversacion } from '../api/chat';
 import { useAuth } from '../auth/AuthContext';
 import { formatearBob } from '../lib/formato';
 import { HttpError } from '../api/http';
+import { solicitarOrden } from '../api/orders';
 
 export function DetalleAvisoPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
-  const { estaAutenticado } = useAuth();
+  const { estaAutenticado, verificado } = useAuth();
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [reporteAbierto, setReporteAbierto] = useState(false);
   const [motivo, setMotivo] = useState('EstafaOEngano');
   const [detalle, setDetalle] = useState('');
+  const [propuestaAbierta, setPropuestaAbierta] = useState(false);
+  const propuesta = useMutation({
+    mutationFn: () => solicitarOrden(id),
+    onSuccess: (orden) => navigate(`/acuerdos/${orden.id}`),
+  });
   const reporte = useMutation({ mutationFn: () => reportarAviso(id, { motivo, detalle: detalle.trim() || null }), onSuccess: () => setReporteAbierto(false) });
   const contacto = useMutation({
     mutationFn: () => iniciarConversacion(id),
@@ -130,13 +136,20 @@ export function DetalleAvisoPage() {
       </Typography>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 3 }}>
         {esAvisoAjeno && (
-          <Button
-            variant="contained"
-            onClick={() => contacto.mutate()}
-            disabled={contacto.isPending}
-          >
-            {contacto.isPending ? 'Abriendo conversación…' : 'Contactar al vendedor'}
-          </Button>
+          <>
+            <Button
+              variant="contained"
+              onClick={() => contacto.mutate()}
+              disabled={contacto.isPending}
+            >
+              {contacto.isPending ? 'Abriendo conversación…' : 'Contactar al vendedor'}
+            </Button>
+            {verificado && (
+              <Button variant="outlined" onClick={() => setPropuestaAbierta(true)}>
+                Proponer compra
+              </Button>
+            )}
+          </>
         )}
         {!estaAutenticado && (
           <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }}>
@@ -149,6 +162,27 @@ export function DetalleAvisoPage() {
           No se pudo abrir la conversación. Inténtalo nuevamente.
         </Alert>
       )}
+      <Dialog open={propuestaAbierta} onClose={() => setPropuestaAbierta(false)}>
+        <DialogTitle>Proponer compra</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Esta acción crea un acuerdo. No realiza ningún pago ni reserva el artículo.
+          </Typography>
+          {propuesta.isError && (
+            <Alert severity="error" sx={{ mt: 2 }}>No se pudo crear el acuerdo.</Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPropuestaAbierta(false)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={() => propuesta.mutate()}
+            disabled={propuesta.isPending}
+          >
+            Confirmar propuesta
+          </Button>
+        </DialogActions>
+      </Dialog>
       {estaAutenticado ? <Button color="error" onClick={() => setReporteAbierto(true)} sx={{ mt: 3 }}>Reportar aviso</Button> : <Button component={RouterLink} to="/login" state={{ from: `/avisos/${id}` }} sx={{ mt: 3 }}>Inicia sesión para reportar</Button>}
       <Dialog open={reporteAbierto} onClose={() => setReporteAbierto(false)} fullWidth>
         <DialogTitle>Reportar aviso</DialogTitle>

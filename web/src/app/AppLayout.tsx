@@ -36,6 +36,9 @@ export function AppLayout() {
                 <Button color="inherit" component={RouterLink} to="/mis-avisos">
                   Mis avisos
                 </Button>
+                <Button color="inherit" component={RouterLink} to="/acuerdos">
+                  Mis acuerdos
+                </Button>
                 <ContadorChat />
                 {tienePermiso('publicaciones.moderar') && (
                   <Button color="inherit" component={RouterLink} to="/admin/moderacion">Moderación</Button>

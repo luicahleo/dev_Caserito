@@ -17,6 +17,8 @@ import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
 import { ConversacionesPage } from '../routes/ConversacionesPage';
 import { ConversacionPage } from '../routes/ConversacionPage';
+import { MisAcuerdosPage } from '../routes/MisAcuerdosPage';
+import { DetalleAcuerdoPage } from '../routes/DetalleAcuerdoPage';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +35,14 @@ export const router = createBrowserRouter([
       {
         path: '/mensajes/:id',
         element: <ProtectedRoute><ConversacionPage /></ProtectedRoute>,
+      },
+      {
+        path: '/acuerdos',
+        element: <ProtectedRoute><MisAcuerdosPage /></ProtectedRoute>,
+      },
+      {
+        path: '/acuerdos/:id',
+        element: <ProtectedRoute><DetalleAcuerdoPage /></ProtectedRoute>,
       },
       {
         path: '/publicar',
