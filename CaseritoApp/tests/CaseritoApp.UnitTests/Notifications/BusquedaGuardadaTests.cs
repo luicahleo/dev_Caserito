@@ -98,6 +98,31 @@ public sealed class BusquedaGuardadaTests
         Assert.Equal("busqueda_guardada_invalida", resultado.Error.Code);
     }
 
+    public static TheoryData<decimal?, decimal?> PreciosNegativos => new()
+    {
+        { -1.0m, null },
+        { null, -1.0m },
+        { -10.0m, -20.0m },
+    };
+
+    [Theory]
+    [MemberData(nameof(PreciosNegativos))]
+    public void Crear_PrecioNegativo_Rechaza(decimal? precioMinimo, decimal? precioMaximo)
+    {
+        var resultado = BusquedaGuardada.Crear(
+            Guid.NewGuid(),
+            "iPhone",
+            null,
+            null,
+            precioMinimo,
+            precioMaximo,
+            null,
+            DateTimeOffset.UtcNow);
+
+        Assert.False(resultado.EsExito);
+        Assert.Equal("busqueda_guardada_invalida", resultado.Error.Code);
+    }
+
     [Fact]
     public void Crear_FechaNoUtc_AlmacenaUtc()
     {

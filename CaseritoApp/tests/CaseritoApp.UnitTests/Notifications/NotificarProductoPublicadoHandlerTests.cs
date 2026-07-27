@@ -5,6 +5,7 @@ using CaseritoApp.Notifications.Application.Notificaciones;
 using CaseritoApp.Notifications.Domain.Busquedas;
 using CaseritoApp.Notifications.Domain.Notificaciones;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace CaseritoApp.UnitTests.Notifications;
@@ -16,13 +17,15 @@ public sealed class NotificarProductoPublicadoHandlerTests
     private readonly IConsultaProductoParaAlerta _consulta = Substitute.For<IConsultaProductoParaAlerta>();
     private readonly IEmailSender _emailSender = Substitute.For<IEmailSender>();
     private readonly IConsultaEmailUsuario _consultaEmail = Substitute.For<IConsultaEmailUsuario>();
+    private readonly ILogger<NotificarProductoPublicadoHandler> _logger = Substitute.For<ILogger<NotificarProductoPublicadoHandler>>();
 
     private NotificarProductoPublicadoHandler CrearHandler() => new(
         _sender,
         _busquedas,
         _consulta,
         _emailSender,
-        _consultaEmail);
+        _consultaEmail,
+        _logger);
 
     [Fact]
     public async Task Handle_ProductoNoEncontrado_NoEnviaNada()

@@ -9,28 +9,22 @@ public sealed class ConsultaProductoParaAlertaAdapter(CatalogDbContext db)
 {
     public async Task<ProductoAlertaDto?> ObtenerAsync(Guid avisoId, CancellationToken ct)
     {
-        var aviso = await db.Avisos
-            .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.Id == avisoId, ct);
+        var dto = await (
+            from a in db.Avisos.AsNoTracking()
+            where a.Id == avisoId
+            join c in db.Categorias.AsNoTracking() on a.CategoriaId equals c.Id into categorias
+            from c in categorias.DefaultIfEmpty()
+            join ci in db.Ciudades.AsNoTracking() on a.CiudadId equals ci.Id into ciudades
+            from ci in ciudades.DefaultIfEmpty()
+            select new ProductoAlertaDto(
+                a.Id,
+                a.Titulo,
+                c.Nombre,
+                ci.Nombre,
+                a.Precio.Monto,
+                a.Condicion.ToString()))
+            .FirstOrDefaultAsync(ct);
 
-        if (aviso is null)
-        {
-            return null;
-        }
-
-        var categoria = await db.Categorias
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == aviso.CategoriaId, ct);
-        var ciudad = await db.Ciudades
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == aviso.CiudadId, ct);
-
-        return new ProductoAlertaDto(
-            aviso.Id,
-            aviso.Titulo,
-            categoria?.Nombre,
-            ciudad?.Nombre,
-            aviso.Precio?.Monto,
-            aviso.Condicion.ToString());
+        return dto;
     }
 }

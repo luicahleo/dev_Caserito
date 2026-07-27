@@ -29,7 +29,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     public async Task ListarCoincidencias_CoincidePorCategoriaYCiudad_RetornaBusqueda()
     {
         var usuarioId = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioId, null, "tecnología", "cochabamba"));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioId, null, "tecnología", "cochabamba"));
         await _db.SaveChangesAsync();
 
         var coincidencias = await _repo.ListarCoincidenciasAsync(
@@ -48,7 +48,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     public async Task ListarCoincidencias_PrecioFueraDeRango_NoRetornaBusqueda()
     {
         var usuarioId = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioId, "producto", null, null, 5000, 10000));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioId, "producto", null, null, 5000, 10000));
         await _db.SaveChangesAsync();
 
         var coincidencias = await _repo.ListarCoincidenciasAsync(
@@ -66,7 +66,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     public async Task ListarCoincidencias_PalabraClaveEnTitulo_RetornaBusqueda()
     {
         var usuarioId = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioId, "iphone", null, null));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioId, "iphone", null, null));
         await _db.SaveChangesAsync();
 
         var coincidencias = await _repo.ListarCoincidenciasAsync(
@@ -84,7 +84,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     public async Task ListarCoincidencias_PalabraClaveNoEnTitulo_NoRetornaBusqueda()
     {
         var usuarioId = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioId, "samsung", null, null));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioId, "samsung", null, null));
         await _db.SaveChangesAsync();
 
         var coincidencias = await _repo.ListarCoincidenciasAsync(
@@ -102,7 +102,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     public async Task ListarCoincidencias_EstadoCualquiera_RetornaParaCualquierEstado()
     {
         var usuarioId = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioId, null, "tecnología", null, null, null, "cualquiera"));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioId, null, "tecnología", null, null, null, BusquedaGuardada.EstadoCualquiera));
         await _db.SaveChangesAsync();
 
         var coincidencias = await _repo.ListarCoincidenciasAsync(
@@ -121,9 +121,9 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     {
         var usuarioA = Guid.NewGuid();
         var usuarioB = Guid.NewGuid();
-        _repo.Agregar(CrearBusqueda(usuarioA, "a", null, null));
-        _repo.Agregar(CrearBusqueda(usuarioA, "b", null, null));
-        _repo.Agregar(CrearBusqueda(usuarioB, "c", null, null));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioA, "a", null, null));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioA, "b", null, null));
+        _db.BusquedasGuardadas.Add(CrearBusqueda(usuarioB, "c", null, null));
         await _db.SaveChangesAsync();
 
         var cantidad = await _repo.ContarPorUsuarioAsync(usuarioA, CancellationToken.None);
@@ -136,7 +136,7 @@ public sealed class BusquedaGuardadaRepositoryEfCoreTests : IDisposable
     {
         var usuarioId = Guid.NewGuid();
         var busqueda = CrearBusqueda(usuarioId, "iphone", null, null);
-        _repo.Agregar(busqueda);
+        _db.BusquedasGuardadas.Add(busqueda);
         await _db.SaveChangesAsync();
 
         _repo.Eliminar(busqueda);

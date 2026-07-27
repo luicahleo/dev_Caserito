@@ -45,6 +45,9 @@ public sealed class BusquedaGuardada : AggregateRoot
     public DateTimeOffset CreadaEn { get; private set; }
     public byte[] Version { get; private set; }
 
+    /// <summary>Valor especial para <see cref="EstadoProducto"/> que coincide con cualquier estado.</summary>
+    public const string EstadoCualquiera = "cualquiera";
+
     public static Result<BusquedaGuardada> Crear(
         Guid usuarioId,
         string? palabraClave,
@@ -59,7 +62,9 @@ public sealed class BusquedaGuardada : AggregateRoot
             || string.IsNullOrWhiteSpace(palabraClave)
                 && string.IsNullOrWhiteSpace(categoria)
                 && string.IsNullOrWhiteSpace(ciudad)
-            || (precioMinimo.HasValue && precioMaximo.HasValue && precioMinimo > precioMaximo))
+            || (precioMinimo.HasValue && precioMaximo.HasValue && precioMinimo > precioMaximo)
+            || (precioMinimo.HasValue && precioMinimo < 0)
+            || (precioMaximo.HasValue && precioMaximo < 0))
         {
             return Result.Fallo<BusquedaGuardada>(new Error(
                 "busqueda_guardada_invalida",

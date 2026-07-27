@@ -2,6 +2,7 @@ using CaseritoApp.BuildingBlocks.Contracts.Catalog;
 using CaseritoApp.Notifications.Application.Busquedas;
 using CaseritoApp.Notifications.Domain.Notificaciones;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace CaseritoApp.Notifications.Application.Notificaciones;
 
@@ -10,9 +11,15 @@ public sealed class NotificarProductoPublicadoHandler(
     IBusquedaGuardadaRepository busquedas,
     IConsultaProductoParaAlerta consulta,
     IEmailSender emailSender,
-    IConsultaEmailUsuario consultaEmail)
+    IConsultaEmailUsuario consultaEmail,
+    ILogger<NotificarProductoPublicadoHandler> logger)
     : INotificationHandler<ProductPublished>
 {
+    private static readonly Action<ILogger, Exception> _logErrorEmail = LoggerMessage.Define(
+        LogLevel.Error,
+        new EventId(1, "EmailAlerta"),
+        "Error al enviar el email de alerta de búsqueda.");
+
     public async Task Handle(ProductPublished evento, CancellationToken cancellationToken)
     {
         var producto = await consulta.ObtenerAsync(evento.ProductId, cancellationToken);
@@ -29,13 +36,11 @@ public sealed class NotificarProductoPublicadoHandler(
             producto.EstadoProducto,
             cancellationToken);
 
-        foreach (var busqueda in coincidentes)
+        foreach (var usuarioId in coincidentes.Select(b => b.UsuarioId))
         {
-            _ = busqueda.Id;
-
             await sender.Send(
                 new CrearNotificacionCommand(
-                    busqueda.UsuarioId,
+                    usuarioId,
                     TipoNotificacion.AlertaBusqueda,
                     "Nuevo aviso que puede interesarte",
                     "Se publicó un aviso que coincide con tu búsqueda.",
@@ -43,7 +48,7 @@ public sealed class NotificarProductoPublicadoHandler(
                 cancellationToken);
 
             await EnviarEmailAsync(
-                busqueda.UsuarioId,
+                usuarioId,
                 "Nuevo aviso que puede interesarte",
                 "Se publicó un aviso que coincide con una de tus búsquedas guardadas.",
                 cancellationToken);
@@ -66,7 +71,7 @@ public sealed class NotificarProductoPublicadoHandler(
         }
         catch (Exception ex)
         {
-            _ = ex;
+            _logErrorEmail(logger, ex);
             // Email no debe fallar la alerta in-app.
         }
     }
