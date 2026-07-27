@@ -17,6 +17,7 @@ using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Notifications.Application.Notificaciones;
 using CaseritoApp.Notifications.Infrastructure;
+using CaseritoApp.Notifications.Infrastructure.PuntosEncuentro;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
 using CaseritoApp.Reputation.Application.Resenas;
@@ -287,6 +288,8 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
             .GetRequiredService<NotificationsDbContext>();
         await dbNotifications.Database.MigrateAsync();
     }
+
+    await app.Services.SembrarPuntosEncuentroSegurosAsync();
 }
 
 app.UseAuthentication();
@@ -308,6 +311,7 @@ app.MapChatEndpoints();
 app.MapOrdersEndpoints();
 app.MapReputationEndpoints();
 app.MapBusquedasGuardadasEndpoints();
+app.MapPuntosEncuentroEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration
