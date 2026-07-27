@@ -9,11 +9,14 @@ using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Host.Notifications;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Host.Orders;
 using CaseritoApp.Host.Reputation;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Notifications.Application.Notificaciones;
+using CaseritoApp.Notifications.Infrastructure;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
 using CaseritoApp.Reputation.Application.Resenas;
@@ -36,7 +39,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(IniciarConversacionCommand).Assembly,
         typeof(SolicitarOrdenCommand).Assembly,
         typeof(CrearResenaCommand).Assembly,
-        typeof(RevocarAccesoTiempoRealHandler).Assembly));
+        typeof(RevocarAccesoTiempoRealHandler).Assembly,
+        typeof(CrearNotificacionCommand).Assembly));
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -63,8 +67,11 @@ builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
 builder.Services.AgregarOrders(builder.Configuration);
 builder.Services.AgregarReputation(builder.Configuration);
+builder.Services.AgregarNotifications(builder.Configuration, builder.Environment);
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddScoped<IConsultaAvisoParaOrden, ConsultaAvisoParaOrdenAdapter>();
+builder.Services.AddScoped<IConsultaEmailUsuario, ConsultaEmailUsuarioAdapter>();
+builder.Services.AddScoped<IConsultaParticipantesOrden, ConsultaParticipantesOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
 builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
 builder.Services.AddScoped<IConsultaOrdenCalificable, ConsultaOrdenCalificableAdapter>();
@@ -262,6 +269,13 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
         var dbReputation = scopeReputation.ServiceProvider
             .GetRequiredService<ReputationDbContext>();
         await dbReputation.Database.MigrateAsync();
+    }
+
+    using (var scopeNotifications = app.Services.CreateScope())
+    {
+        var dbNotifications = scopeNotifications.ServiceProvider
+            .GetRequiredService<NotificationsDbContext>();
+        await dbNotifications.Database.MigrateAsync();
     }
 }
 

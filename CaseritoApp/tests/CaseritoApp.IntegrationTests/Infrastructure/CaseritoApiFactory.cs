@@ -77,6 +77,9 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             var dbReputation = scope.ServiceProvider.GetRequiredService<ReputationDbContext>();
             await dbReputation.Database.MigrateAsync();
+
+            var dbNotifications = scope.ServiceProvider.GetRequiredService<NotificationsDbContext>();
+            await dbNotifications.Database.MigrateAsync();
         }
 
         await Services.SembrarRolesAsync();
