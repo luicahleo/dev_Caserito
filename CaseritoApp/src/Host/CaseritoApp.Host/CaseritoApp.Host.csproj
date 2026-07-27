@@ -8,6 +8,7 @@
     <ProjectReference Include="..\..\Chat\CaseritoApp.Chat.Application\CaseritoApp.Chat.Application.csproj" />
     <ProjectReference Include="..\..\Chat\CaseritoApp.Chat.Infrastructure\CaseritoApp.Chat.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Orders\CaseritoApp.Orders.Application\CaseritoApp.Orders.Application.csproj" />
+    <ProjectReference Include="..\..\Notifications\CaseritoApp.Notifications.Application\CaseritoApp.Notifications.Application.csproj" />
     <ProjectReference Include="..\..\Orders\CaseritoApp.Orders.Infrastructure\CaseritoApp.Orders.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Reputation\CaseritoApp.Reputation.Infrastructure\CaseritoApp.Reputation.Infrastructure.csproj" />
   </ItemGroup>
