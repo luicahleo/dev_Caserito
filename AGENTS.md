@@ -66,20 +66,23 @@ Mapa de documentación y plantillas: `docs/ai/README.md`.
 
 ## graphify
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+Este proyecto tiene un grafo de conocimiento en `graphify-out/` con nodos, comunidades y relaciones entre archivos. El grafo ya está construido (`graphify-out/graph.json`, ~8 MB, 4319 nodos / 9884 aristas / 258 comunidades) y puede usarse para responder preguntas sobre el codebase ahorrando tokens en búsquedas amplias.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+Graphify es **opcional**: usarlo cuando `graphify-out/graph.json` exista y sea usable; si no, continuar directamente con búsquedas puntuales (`rg`).
 
-Rules:
-- Graphify is optional. Use it only when `graphify-out/graph.json` exists and
-  contains a usable graph; otherwise continue directly with scoped `rg`
-  searches.
-- For codebase questions, run `graphify query "<question>"` when the graph is
-  usable. Use `graphify path "<A>" "<B>"` for relationships and
-  `graphify explain "<concept>"` for focused concepts.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Do not read `GRAPH_REPORT.md` or traverse `graphify-out/` as a fallback when
-  the graph is missing or incomplete.
-- After modifying code, run `graphify update .` only when Graphify is configured
-  and available.
+Cuando el usuario escriba `/graphify`, seguir las instrucciones del skill o comando instalado antes de cualquier otra acción.
+
+Comandos útiles:
+- `graphify query "<pregunta>"` — responder preguntas sobre el código.
+- `graphify path "<A>" "<B>"` — encontrar relaciones entre dos símbolos/archivos.
+- `graphify explain "<concepto>"` — explicar un concepto del proyecto.
+- `graphify . --code-only` — reconstruir el grafo completo solo con código (no requiere API key).
+- `graphify cluster-only .` — regenerar comunidades y `GRAPH_REPORT.md`.
+- `graphify update .` — actualizar el grafo después de modificar código (solo si Graphify está configurado y disponible).
+
+Reglas:
+- Usar el grafo para preguntas amplias o de arquitectura; seguir usando `rg` para búsquedas exactas de texto o símbolos cuando sea más directo.
+- Los archivos sucios en `graphify-out/` son normales después de hooks o actualizaciones incrementales; no son motivo para ignorar graphify. Solo omitir graphify si la tarea trata sobre output obsoleto/incorrecto, o el usuario lo pide explícitamente.
+- Si existe `graphify-out/wiki/index.md`, usarlo para navegación general en lugar de recorrer el código fuente directamente.
+- No leer `GRAPH_REPORT.md` ni recorrer `graphify-out/` como fallback cuando el grafo falte o esté incompleto.
+- El grafo actual se generó en modo `--code-only`; no incluye documentos ni imágenes. Para indexar también docs, configurar una API key (p. ej. `GOOGLE_API_KEY`) y ejecutar `graphify .` sin `--code-only`.

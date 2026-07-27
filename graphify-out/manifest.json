@@ -1,0 +1,2707 @@
+{
+  ".claude/hooks/format-cs.ps1": {
+    "mtime": 1783965678.3401923,
+    "ast_hash": "028178105c5613fbbb012f5f08696eae",
+    "semantic_hash": "028178105c5613fbbb012f5f08696eae"
+  },
+  ".claude/settings.json": {
+    "mtime": 1785010036.6827607,
+    "ast_hash": "c9d5d601479f9c5777cae8cb9c82266f",
+    "semantic_hash": "c9d5d601479f9c5777cae8cb9c82266f"
+  },
+  ".codex/hooks.json": {
+    "mtime": 1785009994.6032965,
+    "ast_hash": "c7bba47d7b45204b30ad4922f6495fe7",
+    "semantic_hash": "c7bba47d7b45204b30ad4922f6495fe7"
+  },
+  ".config/dotnet-tools.json": {
+    "mtime": 1784028350.1077714,
+    "ast_hash": "781fc77c3f8aaf10ced67b6529dfa0a5",
+    "semantic_hash": "781fc77c3f8aaf10ced67b6529dfa0a5"
+  },
+  ".husky/pre-commit": {
+    "mtime": 1783965678.3511908,
+    "ast_hash": "e5251653e24db4937811b6732cf7ecdd",
+    "semantic_hash": "e5251653e24db4937811b6732cf7ecdd"
+  },
+  ".husky/task-runner.json": {
+    "mtime": 1783965678.352192,
+    "ast_hash": "9d715db3182489f0874bd3e6efab622d",
+    "semantic_hash": "9d715db3182489f0874bd3e6efab622d"
+  },
+  "CaseritoApp/CaseritoApp.sln": {
+    "mtime": 1784121277.992203,
+    "ast_hash": "8e01e9a24d621fc266e76c9920187364",
+    "semantic_hash": "8e01e9a24d621fc266e76c9920187364"
+  },
+  "CaseritoApp/artifacts/openapi/CaseritoApp.Host.json": {
+    "mtime": 1784996038.4179592,
+    "ast_hash": "a9b6938095c514736378bcc2c10e8af1",
+    "semantic_hash": "a9b6938095c514736378bcc2c10e8af1"
+  },
+  "CaseritoApp/global.json": {
+    "mtime": 1783965678.359191,
+    "ast_hash": "cdb364807ae5e600faf939c8538e4fd6",
+    "semantic_hash": "cdb364807ae5e600faf939c8538e4fd6"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Abstractions/ConflictoConcurrenciaException.cs": {
+    "mtime": 1784289364.558425,
+    "ast_hash": "5e405ab58743facdba6ef14f8e12cdbb",
+    "semantic_hash": "5e405ab58743facdba6ef14f8e12cdbb"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Abstractions/IDomainEventDispatcher.cs": {
+    "mtime": 1783972805.330733,
+    "ast_hash": "51ca65f601b213391b354ad3e2983db4",
+    "semantic_hash": "51ca65f601b213391b354ad3e2983db4"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Abstractions/IPublicadorEventosIntegracion.cs": {
+    "mtime": 1784182811.7247787,
+    "ast_hash": "4995b64596972e776d83fa139843bdca",
+    "semantic_hash": "4995b64596972e776d83fa139843bdca"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Abstractions/IUnitOfWork.cs": {
+    "mtime": 1783972805.3317323,
+    "ast_hash": "7c3774a1317bbc5bf750a64aed9fb77b",
+    "semantic_hash": "7c3774a1317bbc5bf750a64aed9fb77b"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Behaviors/LoggingBehavior.cs": {
+    "mtime": 1783972805.333237,
+    "ast_hash": "eae5c7356b6202290a69f9c50157c883",
+    "semantic_hash": "eae5c7356b6202290a69f9c50157c883"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Behaviors/UnitOfWorkBehavior.cs": {
+    "mtime": 1784314368.4372365,
+    "ast_hash": "6ee78eedd2c2f1bb880819381d404291",
+    "semantic_hash": "6ee78eedd2c2f1bb880819381d404291"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Behaviors/ValidationBehavior.cs": {
+    "mtime": 1783972805.3353379,
+    "ast_hash": "60a296b6e5856972b5a23244837b559c",
+    "semantic_hash": "60a296b6e5856972b5a23244837b559c"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/CaseritoApp.BuildingBlocks.Application.csproj": {
+    "mtime": 1784182811.725779,
+    "ast_hash": "8d182221b08d149d05cbc4c7e61f0ec9",
+    "semantic_hash": "8d182221b08d149d05cbc4c7e61f0ec9"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Messaging/ICommand.cs": {
+    "mtime": 1783972805.3374248,
+    "ast_hash": "086d5028854780d8d00767c1dc2fc249",
+    "semantic_hash": "086d5028854780d8d00767c1dc2fc249"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Messaging/IQuery.cs": {
+    "mtime": 1783972805.3384573,
+    "ast_hash": "08b00343a4a1e99d26d8b96528822a32",
+    "semantic_hash": "08b00343a4a1e99d26d8b96528822a32"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/CaseritoApp.BuildingBlocks.Contracts.csproj": {
+    "mtime": 1783972805.3394547,
+    "ast_hash": "46b0780bd56312ea2d1bab391f179e89",
+    "semantic_hash": "46b0780bd56312ea2d1bab391f179e89"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/Catalog/ProductPublished.cs": {
+    "mtime": 1783972805.3404548,
+    "ast_hash": "110e39bb600443da3e33b916ecd23fdb",
+    "semantic_hash": "110e39bb600443da3e33b916ecd23fdb"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/Chat/ChatMessageSent.cs": {
+    "mtime": 1784572849.3604357,
+    "ast_hash": "eeb20820234e11e420bebabb12b2e2fa",
+    "semantic_hash": "eeb20820234e11e420bebabb12b2e2fa"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/Identity/UserVerified.cs": {
+    "mtime": 1783972805.3424537,
+    "ast_hash": "6f274fe4c217a3e1447df7094952b901",
+    "semantic_hash": "6f274fe4c217a3e1447df7094952b901"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/IntegrationEvent.cs": {
+    "mtime": 1783972805.3435106,
+    "ast_hash": "cb69475a07439ad58f0de3e55ac68db9",
+    "semantic_hash": "cb69475a07439ad58f0de3e55ac68db9"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Contracts/Orders/OrderStatusChanged.cs": {
+    "mtime": 1783972805.344549,
+    "ast_hash": "59f37e5937c9406baa262ccc3406bfb6",
+    "semantic_hash": "59f37e5937c9406baa262ccc3406bfb6"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/AggregateRoot.cs": {
+    "mtime": 1783972805.3461263,
+    "ast_hash": "3900b8c0fda5e185fd2abeb4f724d3b2",
+    "semantic_hash": "3900b8c0fda5e185fd2abeb4f724d3b2"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/CaseritoApp.BuildingBlocks.Domain.csproj": {
+    "mtime": 1783972805.3472002,
+    "ast_hash": "7601602d8cca2982868ec7b52f690107",
+    "semantic_hash": "7601602d8cca2982868ec7b52f690107"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/Entity.cs": {
+    "mtime": 1783972805.348764,
+    "ast_hash": "c49bdc2be6f9ca5f4bf1991a33a57e51",
+    "semantic_hash": "c49bdc2be6f9ca5f4bf1991a33a57e51"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/Error.cs": {
+    "mtime": 1783972805.3497999,
+    "ast_hash": "efb98e2419bba6011bc7cc3f4dbe91b8",
+    "semantic_hash": "efb98e2419bba6011bc7cc3f4dbe91b8"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/IDomainEvent.cs": {
+    "mtime": 1783972805.350848,
+    "ast_hash": "422263cc5dd3c9470475e6bcd246929a",
+    "semantic_hash": "422263cc5dd3c9470475e6bcd246929a"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Domain/Result.cs": {
+    "mtime": 1783972805.3518803,
+    "ast_hash": "b97895058d0542ec158bffb4380a74d6",
+    "semantic_hash": "b97895058d0542ec158bffb4380a74d6"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Infrastructure/CaseritoApp.BuildingBlocks.Infrastructure.csproj": {
+    "mtime": 1783972805.3529167,
+    "ast_hash": "004123447c3711a2aa26b069332160a8",
+    "semantic_hash": "004123447c3711a2aa26b069332160a8"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Infrastructure/Logging/PiiRedaction.cs": {
+    "mtime": 1784572849.363438,
+    "ast_hash": "fff510645e2174ab48732b161f4798c0",
+    "semantic_hash": "fff510645e2174ab48732b161f4798c0"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Infrastructure/Security/IEncryptor.cs": {
+    "mtime": 1784182811.726778,
+    "ast_hash": "ebfe765320189da4cb82db4493fbf111",
+    "semantic_hash": "ebfe765320189da4cb82db4493fbf111"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Infrastructure/Security/IPiiAccessAuditor.cs": {
+    "mtime": 1783972805.3560214,
+    "ast_hash": "1d66ecdabecfff056ca6c746c58859c9",
+    "semantic_hash": "1d66ecdabecfff056ca6c746c58859c9"
+  },
+  "CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Infrastructure/Security/PassthroughEncryptor.cs": {
+    "mtime": 1784182811.727778,
+    "ast_hash": "58b749c3d07a064f87fcfd400bad3ead",
+    "semantic_hash": "58b749c3d07a064f87fcfd400bad3ead"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BorrarFotoAvisoCommand.cs": {
+    "mtime": 1784475687.1026514,
+    "ast_hash": "47ac8d9e3546dcaeb7180dd50547277d",
+    "semantic_hash": "47ac8d9e3546dcaeb7180dd50547277d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/BuscarAvisosQuery.cs": {
+    "mtime": 1784364800.946297,
+    "ast_hash": "680a34cdf428784bdad9a607ad49bb53",
+    "semantic_hash": "680a34cdf428784bdad9a607ad49bb53"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/CrearAvisoCommand.cs": {
+    "mtime": 1784364800.9482958,
+    "ast_hash": "7427a86d837bc5688d0df91e067a105d",
+    "semantic_hash": "7427a86d837bc5688d0df91e067a105d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAviso.cs": {
+    "mtime": 1784479304.2824464,
+    "ast_hash": "00047b2f59029c9eca4326e6c55e9222",
+    "semantic_hash": "00047b2f59029c9eca4326e6c55e9222"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/DtosAvisoPublico.cs": {
+    "mtime": 1784996038.421959,
+    "ast_hash": "8800fb4007b4e2906d07119161445089",
+    "semantic_hash": "8800fb4007b4e2906d07119161445089"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/EditarAvisoCommand.cs": {
+    "mtime": 1784364800.9522958,
+    "ast_hash": "e9c257178fe65cec4eea81ddf637b678",
+    "semantic_hash": "e9c257178fe65cec4eea81ddf637b678"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/EliminarAvisoCommand.cs": {
+    "mtime": 1784479304.283447,
+    "ast_hash": "26fb87c183bbb10ec719da3da51b0258",
+    "semantic_hash": "26fb87c183bbb10ec719da3da51b0258"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaAvisosPublica.cs": {
+    "mtime": 1784970132.6842978,
+    "ast_hash": "89858b785b8b50ee786b06406847660e",
+    "semantic_hash": "89858b785b8b50ee786b06406847660e"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IConsultaCatalogo.cs": {
+    "mtime": 1784314368.4439466,
+    "ast_hash": "a012e4cfd3c89d828acb565cc414243e",
+    "semantic_hash": "a012e4cfd3c89d828acb565cc414243e"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/IRepositorioAvisos.cs": {
+    "mtime": 1784475687.1092432,
+    "ast_hash": "19b5d61ff5b946ed38b1f7642f875de2",
+    "semantic_hash": "19b5d61ff5b946ed38b1f7642f875de2"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ListarMisAvisosQuery.cs": {
+    "mtime": 1784314368.446949,
+    "ast_hash": "bf2fb64d17c15be7a89fe50a6dd7872c",
+    "semantic_hash": "bf2fb64d17c15be7a89fe50a6dd7872c"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/MarcarAvisoVendidoCommand.cs": {
+    "mtime": 1784988938.245844,
+    "ast_hash": "b27e7fd8367454d90689630fc8cc01b4",
+    "semantic_hash": "b27e7fd8367454d90689630fc8cc01b4"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerAvisoPublicoQuery.cs": {
+    "mtime": 1784364800.9552953,
+    "ast_hash": "33807250738225c3ab03f9c7fe4de0b7",
+    "semantic_hash": "33807250738225c3ab03f9c7fe4de0b7"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ObtenerMiAvisoQuery.cs": {
+    "mtime": 1784475687.1112437,
+    "ast_hash": "31ded8821ee6c91266a5fa738eee5de3",
+    "semantic_hash": "31ded8821ee6c91266a5fa738eee5de3"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/PausarAvisoCommand.cs": {
+    "mtime": 1784314368.4489484,
+    "ast_hash": "1315650112be3ebf75be3669ef627a07",
+    "semantic_hash": "1315650112be3ebf75be3669ef627a07"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ReactivarAvisoCommand.cs": {
+    "mtime": 1784314368.4499466,
+    "ast_hash": "b6a4f734606b4df64b291325ab35c377",
+    "semantic_hash": "b6a4f734606b4df64b291325ab35c377"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ResultadoPaginado.cs": {
+    "mtime": 1784314368.450946,
+    "ast_hash": "cbc7190cda77c3a189cb4ec9e5c6e24c",
+    "semantic_hash": "cbc7190cda77c3a189cb4ec9e5c6e24c"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/SubirFotoAvisoCommand.cs": {
+    "mtime": 1784475687.1142445,
+    "ast_hash": "456569c8527d681433b3305423249dfc",
+    "semantic_hash": "456569c8527d681433b3305423249dfc"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Avisos/ValidarAvisoParaVentaQuery.cs": {
+    "mtime": 1784988938.2498438,
+    "ast_hash": "6f35140c61757c397ee2fe8d11386832",
+    "semantic_hash": "6f35140c61757c397ee2fe8d11386832"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/CaseritoApp.Catalog.Application.csproj": {
+    "mtime": 1783972805.3581526,
+    "ast_hash": "dd1b184d2fcd1fbeb6738eaadd28d72d",
+    "semantic_hash": "dd1b184d2fcd1fbeb6738eaadd28d72d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Catalogo/ListarCategoriasQuery.cs": {
+    "mtime": 1784314368.4529464,
+    "ast_hash": "55e835f37526f149829b56cc6e0342e3",
+    "semantic_hash": "55e835f37526f149829b56cc6e0342e3"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Catalogo/ListarCiudadesQuery.cs": {
+    "mtime": 1784314368.4539466,
+    "ast_hash": "0861fc2c5a43ac50a58c43049c8a1889",
+    "semantic_hash": "0861fc2c5a43ac50a58c43049c8a1889"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Fotos/FotoAvisoDto.cs": {
+    "mtime": 1784475687.1172473,
+    "ast_hash": "6ad284df70876f73273587abfd97685d",
+    "semantic_hash": "6ad284df70876f73273587abfd97685d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Fotos/IAlmacenFotosAviso.cs": {
+    "mtime": 1784475687.1212466,
+    "ast_hash": "95443aaedc4fba8af3ecef7e085738a4",
+    "semantic_hash": "95443aaedc4fba8af3ecef7e085738a4"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Fotos/IConsultaFotoPublica.cs": {
+    "mtime": 1784479304.2854471,
+    "ast_hash": "8ad500b0b2fad46e95ee5a19513b9572",
+    "semantic_hash": "8ad500b0b2fad46e95ee5a19513b9572"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Fotos/ValidacionFotoAviso.cs": {
+    "mtime": 1784475687.1242518,
+    "ast_hash": "d39b168a96a30e0bb8a619453fc2792d",
+    "semantic_hash": "d39b168a96a30e0bb8a619453fc2792d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/AccionesModeracionCommands.cs": {
+    "mtime": 1784479304.286448,
+    "ast_hash": "cdbca8c3cba513688863557bf6c81423",
+    "semantic_hash": "cdbca8c3cba513688863557bf6c81423"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/DtosModeracion.cs": {
+    "mtime": 1784479304.2884476,
+    "ast_hash": "6934f7b91e4720f2b478ec1150732b9b",
+    "semantic_hash": "6934f7b91e4720f2b478ec1150732b9b"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/IRepositorioRegistrosModeracion.cs": {
+    "mtime": 1784479304.2894492,
+    "ast_hash": "87d9888227a803d7e46111afb9b35401",
+    "semantic_hash": "87d9888227a803d7e46111afb9b35401"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/IRepositorioReportesAviso.cs": {
+    "mtime": 1784479304.291449,
+    "ast_hash": "5404681ec77468f72708195979adc776",
+    "semantic_hash": "5404681ec77468f72708195979adc776"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/QueriesModeracion.cs": {
+    "mtime": 1784479304.2934508,
+    "ast_hash": "6c5d8dfe045d7cbf5c9cdbc9c584e28f",
+    "semantic_hash": "6c5d8dfe045d7cbf5c9cdbc9c584e28f"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Application/Moderacion/ReportarAvisoCommand.cs": {
+    "mtime": 1784479304.296449,
+    "ast_hash": "20345afa9b4207c54af875a37d8f6be8",
+    "semantic_hash": "20345afa9b4207c54af875a37d8f6be8"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Aviso.cs": {
+    "mtime": 1784988652.6680443,
+    "ast_hash": "c4a73d3a807552edc499566659f77e1d",
+    "semantic_hash": "c4a73d3a807552edc499566659f77e1d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Categoria.cs": {
+    "mtime": 1784356301.195816,
+    "ast_hash": "f715b3f6e6091713d50489e038c0a5ff",
+    "semantic_hash": "f715b3f6e6091713d50489e038c0a5ff"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Ciudad.cs": {
+    "mtime": 1784356314.6940606,
+    "ast_hash": "6df6da4423cb6b2c8e29e2a2823604a1",
+    "semantic_hash": "6df6da4423cb6b2c8e29e2a2823604a1"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/CondicionArticulo.cs": {
+    "mtime": 1784314368.4605021,
+    "ast_hash": "76b24f0fcb04077ef4b8f21aeed6574d",
+    "semantic_hash": "76b24f0fcb04077ef4b8f21aeed6574d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Dinero.cs": {
+    "mtime": 1784314368.4615014,
+    "ast_hash": "2feee99a6c36ceb453f5ed75fc6d4aae",
+    "semantic_hash": "2feee99a6c36ceb453f5ed75fc6d4aae"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/ErroresAviso.cs": {
+    "mtime": 1784988652.674044,
+    "ast_hash": "87c5cca6bb4f957b27b0e1402dc00a10",
+    "semantic_hash": "87c5cca6bb4f957b27b0e1402dc00a10"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/EstadoAviso.cs": {
+    "mtime": 1784988652.6760454,
+    "ast_hash": "7d4ccc87296e453b973ec2ca5c9ebe05",
+    "semantic_hash": "7d4ccc87296e453b973ec2ca5c9ebe05"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/EstadoModeracionAviso.cs": {
+    "mtime": 1784479304.303965,
+    "ast_hash": "8283719e53bbb1125df3b5cd81746288",
+    "semantic_hash": "8283719e53bbb1125df3b5cd81746288"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/EventosAviso.cs": {
+    "mtime": 1784988652.6770442,
+    "ast_hash": "189f82b30d7a941ffadd9fbdbd23cda2",
+    "semantic_hash": "189f82b30d7a941ffadd9fbdbd23cda2"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/FotoAviso.cs": {
+    "mtime": 1784475687.128249,
+    "ast_hash": "1da59ffc0fb61f66a4b0d30945778a6c",
+    "semantic_hash": "1da59ffc0fb61f66a4b0d30945778a6c"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Avisos/Moneda.cs": {
+    "mtime": 1784314368.4645023,
+    "ast_hash": "389fd9b95b7601b9e9fea47c41725dd6",
+    "semantic_hash": "389fd9b95b7601b9e9fea47c41725dd6"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/CaseritoApp.Catalog.Domain.csproj": {
+    "mtime": 1783972805.35919,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Moderacion/AccionModeracionAviso.cs": {
+    "mtime": 1784479304.304965,
+    "ast_hash": "81f623c634f8efd4b33bb3b8e702f3a9",
+    "semantic_hash": "81f623c634f8efd4b33bb3b8e702f3a9"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Moderacion/EstadoReporteAviso.cs": {
+    "mtime": 1784479304.306965,
+    "ast_hash": "a693a444014ab9433927659398fab7c4",
+    "semantic_hash": "a693a444014ab9433927659398fab7c4"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Moderacion/MotivoReporteAviso.cs": {
+    "mtime": 1784479304.3095987,
+    "ast_hash": "5e59a06e0199550c86c1026335515375",
+    "semantic_hash": "5e59a06e0199550c86c1026335515375"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Moderacion/RegistroModeracion.cs": {
+    "mtime": 1784479304.3125973,
+    "ast_hash": "0ce8f374de6c074c389760b3ade928fe",
+    "semantic_hash": "0ce8f374de6c074c389760b3ade928fe"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Domain/Moderacion/ReporteAviso.cs": {
+    "mtime": 1784479304.315599,
+    "ast_hash": "966fc01507e2910c96bf063e4a899206",
+    "semantic_hash": "966fc01507e2910c96bf063e4a899206"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConfiguracionCatalog.cs": {
+    "mtime": 1784988938.2534487,
+    "ast_hash": "04cfdbdafeba81386bc5d89fa61f7f38",
+    "semantic_hash": "04cfdbdafeba81386bc5d89fa61f7f38"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaAvisosPublicaEfCore.cs": {
+    "mtime": 1784996038.4249606,
+    "ast_hash": "6e4917e062e6be48c2b5199b470ad829",
+    "semantic_hash": "6e4917e062e6be48c2b5199b470ad829"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/ConsultaCatalogoEfCore.cs": {
+    "mtime": 1784314368.468501,
+    "ast_hash": "770dfdd3c4c59903a0940acc62b8c6e9",
+    "semantic_hash": "770dfdd3c4c59903a0940acc62b8c6e9"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Avisos/RepositorioAvisosEfCore.cs": {
+    "mtime": 1784479304.3215952,
+    "ast_hash": "f2fdd8cf39770a54d5ff9d97443ad442",
+    "semantic_hash": "f2fdd8cf39770a54d5ff9d97443ad442"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/CaseritoApp.Catalog.Infrastructure.csproj": {
+    "mtime": 1784475687.1390843,
+    "ast_hash": "b8f60e91b8dd37870e356ca1f9d38a15",
+    "semantic_hash": "b8f60e91b8dd37870e356ca1f9d38a15"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/CatalogDbContext.cs": {
+    "mtime": 1784479304.3235955,
+    "ast_hash": "a22f6324c834e9a0c908709d8eed7c50",
+    "semantic_hash": "a22f6324c834e9a0c908709d8eed7c50"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1784479304.3255997,
+    "ast_hash": "a5b69493ff9d3cf59adeb98909bfa319",
+    "semantic_hash": "a5b69493ff9d3cf59adeb98909bfa319"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/DesignTimeCatalogDbContextFactory.cs": {
+    "mtime": 1784314368.478052,
+    "ast_hash": "174db76174f60ede693c128a93a5388f",
+    "semantic_hash": "174db76174f60ede693c128a93a5388f"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Fotos/AlmacenFotoAvisoDisco.cs": {
+    "mtime": 1784475687.149087,
+    "ast_hash": "ecd05b155e9a6a1a443b1e2852a3813b",
+    "semantic_hash": "ecd05b155e9a6a1a443b1e2852a3813b"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Fotos/ConsultaFotoPublicaEfCore.cs": {
+    "mtime": 1784479304.327598,
+    "ast_hash": "24e593a2cba13cd7df340c15746b477d",
+    "semantic_hash": "24e593a2cba13cd7df340c15746b477d"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Fotos/OpcionesAlmacenFotos.cs": {
+    "mtime": 1784475687.1537561,
+    "ast_hash": "054b3bb21f19b841f51c4ef90fe0f6bb",
+    "semantic_hash": "054b3bb21f19b841f51c4ef90fe0f6bb"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260717180704_CatalogInicial.Designer.cs": {
+    "mtime": 1784314368.4810522,
+    "ast_hash": "d7612e0601e89f09de49d2d120ca75cf",
+    "semantic_hash": "d7612e0601e89f09de49d2d120ca75cf"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260717180704_CatalogInicial.cs": {
+    "mtime": 1784314368.4830518,
+    "ast_hash": "0c8e1b904c73b179f378f769cb0145dd",
+    "semantic_hash": "0c8e1b904c73b179f378f769cb0145dd"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260719151710_AgregarFotosAviso.Designer.cs": {
+    "mtime": 1784475687.1577573,
+    "ast_hash": "7e21df9ffb67653e16f4446685ea3f71",
+    "semantic_hash": "7e21df9ffb67653e16f4446685ea3f71"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260719151710_AgregarFotosAviso.cs": {
+    "mtime": 1784475687.1627605,
+    "ast_hash": "db8462254af111d5afa7709245b0e932",
+    "semantic_hash": "db8462254af111d5afa7709245b0e932"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260719161720_AgregarModeracionAvisos.Designer.cs": {
+    "mtime": 1784479304.3295996,
+    "ast_hash": "c01542f0c4f2fb6811d0d10a58cdb35c",
+    "semantic_hash": "c01542f0c4f2fb6811d0d10a58cdb35c"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260719161720_AgregarModeracionAvisos.cs": {
+    "mtime": 1784479304.3315983,
+    "ast_hash": "797c2ce99d0a340728aa0001bf4386b1",
+    "semantic_hash": "797c2ce99d0a340728aa0001bf4386b1"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260725141228_CatalogAvisoVendido.Designer.cs": {
+    "mtime": 1784988748.151631,
+    "ast_hash": "e6ba067fadc9eaf97ce83e88edf8cb39",
+    "semantic_hash": "e6ba067fadc9eaf97ce83e88edf8cb39"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/20260725141228_CatalogAvisoVendido.cs": {
+    "mtime": 1784988938.2554474,
+    "ast_hash": "284089b8ee7b16091431f6aa2050e6bb",
+    "semantic_hash": "284089b8ee7b16091431f6aa2050e6bb"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Migrations/CatalogDbContextModelSnapshot.cs": {
+    "mtime": 1784988748.157626,
+    "ast_hash": "e3e43a830dc2e12525008d59618ba109",
+    "semantic_hash": "e3e43a830dc2e12525008d59618ba109"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Moderacion/RepositorioRegistrosModeracionEfCore.cs": {
+    "mtime": 1784479304.3345973,
+    "ast_hash": "cea6a23e703ddb42de14c0e96987ef6b",
+    "semantic_hash": "cea6a23e703ddb42de14c0e96987ef6b"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/Moderacion/RepositorioReportesAvisoEfCore.cs": {
+    "mtime": 1784482236.496537,
+    "ast_hash": "8e4164be85ec494c67d2e84f66e21d6b",
+    "semantic_hash": "8e4164be85ec494c67d2e84f66e21d6b"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/SeedCatalogoExtensions.cs": {
+    "mtime": 1784314368.486051,
+    "ast_hash": "052da94b33aa17022a21dce278966ae2",
+    "semantic_hash": "052da94b33aa17022a21dce278966ae2"
+  },
+  "CaseritoApp/src/Catalog/CaseritoApp.Catalog.Infrastructure/UnitOfWorkCatalog.cs": {
+    "mtime": 1784314368.487613,
+    "ast_hash": "8bbaa034a8816f42c11292f9e70df9f4",
+    "semantic_hash": "8bbaa034a8816f42c11292f9e70df9f4"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/CaseritoApp.Chat.Application.csproj": {
+    "mtime": 1783972805.3623273,
+    "ast_hash": "21db3036ac0978c88ac95a343d12c4ba",
+    "semantic_hash": "21db3036ac0978c88ac95a343d12c4ba"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/DtosChat.cs": {
+    "mtime": 1784744386.5356126,
+    "ast_hash": "0a30b71d0bd82e627fbe60dcf5ee026b",
+    "semantic_hash": "0a30b71d0bd82e627fbe60dcf5ee026b"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/IConsultaAvisoContactable.cs": {
+    "mtime": 1784572849.3704822,
+    "ast_hash": "4f1ceb5aeaa6d3b736d47db6202cad9e",
+    "semantic_hash": "4f1ceb5aeaa6d3b736d47db6202cad9e"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/IConsultaConversaciones.cs": {
+    "mtime": 1784833547.8827055,
+    "ast_hash": "db58085397722a9160396589ab47208e",
+    "semantic_hash": "db58085397722a9160396589ab47208e"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/IRepositorioConversaciones.cs": {
+    "mtime": 1784572849.373166,
+    "ast_hash": "98e0a5283802bb91da8197ffe5ff4e93",
+    "semantic_hash": "98e0a5283802bb91da8197ffe5ff4e93"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/IniciarConversacionCommand.cs": {
+    "mtime": 1784833547.8847983,
+    "ast_hash": "68b947b6b4b06281d0a684fd46f7a3d2",
+    "semantic_hash": "68b947b6b4b06281d0a684fd46f7a3d2"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/ListarConversacionesQuery.cs": {
+    "mtime": 1784572849.3752558,
+    "ast_hash": "a0e75ac05207ac7fa330df34f831d50c",
+    "semantic_hash": "a0e75ac05207ac7fa330df34f831d50c"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/MarcarLecturaCommand.cs": {
+    "mtime": 1784572849.37578,
+    "ast_hash": "8eaf1c69351bf94294882639786ac93a",
+    "semantic_hash": "8eaf1c69351bf94294882639786ac93a"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/PuedeAccederConversacionQuery.cs": {
+    "mtime": 1784572849.3778872,
+    "ast_hash": "502afff10842a8beee4d754eebd77949",
+    "semantic_hash": "502afff10842a8beee4d754eebd77949"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Conversaciones/PuedeRecibirTiempoRealQuery.cs": {
+    "mtime": 1784833547.8863728,
+    "ast_hash": "09dced00f10ce764b7fc30be3f9b7f5a",
+    "semantic_hash": "09dced00f10ce764b7fc30be3f9b7f5a"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Mensajes/DtosMensaje.cs": {
+    "mtime": 1784572849.3794427,
+    "ast_hash": "1f2082c20ec281312850bdec4ec70c60",
+    "semantic_hash": "1f2082c20ec281312850bdec4ec70c60"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Mensajes/EnviarMensajeCommand.cs": {
+    "mtime": 1784744386.5416543,
+    "ast_hash": "db18ed7eea0845c9de5812764e9bb915",
+    "semantic_hash": "db18ed7eea0845c9de5812764e9bb915"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Mensajes/IConsultaMensajes.cs": {
+    "mtime": 1784572849.3826249,
+    "ast_hash": "bbcbd45f1e3292356abae23e4aaa2f47",
+    "semantic_hash": "bbcbd45f1e3292356abae23e4aaa2f47"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Mensajes/IRepositorioMensajes.cs": {
+    "mtime": 1784833547.887372,
+    "ast_hash": "4a73658a1af564c915999ec7cbb03828",
+    "semantic_hash": "4a73658a1af564c915999ec7cbb03828"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Mensajes/ObtenerMensajesQuery.cs": {
+    "mtime": 1784572849.385249,
+    "ast_hash": "50ba6f2f1a478809effc0f28ab4cb55d",
+    "semantic_hash": "50ba6f2f1a478809effc0f28ab4cb55d"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/IConsultaModeracionChat.cs": {
+    "mtime": 1784833547.8893714,
+    "ast_hash": "da47e1356b9fa294fe0a993d910c55fd",
+    "semantic_hash": "da47e1356b9fa294fe0a993d910c55fd"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/IRepositorioRegistrosModeracionChat.cs": {
+    "mtime": 1784833547.8913713,
+    "ast_hash": "5d1b16dfb37c36b341fe2081ce2c4c7d",
+    "semantic_hash": "5d1b16dfb37c36b341fe2081ce2c4c7d"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/IRepositorioReportesChat.cs": {
+    "mtime": 1784833547.8923717,
+    "ast_hash": "32984ca743bd99c8903fa479748fc7bf",
+    "semantic_hash": "32984ca743bd99c8903fa479748fc7bf"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/QueriesModeracionChat.cs": {
+    "mtime": 1784833547.894761,
+    "ast_hash": "f53a367194e84e5c3bc128f3733118e8",
+    "semantic_hash": "f53a367194e84e5c3bc128f3733118e8"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/ReportarChatCommand.cs": {
+    "mtime": 1784833547.895279,
+    "ast_hash": "a7cc6f51fb74e203e7b00346ff39daa6",
+    "semantic_hash": "a7cc6f51fb74e203e7b00346ff39daa6"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Moderacion/WorkflowModeracionChatCommands.cs": {
+    "mtime": 1784833547.8982732,
+    "ast_hash": "ecb9f6f7e00c8cc5a6725863b311be15",
+    "semantic_hash": "ecb9f6f7e00c8cc5a6725863b311be15"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Paginacion/ResultadosCursor.cs": {
+    "mtime": 1784572849.3857641,
+    "ast_hash": "a04acc4d3af53ebf26e1ec8ef8f339b2",
+    "semantic_hash": "a04acc4d3af53ebf26e1ec8ef8f339b2"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/AccesoTiempoRealRevocado.cs": {
+    "mtime": 1784833547.9002733,
+    "ast_hash": "3b49282183edeedf5f0411333a7ca5bd",
+    "semantic_hash": "3b49282183edeedf5f0411333a7ca5bd"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/BloquearUsuarioCommand.cs": {
+    "mtime": 1784744386.5446453,
+    "ast_hash": "41fc72ec0a19bdb5365980b57aa6ec32",
+    "semantic_hash": "41fc72ec0a19bdb5365980b57aa6ec32"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/CerrarConversacionCommand.cs": {
+    "mtime": 1784833547.903273,
+    "ast_hash": "f5be09bfed04488295aacb87c91be93b",
+    "semantic_hash": "f5be09bfed04488295aacb87c91be93b"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/DesbloquearUsuarioCommand.cs": {
+    "mtime": 1784744386.549202,
+    "ast_hash": "66de18bf1b5942c24aa8b456dfedbdc7",
+    "semantic_hash": "66de18bf1b5942c24aa8b456dfedbdc7"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/IRepositorioBloqueosUsuario.cs": {
+    "mtime": 1784744386.552202,
+    "ast_hash": "a47f22abab6c2e5558fab0adb2708ca2",
+    "semantic_hash": "a47f22abab6c2e5558fab0adb2708ca2"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Application/Seguridad/ReabrirConversacionCommand.cs": {
+    "mtime": 1784833547.9058585,
+    "ast_hash": "dc6b5f38182bdc5eac29c7020edb8512",
+    "semantic_hash": "dc6b5f38182bdc5eac29c7020edb8512"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/CaseritoApp.Chat.Domain.csproj": {
+    "mtime": 1783972805.3633773,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Conversaciones/Conversacion.cs": {
+    "mtime": 1784744386.5572028,
+    "ast_hash": "9c94e6b6cf3eb77bc903905c7a8affed",
+    "semantic_hash": "9c94e6b6cf3eb77bc903905c7a8affed"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Conversaciones/ErroresConversacion.cs": {
+    "mtime": 1784744386.5612025,
+    "ast_hash": "ce296b3b6605470acb4dddd1ad80f061",
+    "semantic_hash": "ce296b3b6605470acb4dddd1ad80f061"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Conversaciones/EstadoConversacion.cs": {
+    "mtime": 1784744386.5657969,
+    "ast_hash": "882c9a5170ba1e7f5e7f9148335e8787",
+    "semantic_hash": "882c9a5170ba1e7f5e7f9148335e8787"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Conversaciones/EventosConversacion.cs": {
+    "mtime": 1784744386.5687983,
+    "ast_hash": "9c43cead730a7b59919bb470709a67c6",
+    "semantic_hash": "9c43cead730a7b59919bb470709a67c6"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Conversaciones/Mensaje.cs": {
+    "mtime": 1784572849.3898506,
+    "ast_hash": "5b00ba50e29a91b3edf3d058a9f702da",
+    "semantic_hash": "5b00ba50e29a91b3edf3d058a9f702da"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/AccionModeracionChat.cs": {
+    "mtime": 1784744386.5717962,
+    "ast_hash": "ca3b8de3aab1aff75ca087cd02457100",
+    "semantic_hash": "ca3b8de3aab1aff75ca087cd02457100"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/CategoriaReporteChat.cs": {
+    "mtime": 1784744386.5737975,
+    "ast_hash": "bccb13e007c76a3a7b10925d376d158a",
+    "semantic_hash": "bccb13e007c76a3a7b10925d376d158a"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/ErroresModeracionChat.cs": {
+    "mtime": 1784833547.9085305,
+    "ast_hash": "1859d40af0e756f3b1846929a3116377",
+    "semantic_hash": "1859d40af0e756f3b1846929a3116377"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/EstadoReporteChat.cs": {
+    "mtime": 1784744386.5813792,
+    "ast_hash": "a8f89aec41e589648d9c64543e046d51",
+    "semantic_hash": "a8f89aec41e589648d9c64543e046d51"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/RegistroModeracionChat.cs": {
+    "mtime": 1784744386.5843794,
+    "ast_hash": "3b53585cb57137b47a6c885f1489327e",
+    "semantic_hash": "3b53585cb57137b47a6c885f1489327e"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/ReporteChat.cs": {
+    "mtime": 1784744386.5873792,
+    "ast_hash": "fe1bca789c755c7e4e0d058484091a69",
+    "semantic_hash": "fe1bca789c755c7e4e0d058484091a69"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Moderacion/TipoObjetivoReporteChat.cs": {
+    "mtime": 1784744386.589379,
+    "ast_hash": "1a42e6705910211d46cac8f59faac3df",
+    "semantic_hash": "1a42e6705910211d46cac8f59faac3df"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Domain/Seguridad/BloqueoUsuario.cs": {
+    "mtime": 1784744386.5929074,
+    "ast_hash": "3cf66eff66bf50cd26b7d4be96a10356",
+    "semantic_hash": "3cf66eff66bf50cd26b7d4be96a10356"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/CaseritoApp.Chat.Infrastructure.csproj": {
+    "mtime": 1784572849.3918512,
+    "ast_hash": "290bdbabe78dc3319d73e5ccac4c1094",
+    "semantic_hash": "290bdbabe78dc3319d73e5ccac4c1094"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/ChatDbContext.cs": {
+    "mtime": 1784744386.5940156,
+    "ast_hash": "92a5fa6f3b41f9ef27e6723a90e22c05",
+    "semantic_hash": "92a5fa6f3b41f9ef27e6723a90e22c05"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/ConflictoUnicidadChatException.cs": {
+    "mtime": 1784572849.3948529,
+    "ast_hash": "cd1df0c50229c8596b96dd4146be172c",
+    "semantic_hash": "cd1df0c50229c8596b96dd4146be172c"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Conversaciones/ConfiguracionChat.cs": {
+    "mtime": 1784572849.3975942,
+    "ast_hash": "8476f1028d328c55a37434b9a9b0fced",
+    "semantic_hash": "8476f1028d328c55a37434b9a9b0fced"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Conversaciones/ConsultaConversacionesEfCore.cs": {
+    "mtime": 1784833547.9111722,
+    "ast_hash": "c6c160192947d232a6313542c5fee682",
+    "semantic_hash": "c6c160192947d232a6313542c5fee682"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Conversaciones/RepositorioConversacionesEfCore.cs": {
+    "mtime": 1784572849.4015875,
+    "ast_hash": "567e6d1a7857cbf956b68b2cc1c45da8",
+    "semantic_hash": "567e6d1a7857cbf956b68b2cc1c45da8"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1784833547.9140432,
+    "ast_hash": "ab0c58a2f494305d75ef69783d8b6e04",
+    "semantic_hash": "ab0c58a2f494305d75ef69783d8b6e04"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/DesignTimeChatDbContextFactory.cs": {
+    "mtime": 1784572849.4051578,
+    "ast_hash": "6f3310a5a1d36711def11713b9d5240c",
+    "semantic_hash": "6f3310a5a1d36711def11713b9d5240c"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Mensajes/ConsultaMensajesEfCore.cs": {
+    "mtime": 1784572849.4091582,
+    "ast_hash": "00f24e312b9e0f41fef04557f846a887",
+    "semantic_hash": "00f24e312b9e0f41fef04557f846a887"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Mensajes/RepositorioMensajesEfCore.cs": {
+    "mtime": 1784833547.9150429,
+    "ast_hash": "3775541ff51d53b38ade933bd65128b9",
+    "semantic_hash": "3775541ff51d53b38ade933bd65128b9"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260719180954_ChatInicial.Designer.cs": {
+    "mtime": 1784572849.4201593,
+    "ast_hash": "0f0d4f27b75a130f4fe67a66e874947b",
+    "semantic_hash": "0f0d4f27b75a130f4fe67a66e874947b"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260719180954_ChatInicial.cs": {
+    "mtime": 1784572849.422159,
+    "ast_hash": "2eae09e527f9f021609f303ac3fa5110",
+    "semantic_hash": "2eae09e527f9f021609f303ac3fa5110"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260720174915_ChatEntregasTiempoReal.Designer.cs": {
+    "mtime": 1784572849.4241588,
+    "ast_hash": "9c3c63905305ffd22ef407c98ff15489",
+    "semantic_hash": "9c3c63905305ffd22ef407c98ff15489"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260720174915_ChatEntregasTiempoReal.cs": {
+    "mtime": 1784572849.4251597,
+    "ast_hash": "120dcbbe06cbf34a81132b1817cf8bc4",
+    "semantic_hash": "120dcbbe06cbf34a81132b1817cf8bc4"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260722173757_ChatSeguridadModeracion.Designer.cs": {
+    "mtime": 1784744386.5990167,
+    "ast_hash": "e412b60f0dc96a388b501cf0bb1b2aca",
+    "semantic_hash": "e412b60f0dc96a388b501cf0bb1b2aca"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/20260722173757_ChatSeguridadModeracion.cs": {
+    "mtime": 1784744386.6010132,
+    "ast_hash": "363d4912ed1c7e2c42370c2d5fdf2343",
+    "semantic_hash": "363d4912ed1c7e2c42370c2d5fdf2343"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Migrations/ChatDbContextModelSnapshot.cs": {
+    "mtime": 1784744386.6030128,
+    "ast_hash": "13148b47e73712326f46c1fa80005881",
+    "semantic_hash": "13148b47e73712326f46c1fa80005881"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Moderacion/ConfiguracionModeracionChat.cs": {
+    "mtime": 1784744386.6040132,
+    "ast_hash": "f56e007243945f3f476f6408eef84793",
+    "semantic_hash": "f56e007243945f3f476f6408eef84793"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Moderacion/ConsultaModeracionChatEfCore.cs": {
+    "mtime": 1784833547.918043,
+    "ast_hash": "85f80bb1fe7979e0c5c292ee3e84170d",
+    "semantic_hash": "85f80bb1fe7979e0c5c292ee3e84170d"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Moderacion/RepositorioRegistrosModeracionChatEfCore.cs": {
+    "mtime": 1784833547.922866,
+    "ast_hash": "8f3edfac182769e2aec506acaeb391d3",
+    "semantic_hash": "8f3edfac182769e2aec506acaeb391d3"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Moderacion/RepositorioReportesChatEfCore.cs": {
+    "mtime": 1784833547.929865,
+    "ast_hash": "4116fc92d6f67c85469d4fcdbd12cfe7",
+    "semantic_hash": "4116fc92d6f67c85469d4fcdbd12cfe7"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Seguridad/ConfiguracionSeguridadChat.cs": {
+    "mtime": 1784744386.6060138,
+    "ast_hash": "ee267c090225b7778fd058726ee64f82",
+    "semantic_hash": "ee267c090225b7778fd058726ee64f82"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/Seguridad/RepositorioBloqueosUsuarioEfCore.cs": {
+    "mtime": 1784744386.608013,
+    "ast_hash": "a2c3d992c02d7f2f04d9b4e968eadceb",
+    "semantic_hash": "a2c3d992c02d7f2f04d9b4e968eadceb"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/TiempoReal/AlmacenEntregasTiempoRealSql.cs": {
+    "mtime": 1784572849.4291599,
+    "ast_hash": "458f44a780574942eeaa88a0232443b0",
+    "semantic_hash": "458f44a780574942eeaa88a0232443b0"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/TiempoReal/ConfiguracionEntregaTiempoReal.cs": {
+    "mtime": 1784572849.4321597,
+    "ast_hash": "3d92822f5eb8139885a2f8f2bb903482",
+    "semantic_hash": "3d92822f5eb8139885a2f8f2bb903482"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/TiempoReal/EntregaTiempoReal.cs": {
+    "mtime": 1784572849.4361618,
+    "ast_hash": "52791b547e190901006846f8b9c30950",
+    "semantic_hash": "52791b547e190901006846f8b9c30950"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/TiempoReal/IAlmacenEntregasTiempoReal.cs": {
+    "mtime": 1784572849.4421582,
+    "ast_hash": "477909ab6d98083245d199e147d854ea",
+    "semantic_hash": "477909ab6d98083245d199e147d854ea"
+  },
+  "CaseritoApp/src/Chat/CaseritoApp.Chat.Infrastructure/UnitOfWorkChat.cs": {
+    "mtime": 1784572849.4461598,
+    "ast_hash": "373d5505c8ea037e79b27171ceadcfa8",
+    "semantic_hash": "373d5505c8ea037e79b27171ceadcfa8"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj": {
+    "mtime": 1784996038.427961,
+    "ast_hash": "f04d0bca05ac6a27e0391d7074e981d8",
+    "semantic_hash": "f04d0bca05ac6a27e0391d7074e981d8"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/ChatHub.cs": {
+    "mtime": 1784833547.9348648,
+    "ast_hash": "c106622fd0578ca887aacc30966a6cbf",
+    "semantic_hash": "c106622fd0578ca887aacc30966a6cbf"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/ConsultaAvisoContactableAdapter.cs": {
+    "mtime": 1784572849.4631608,
+    "ast_hash": "524d4a19ca181499da5a6e6a4da9f1ba",
+    "semantic_hash": "524d4a19ca181499da5a6e6a4da9f1ba"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/CursoresChat.cs": {
+    "mtime": 1784572849.46716,
+    "ast_hash": "d7748f87b95819e88c7fc4ec2efb0e6c",
+    "semantic_hash": "d7748f87b95819e88c7fc4ec2efb0e6c"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/DespachadorEntregasTiempoReal.cs": {
+    "mtime": 1784833547.938868,
+    "ast_hash": "1e2a12dff595e50d15ea8874d69ee559",
+    "semantic_hash": "1e2a12dff595e50d15ea8874d69ee559"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/EstadoSuscripcionesChat.cs": {
+    "mtime": 1784572849.4781904,
+    "ast_hash": "a657425595c499c351403baba0778e66",
+    "semantic_hash": "a657425595c499c351403baba0778e66"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/GruposChat.cs": {
+    "mtime": 1784572849.4831884,
+    "ast_hash": "86d9f1c9232ecc8779e7f948c514012c",
+    "semantic_hash": "86d9f1c9232ecc8779e7f948c514012c"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/IPublicadorMensajesTiempoReal.cs": {
+    "mtime": 1784572849.4883873,
+    "ast_hash": "b3da12b169ba487e30dff906a0a11c3e",
+    "semantic_hash": "b3da12b169ba487e30dff906a0a11c3e"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/IRevocadorTiempoRealChat.cs": {
+    "mtime": 1784833547.9468641,
+    "ast_hash": "cb279814fe2198edb869a3562d9ba931",
+    "semantic_hash": "cb279814fe2198edb869a3562d9ba931"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/MensajeTiempoRealDto.cs": {
+    "mtime": 1784572849.492388,
+    "ast_hash": "e9fb209b39be7bf397d3b9d4b094a5b5",
+    "semantic_hash": "e9fb209b39be7bf397d3b9d4b094a5b5"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/OpcionesTiempoRealChat.cs": {
+    "mtime": 1784572849.4957125,
+    "ast_hash": "35627bd8fdce7655157069534440b94b",
+    "semantic_hash": "35627bd8fdce7655157069534440b94b"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/PublicadorSignalRMensajes.cs": {
+    "mtime": 1784572849.499716,
+    "ast_hash": "d6438032515577d1c8141cd195e35c7d",
+    "semantic_hash": "d6438032515577d1c8141cd195e35c7d"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/RegistroConexionesChat.cs": {
+    "mtime": 1784833547.9559288,
+    "ast_hash": "98075836be6e52addea5e7b8631091ea",
+    "semantic_hash": "98075836be6e52addea5e7b8631091ea"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/RevocadorTiempoRealChat.cs": {
+    "mtime": 1784833547.971795,
+    "ast_hash": "f8ae527c36a357841dc17709118f10cb",
+    "semantic_hash": "f8ae527c36a357841dc17709118f10cb"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Chat/RevocarAccesoTiempoRealHandler.cs": {
+    "mtime": 1784833547.9842527,
+    "ast_hash": "18d6de7024b381366283913206e311d6",
+    "semantic_hash": "18d6de7024b381366283913206e311d6"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AdminEndpoints.cs": {
+    "mtime": 1784303485.1778865,
+    "ast_hash": "f92a88eeb1da4878ee047418916cdd99",
+    "semantic_hash": "f92a88eeb1da4878ee047418916cdd99"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AuthEndpoints.cs": {
+    "mtime": 1784303485.1808865,
+    "ast_hash": "afabd44541d4a6aa156efb7876ac57a3",
+    "semantic_hash": "afabd44541d4a6aa156efb7876ac57a3"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs": {
+    "mtime": 1784482236.4990647,
+    "ast_hash": "c5f18df1cd6d7e362573cd0ec99cc778",
+    "semantic_hash": "c5f18df1cd6d7e362573cd0ec99cc778"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/CatalogoEndpoints.cs": {
+    "mtime": 1784369566.9583724,
+    "ast_hash": "7f53b1ffb0841823f4ac4e4308da4640",
+    "semantic_hash": "7f53b1ffb0841823f4ac4e4308da4640"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/ChatEndpoints.cs": {
+    "mtime": 1784833547.9909413,
+    "ast_hash": "31e9f389b2657453286374306d64ad7c",
+    "semantic_hash": "31e9f389b2657453286374306d64ad7c"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/FotosEndpoints.cs": {
+    "mtime": 1784479304.3375971,
+    "ast_hash": "c96f1a951e1ab6038a4e5643102489ea",
+    "semantic_hash": "c96f1a951e1ab6038a4e5643102489ea"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/KycEndpoints.cs": {
+    "mtime": 1784303485.1834004,
+    "ast_hash": "df4ea93625c16e3d7f8fc8f5e6d5485d",
+    "semantic_hash": "df4ea93625c16e3d7f8fc8f5e6d5485d"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/ModeracionChatEndpoints.cs": {
+    "mtime": 1784833547.998555,
+    "ast_hash": "60062f9012ec570d0c42bd53a0ad858f",
+    "semantic_hash": "60062f9012ec570d0c42bd53a0ad858f"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/ModeracionEndpoints.cs": {
+    "mtime": 1784479304.3401666,
+    "ast_hash": "efcf2414b66aa94da56eaf1f94a2555a",
+    "semantic_hash": "efcf2414b66aa94da56eaf1f94a2555a"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/OrdersEndpoints.cs": {
+    "mtime": 1784989314.0444896,
+    "ast_hash": "e673c3bff9a735bd47e21a55bb4d2cee",
+    "semantic_hash": "e673c3bff9a735bd47e21a55bb4d2cee"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PerfilEndpoints.cs": {
+    "mtime": 1784303485.1854005,
+    "ast_hash": "7998ceccfe1f90e44cdc7433d95285ac",
+    "semantic_hash": "7998ceccfe1f90e44cdc7433d95285ac"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PerfilesPublicosEndpoints.cs": {
+    "mtime": 1784996038.43096,
+    "ast_hash": "71f98957af9bd771d426acd052881872",
+    "semantic_hash": "71f98957af9bd771d426acd052881872"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/PublicoEndpoints.cs": {
+    "mtime": 1784364800.9638448,
+    "ast_hash": "b58e9ca2e7d4faf36d8ec6d03f02c442",
+    "semantic_hash": "b58e9ca2e7d4faf36d8ec6d03f02c442"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/ReputationEndpoints.cs": {
+    "mtime": 1784996038.4339583,
+    "ast_hash": "c0b7c4218f4855de488f237a9f26fa18",
+    "semantic_hash": "c0b7c4218f4855de488f237a9f26fa18"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/OpenApi/SecuritySchemeTransformer.cs": {
+    "mtime": 1784303485.1904013,
+    "ast_hash": "2b4d6ad9e8bead8d92bf9a3db5a9aca5",
+    "semantic_hash": "2b4d6ad9e8bead8d92bf9a3db5a9aca5"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Orders/ConsultaAvisoParaOrdenAdapter.cs": {
+    "mtime": 1784970132.6948867,
+    "ast_hash": "e5415b56daf5a3fd271aa5593ee5a418",
+    "semantic_hash": "e5415b56daf5a3fd271aa5593ee5a418"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Orders/ConsultaVerificacionParticipanteAdapter.cs": {
+    "mtime": 1784970132.6968868,
+    "ast_hash": "c2f2af995cec3e6dd34196189bd022d2",
+    "semantic_hash": "c2f2af995cec3e6dd34196189bd022d2"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Orders/IOrquestadorCierreOrden.cs": {
+    "mtime": 1784989357.0500638,
+    "ast_hash": "092a2116e6a3baa2f58021441c172ef9",
+    "semantic_hash": "092a2116e6a3baa2f58021441c172ef9"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Orders/OrquestadorCierreOrden.cs": {
+    "mtime": 1784989357.056065,
+    "ast_hash": "c0120e72cfec0a51ad0cd79e40c1a22a",
+    "semantic_hash": "c0120e72cfec0a51ad0cd79e40c1a22a"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Program.cs": {
+    "mtime": 1784996038.4369595,
+    "ast_hash": "542183d0e33a41c7fd5ab2dcb6ab5107",
+    "semantic_hash": "542183d0e33a41c7fd5ab2dcb6ab5107"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Properties/launchSettings.json": {
+    "mtime": 1783972805.368895,
+    "ast_hash": "f6fd285c9bfc28b5f8c251e2c9f09aba",
+    "semantic_hash": "f6fd285c9bfc28b5f8c251e2c9f09aba"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/Reputation/ConsultaOrdenCalificableAdapter.cs": {
+    "mtime": 1784996038.4389603,
+    "ast_hash": "46378ab1502805276d76158bca419da0",
+    "semantic_hash": "46378ab1502805276d76158bca419da0"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/appsettings.Development.json": {
+    "mtime": 1783972805.3699296,
+    "ast_hash": "804b473502a4c415cf75db61c56c32aa",
+    "semantic_hash": "804b473502a4c415cf75db61c56c32aa"
+  },
+  "CaseritoApp/src/Host/CaseritoApp.Host/appsettings.json": {
+    "mtime": 1784572849.5107145,
+    "ast_hash": "42d82562e3b51daf7fde65848ee58e8d",
+    "semantic_hash": "42d82562e3b51daf7fde65848ee58e8d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/AsignarRolCommand.cs": {
+    "mtime": 1784144181.2247934,
+    "ast_hash": "cad66be9338a3bac4ce54ce1252fc737",
+    "semantic_hash": "cad66be9338a3bac4ce54ce1252fc737"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/BuscarUsuariosQuery.cs": {
+    "mtime": 1784144181.2257955,
+    "ast_hash": "287f2c7cc5b7d824d2cf5d08a2ef177b",
+    "semantic_hash": "287f2c7cc5b7d824d2cf5d08a2ef177b"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/CodigosErrorRoles.cs": {
+    "mtime": 1784144181.2257955,
+    "ast_hash": "44d780b3d91cb97142079613a55fff43",
+    "semantic_hash": "44d780b3d91cb97142079613a55fff43"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/IRepositorioRolesUsuario.cs": {
+    "mtime": 1784144181.2267933,
+    "ast_hash": "e7b20b7a7a100effad185ccfbc7f0ca4",
+    "semantic_hash": "e7b20b7a7a100effad185ccfbc7f0ca4"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/ListarRolesQuery.cs": {
+    "mtime": 1784144181.2277932,
+    "ast_hash": "c645371a1dc32edf1ce9ba425474dbf5",
+    "semantic_hash": "c645371a1dc32edf1ce9ba425474dbf5"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/QuitarRolCommand.cs": {
+    "mtime": 1784144181.2287939,
+    "ast_hash": "6c5900998b972eff814370a6de379c0f",
+    "semantic_hash": "6c5900998b972eff814370a6de379c0f"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/ResultadoPaginado.cs": {
+    "mtime": 1784144181.229391,
+    "ast_hash": "2de1ba0fcadaf5055ce84378c6ce2d0f",
+    "semantic_hash": "2de1ba0fcadaf5055ce84378c6ce2d0f"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/RolDto.cs": {
+    "mtime": 1784144181.229391,
+    "ast_hash": "659257bec3b3449307858b85510b611a",
+    "semantic_hash": "659257bec3b3449307858b85510b611a"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Autorizacion/UsuarioConRolesDto.cs": {
+    "mtime": 1784144181.2303894,
+    "ast_hash": "ec9c7547640bb6e6bab52082c4903849",
+    "semantic_hash": "ec9c7547640bb6e6bab52082c4903849"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/CaseritoApp.Identity.Application.csproj": {
+    "mtime": 1783972805.3719738,
+    "ast_hash": "dfaec76a86daf1fe8c3a9f703e9b5ccd",
+    "semantic_hash": "dfaec76a86daf1fe8c3a9f703e9b5ccd"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/AprobarSolicitudKycCommand.cs": {
+    "mtime": 1784182811.7373414,
+    "ast_hash": "0d7caca02907b2a1e7da48dc866d0105",
+    "semantic_hash": "0d7caca02907b2a1e7da48dc866d0105"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/DtosKyc.cs": {
+    "mtime": 1784182811.7383416,
+    "ast_hash": "043f8c6186727bae63cbdc07c9e887b9",
+    "semantic_hash": "043f8c6186727bae63cbdc07c9e887b9"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/EnviarSolicitudKycCommand.cs": {
+    "mtime": 1784182811.7393427,
+    "ast_hash": "85c7daa2cd4246da1c75a9f44e33d56f",
+    "semantic_hash": "85c7daa2cd4246da1c75a9f44e33d56f"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IAlmacenBlobsKyc.cs": {
+    "mtime": 1784182811.7393427,
+    "ast_hash": "9d9e2319da4bd242009e5fca75d230d5",
+    "semantic_hash": "9d9e2319da4bd242009e5fca75d230d5"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IAuditorAccesoPii.cs": {
+    "mtime": 1784182811.741342,
+    "ast_hash": "063052ff80639e6dbd7618e679bb506e",
+    "semantic_hash": "063052ff80639e6dbd7618e679bb506e"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IConsultaVerificacionKyc.cs": {
+    "mtime": 1784182811.741342,
+    "ast_hash": "97fb44e19c6bf391e82a9b80d93b116d",
+    "semantic_hash": "97fb44e19c6bf391e82a9b80d93b116d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IRepositorioVerificacionKyc.cs": {
+    "mtime": 1784182811.742342,
+    "ast_hash": "3f40c8358f7b915e876194d351f3188b",
+    "semantic_hash": "3f40c8358f7b915e876194d351f3188b"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/ListarSolicitudesKycQuery.cs": {
+    "mtime": 1784182811.7433422,
+    "ast_hash": "715765d8d66b8c520bee2877bbf5cc7a",
+    "semantic_hash": "715765d8d66b8c520bee2877bbf5cc7a"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/ObtenerBlobKycQuery.cs": {
+    "mtime": 1784182811.745342,
+    "ast_hash": "af5ec304b222dcc4434832ce84b0273f",
+    "semantic_hash": "af5ec304b222dcc4434832ce84b0273f"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/ObtenerEstadoKycQuery.cs": {
+    "mtime": 1784182811.745342,
+    "ast_hash": "7541d11ce1471e880c169dc471790c9d",
+    "semantic_hash": "7541d11ce1471e880c169dc471790c9d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/RechazarSolicitudKycCommand.cs": {
+    "mtime": 1784182811.747342,
+    "ast_hash": "25e4a8f444d9965e08d1e9611257481d",
+    "semantic_hash": "25e4a8f444d9965e08d1e9611257481d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/ValidacionImagenKyc.cs": {
+    "mtime": 1784182811.748342,
+    "ast_hash": "b866bca63cb3a0a16a9e4f9d1f598e59",
+    "semantic_hash": "b866bca63cb3a0a16a9e4f9d1f598e59"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Perfil/ActualizarPerfilCommand.cs": {
+    "mtime": 1784028350.120772,
+    "ast_hash": "c838ec76d20e538a32e34272c4805400",
+    "semantic_hash": "c838ec76d20e538a32e34272c4805400"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Perfil/IRepositorioPerfil.cs": {
+    "mtime": 1784996038.4429595,
+    "ast_hash": "d14e9306d0fa411866bc4627a20a9e5c",
+    "semantic_hash": "d14e9306d0fa411866bc4627a20a9e5c"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Perfil/ObtenerPerfilPublicoQuery.cs": {
+    "mtime": 1784996038.4469604,
+    "ast_hash": "810f55aab444c37fbad5d416917f2353",
+    "semantic_hash": "810f55aab444c37fbad5d416917f2353"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Perfil/ObtenerPerfilQuery.cs": {
+    "mtime": 1784028350.122773,
+    "ast_hash": "94d0b6efc3d7bad0ef72e3b17a801aaf",
+    "semantic_hash": "94d0b6efc3d7bad0ef72e3b17a801aaf"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Autorizacion/ClaimsApp.cs": {
+    "mtime": 1784182811.7508934,
+    "ast_hash": "044acafbd625c5f2304c348cf44b0cb9",
+    "semantic_hash": "044acafbd625c5f2304c348cf44b0cb9"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Autorizacion/MapaRolesPermisos.cs": {
+    "mtime": 1784121278.0017943,
+    "ast_hash": "e11fa1e3b8c3af44f4664d0cbc9bd7a1",
+    "semantic_hash": "e11fa1e3b8c3af44f4664d0cbc9bd7a1"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Autorizacion/Permisos.cs": {
+    "mtime": 1784121278.002796,
+    "ast_hash": "f185fa43149eb82cb6b97b27a60d7c73",
+    "semantic_hash": "f185fa43149eb82cb6b97b27a60d7c73"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Autorizacion/RolesApp.cs": {
+    "mtime": 1784121278.0047975,
+    "ast_hash": "de0e2057272ba8e0743cfa66da13d3f3",
+    "semantic_hash": "de0e2057272ba8e0743cfa66da13d3f3"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/CaseritoApp.Identity.Domain.csproj": {
+    "mtime": 1783972805.3730085,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/ErroresKyc.cs": {
+    "mtime": 1784289364.5634086,
+    "ast_hash": "b9bde3713050b8f8f6cbcba59614f68f",
+    "semantic_hash": "b9bde3713050b8f8f6cbcba59614f68f"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/EstadoKyc.cs": {
+    "mtime": 1784182811.7528934,
+    "ast_hash": "cdecd54d7b0b82cdabb1e5ac0bfec8fc",
+    "semantic_hash": "cdecd54d7b0b82cdabb1e5ac0bfec8fc"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/SolicitudKyc.cs": {
+    "mtime": 1784182811.7538936,
+    "ast_hash": "b01978c59103ee206e4914ca8ca18a5c",
+    "semantic_hash": "b01978c59103ee206e4914ca8ca18a5c"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/TipoDocumento.cs": {
+    "mtime": 1784182811.7548933,
+    "ast_hash": "4924e132e6f05fb800fe00a4a8abc932",
+    "semantic_hash": "4924e132e6f05fb800fe00a4a8abc932"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/VerificacionKyc.cs": {
+    "mtime": 1784182811.7548933,
+    "ast_hash": "23d5819e8d2655c79a88a46305054c37",
+    "semantic_hash": "23d5819e8d2655c79a88a46305054c37"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/ApplicationUser.cs": {
+    "mtime": 1784028350.123773,
+    "ast_hash": "b638179de8044b1a47f02158a6356b3e",
+    "semantic_hash": "b638179de8044b1a47f02158a6356b3e"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/ConfigurarJwtBearer.cs": {
+    "mtime": 1784572849.5137136,
+    "ast_hash": "07513aab7ce428c5e074edc158088056",
+    "semantic_hash": "07513aab7ce428c5e074edc158088056"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/GeneradorTokensAcceso.cs": {
+    "mtime": 1784182811.7568936,
+    "ast_hash": "b3553b3206df1df2f4f4abafd1950ffd",
+    "semantic_hash": "b3553b3206df1df2f4f4abafd1950ffd"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/OpcionesJwt.cs": {
+    "mtime": 1784028350.1267736,
+    "ast_hash": "9398caa3c0a240ecf7105228a882c972",
+    "semantic_hash": "9398caa3c0a240ecf7105228a882c972"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/PoliticasAutorizacion.cs": {
+    "mtime": 1784121278.0097995,
+    "ast_hash": "d7d71f7c214445ad7036c1d9b635da2d",
+    "semantic_hash": "d7d71f7c214445ad7036c1d9b635da2d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/ProveedorClaveFirma.cs": {
+    "mtime": 1784121278.0117984,
+    "ast_hash": "95cdb36d8cf9b8eae5d01ca1dbfe6861",
+    "semantic_hash": "95cdb36d8cf9b8eae5d01ca1dbfe6861"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/ServicioRefreshTokens.cs": {
+    "mtime": 1784028350.1287735,
+    "ast_hash": "252caec8d7cb9c044de83d6bc6ed2da0",
+    "semantic_hash": "252caec8d7cb9c044de83d6bc6ed2da0"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Autorizacion/RepositorioRolesUsuarioUserManager.cs": {
+    "mtime": 1784144181.23139,
+    "ast_hash": "84f277203fe3c45e0f29df26faa53e0e",
+    "semantic_hash": "84f277203fe3c45e0f29df26faa53e0e"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/BootstrapUsuariosPrueba.cs": {
+    "mtime": 1784970132.6998854,
+    "ast_hash": "d53b636485104c558e7273ba159384d4",
+    "semantic_hash": "d53b636485104c558e7273ba159384d4"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/CaseritoApp.Identity.Infrastructure.csproj": {
+    "mtime": 1784028350.1297722,
+    "ast_hash": "b5cabe706fc506228f56f867e78ff7fc",
+    "semantic_hash": "b5cabe706fc506228f56f867e78ff7fc"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1784289364.5644085,
+    "ast_hash": "247451c1f19193971d7cebc5d954944b",
+    "semantic_hash": "247451c1f19193971d7cebc5d954944b"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DesignTimeIdentityDbContextFactory.cs": {
+    "mtime": 1784028350.1327717,
+    "ast_hash": "9347197f391c2fa51ac3a9f3e48bd5e2",
+    "semantic_hash": "9347197f391c2fa51ac3a9f3e48bd5e2"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/IdentityDbContext.cs": {
+    "mtime": 1784289364.567231,
+    "ast_hash": "2881314e3b90c177ba217406f10378c5",
+    "semantic_hash": "2881314e3b90c177ba217406f10378c5"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/AlmacenBlobsKycDisco.cs": {
+    "mtime": 1784182811.7626982,
+    "ast_hash": "ccfe4d4332f50be149d34cfd64fb970d",
+    "semantic_hash": "ccfe4d4332f50be149d34cfd64fb970d"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/AuditorAccesoPiiLog.cs": {
+    "mtime": 1784182811.763698,
+    "ast_hash": "510b243fbadd562aec46339e03084848",
+    "semantic_hash": "510b243fbadd562aec46339e03084848"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConfiguracionKyc.cs": {
+    "mtime": 1784289364.5682328,
+    "ast_hash": "f2ad9cc00039d84297f79ff024f86f98",
+    "semantic_hash": "f2ad9cc00039d84297f79ff024f86f98"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConsultaVerificacionKycEfCore.cs": {
+    "mtime": 1784182811.7662334,
+    "ast_hash": "fca21a4e3964fe827506c4872d7f25c5",
+    "semantic_hash": "fca21a4e3964fe827506c4872d7f25c5"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/OpcionesAlmacenKyc.cs": {
+    "mtime": 1784182811.7672331,
+    "ast_hash": "346f7bdf1037498abcf45fe4ac42a393",
+    "semantic_hash": "346f7bdf1037498abcf45fe4ac42a393"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/PublicadorEventosIntegracionLog.cs": {
+    "mtime": 1784182811.7682338,
+    "ast_hash": "a0387c9d67a2d4085d517c6e9a67ec71",
+    "semantic_hash": "a0387c9d67a2d4085d517c6e9a67ec71"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/RepositorioVerificacionKycEfCore.cs": {
+    "mtime": 1784182811.7692342,
+    "ast_hash": "03e0d6bdd34179636fa0943644fba603",
+    "semantic_hash": "03e0d6bdd34179636fa0943644fba603"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260714100843_InicialIdentity.Designer.cs": {
+    "mtime": 1784028350.1364026,
+    "ast_hash": "d3d2ddb408be9b9253cd2baa8558023a",
+    "semantic_hash": "d3d2ddb408be9b9253cd2baa8558023a"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260714100843_InicialIdentity.cs": {
+    "mtime": 1784028350.1384013,
+    "ast_hash": "27a40ee729352f775862afc607338688",
+    "semantic_hash": "27a40ee729352f775862afc607338688"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260715212059_KycInicial.Designer.cs": {
+    "mtime": 1784182811.771235,
+    "ast_hash": "1f45102c28edd9b1f69f899b9ed3c285",
+    "semantic_hash": "1f45102c28edd9b1f69f899b9ed3c285"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260715212059_KycInicial.cs": {
+    "mtime": 1784182811.7722342,
+    "ast_hash": "aa735c6e1825d23d36440e7ae7143044",
+    "semantic_hash": "aa735c6e1825d23d36440e7ae7143044"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260717111633_KycConcurrencia.Designer.cs": {
+    "mtime": 1784289364.5712316,
+    "ast_hash": "acb50faffa3f6ba64eceae69011832b1",
+    "semantic_hash": "acb50faffa3f6ba64eceae69011832b1"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260717111633_KycConcurrencia.cs": {
+    "mtime": 1784289364.5722325,
+    "ast_hash": "b53c01e198355fc0e246b8863edb6ead",
+    "semantic_hash": "b53c01e198355fc0e246b8863edb6ead"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/IdentityDbContextModelSnapshot.cs": {
+    "mtime": 1784289364.5742326,
+    "ast_hash": "06196a9950551a98090c198e796719b7",
+    "semantic_hash": "06196a9950551a98090c198e796719b7"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Perfil/RepositorioPerfilUserManager.cs": {
+    "mtime": 1784996038.450477,
+    "ast_hash": "b3eab751c2dae3cc21b489a340505c61",
+    "semantic_hash": "b3eab751c2dae3cc21b489a340505c61"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/RefreshToken.cs": {
+    "mtime": 1784028350.1424024,
+    "ast_hash": "eebbc71b2c57f3b07700498cf6722472",
+    "semantic_hash": "eebbc71b2c57f3b07700498cf6722472"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/SeedRolesExtensions.cs": {
+    "mtime": 1784121278.0184786,
+    "ast_hash": "55c21b0eda15b6ae5313bdf5b972ac00",
+    "semantic_hash": "55c21b0eda15b6ae5313bdf5b972ac00"
+  },
+  "CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/UnitOfWorkIdentity.cs": {
+    "mtime": 1784289364.575234,
+    "ast_hash": "ed1598d13a88fdbd26a4dc9fc0883940",
+    "semantic_hash": "ed1598d13a88fdbd26a4dc9fc0883940"
+  },
+  "CaseritoApp/src/Notifications/CaseritoApp.Notifications.Application/CaseritoApp.Notifications.Application.csproj": {
+    "mtime": 1783972805.3767035,
+    "ast_hash": "45d0a6e1e017ded57c345a4f9da7257d",
+    "semantic_hash": "45d0a6e1e017ded57c345a4f9da7257d"
+  },
+  "CaseritoApp/src/Notifications/CaseritoApp.Notifications.Domain/CaseritoApp.Notifications.Domain.csproj": {
+    "mtime": 1783972805.3777394,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Notifications/CaseritoApp.Notifications.Infrastructure/CaseritoApp.Notifications.Infrastructure.csproj": {
+    "mtime": 1783972805.378788,
+    "ast_hash": "949bc78b5a0ea382a11eba7e4bfa4714",
+    "semantic_hash": "949bc78b5a0ea382a11eba7e4bfa4714"
+  },
+  "CaseritoApp/src/Notifications/CaseritoApp.Notifications.Infrastructure/NotificationsDbContext.cs": {
+    "mtime": 1783972805.3798325,
+    "ast_hash": "0c2c095e982d52b2a3f741dd67c1cf3f",
+    "semantic_hash": "0c2c095e982d52b2a3f741dd67c1cf3f"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/CaseritoApp.Orders.Application.csproj": {
+    "mtime": 1783972805.3808937,
+    "ast_hash": "c66eff5639ec1e331f1252196a8c8f14",
+    "semantic_hash": "c66eff5639ec1e331f1252196a8c8f14"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/AceptarOrdenCommand.cs": {
+    "mtime": 1784970132.7028844,
+    "ast_hash": "c10f698e0b96458350d8857d75dd5972",
+    "semantic_hash": "c10f698e0b96458350d8857d75dd5972"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/CancelarOrdenCommand.cs": {
+    "mtime": 1784976141.410044,
+    "ast_hash": "ae78240405c3fba99da989667729bc4f",
+    "semantic_hash": "ae78240405c3fba99da989667729bc4f"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/ConfirmarCierreOrdenCommand.cs": {
+    "mtime": 1784988175.6466246,
+    "ast_hash": "e67f66ee6bac8a8c97e1cabbdc5b7a10",
+    "semantic_hash": "e67f66ee6bac8a8c97e1cabbdc5b7a10"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/DtosOrden.cs": {
+    "mtime": 1784988175.650733,
+    "ast_hash": "cbead348bdc8b33e4fb61dc270127e67",
+    "semantic_hash": "cbead348bdc8b33e4fb61dc270127e67"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/IConsultaAvisoParaOrden.cs": {
+    "mtime": 1784970132.7078917,
+    "ast_hash": "3a2fbf1100286da7cf2fcbca871b588a",
+    "semantic_hash": "3a2fbf1100286da7cf2fcbca871b588a"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/IConsultaOrdenParaReputacion.cs": {
+    "mtime": 1784996038.4532192,
+    "ast_hash": "4219c36b321b32b0eba16b0f880df47a",
+    "semantic_hash": "4219c36b321b32b0eba16b0f880df47a"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/IConsultaOrdenes.cs": {
+    "mtime": 1784970132.7088926,
+    "ast_hash": "4e1cd0f929c52981a78c429c639ae484",
+    "semantic_hash": "4e1cd0f929c52981a78c429c639ae484"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/IConsultaVerificacionParticipante.cs": {
+    "mtime": 1784970132.710893,
+    "ast_hash": "5a144ae5a9a24cb6aa22a2e4e94eedd0",
+    "semantic_hash": "5a144ae5a9a24cb6aa22a2e4e94eedd0"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/IRepositorioOrdenes.cs": {
+    "mtime": 1784988175.6537354,
+    "ast_hash": "5251b975470f1c84e5768791698c5861",
+    "semantic_hash": "5251b975470f1c84e5768791698c5861"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/ListarOrdenesQuery.cs": {
+    "mtime": 1784988175.6557353,
+    "ast_hash": "d9ded902b6ef9e4d65c0cb883dfb9aae",
+    "semantic_hash": "d9ded902b6ef9e4d65c0cb883dfb9aae"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/MarcarOrdenVendidaCommand.cs": {
+    "mtime": 1784988175.657735,
+    "ast_hash": "1c34c1fd5ec46f8598ee52c2ba74e36c",
+    "semantic_hash": "1c34c1fd5ec46f8598ee52c2ba74e36c"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/ObtenerOrdenQuery.cs": {
+    "mtime": 1784970132.7138934,
+    "ast_hash": "dbd5e06943ce1dfedaa0e4528bc84d4e",
+    "semantic_hash": "dbd5e06943ce1dfedaa0e4528bc84d4e"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Application/Ordenes/SolicitarOrdenCommand.cs": {
+    "mtime": 1784970132.714934,
+    "ast_hash": "377d2f4ab40d4c55d5cbfe5c09721355",
+    "semantic_hash": "377d2f4ab40d4c55d5cbfe5c09721355"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Domain/CaseritoApp.Orders.Domain.csproj": {
+    "mtime": 1783972805.3818622,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Domain/Ordenes/ErroresOrden.cs": {
+    "mtime": 1784970132.716895,
+    "ast_hash": "7e552b07e51f3ede156f55cacfcc2217",
+    "semantic_hash": "7e552b07e51f3ede156f55cacfcc2217"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Domain/Ordenes/EstadoOrden.cs": {
+    "mtime": 1784987913.3485029,
+    "ast_hash": "d84d780067e0ecd715b7fdedd3f2d552",
+    "semantic_hash": "d84d780067e0ecd715b7fdedd3f2d552"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Domain/Ordenes/EventosOrden.cs": {
+    "mtime": 1784970132.7224984,
+    "ast_hash": "8ecb15fdf41c1e850ec58a4f26d376aa",
+    "semantic_hash": "8ecb15fdf41c1e850ec58a4f26d376aa"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Domain/Ordenes/Orden.cs": {
+    "mtime": 1784987913.355088,
+    "ast_hash": "bac8de853ddea1ed1abfe5c83c95bc41",
+    "semantic_hash": "bac8de853ddea1ed1abfe5c83c95bc41"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/CaseritoApp.Orders.Infrastructure.csproj": {
+    "mtime": 1784970132.726498,
+    "ast_hash": "38f752a258fadb2cf723f5b59740ef6e",
+    "semantic_hash": "38f752a258fadb2cf723f5b59740ef6e"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/ConflictoUnicidadOrdersException.cs": {
+    "mtime": 1784970132.7274978,
+    "ast_hash": "ece291fcf3bc744323c7315183acd584",
+    "semantic_hash": "ece291fcf3bc744323c7315183acd584"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1784996038.4572167,
+    "ast_hash": "2b5fa696d712f38e0f8a53d43f3349ae",
+    "semantic_hash": "2b5fa696d712f38e0f8a53d43f3349ae"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/DesignTimeOrdersDbContextFactory.cs": {
+    "mtime": 1784970132.730497,
+    "ast_hash": "58701c8952dbd7b9a3d515e8ab9eac5f",
+    "semantic_hash": "58701c8952dbd7b9a3d515e8ab9eac5f"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725064552_OrdersInicial.Designer.cs": {
+    "mtime": 1784970132.7324986,
+    "ast_hash": "a7b9ecc20112585c42ac5b7ab2508a70",
+    "semantic_hash": "a7b9ecc20112585c42ac5b7ab2508a70"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725064552_OrdersInicial.cs": {
+    "mtime": 1784970132.7351463,
+    "ast_hash": "edd9003c1d9bb6ea30221eb9b3cb40f9",
+    "semantic_hash": "edd9003c1d9bb6ea30221eb9b3cb40f9"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725094059_OrdersCancelacionIndiceFiltrado.Designer.cs": {
+    "mtime": 1784976141.4156418,
+    "ast_hash": "b28dfa27d4ac1a42006ce34f603c301b",
+    "semantic_hash": "b28dfa27d4ac1a42006ce34f603c301b"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725094059_OrdersCancelacionIndiceFiltrado.cs": {
+    "mtime": 1784976141.4176404,
+    "ast_hash": "4e9c34e8541c00f1c436d1781b2fec96",
+    "semantic_hash": "4e9c34e8541c00f1c436d1781b2fec96"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725140409_OrdersCierrePositivo.Designer.cs": {
+    "mtime": 1784988249.91577,
+    "ast_hash": "593ee13e79f4c7cf57ef9cd541846978",
+    "semantic_hash": "593ee13e79f4c7cf57ef9cd541846978"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/20260725140409_OrdersCierrePositivo.cs": {
+    "mtime": 1784988454.7564025,
+    "ast_hash": "be31256bb49982c7fc91459eef04c55f",
+    "semantic_hash": "be31256bb49982c7fc91459eef04c55f"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Migrations/OrdersDbContextModelSnapshot.cs": {
+    "mtime": 1784988249.91677,
+    "ast_hash": "bf572d2c8ac62648265f9a7a394af847",
+    "semantic_hash": "bf572d2c8ac62648265f9a7a394af847"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Ordenes/ConfiguracionOrden.cs": {
+    "mtime": 1784988322.9231877,
+    "ast_hash": "e130527b1a2c72ea41e5ab11443157e8",
+    "semantic_hash": "e130527b1a2c72ea41e5ab11443157e8"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Ordenes/ConsultaOrdenParaReputacionEfCore.cs": {
+    "mtime": 1784996038.4612155,
+    "ast_hash": "f330fd41f3b6f82aaae095d6b5a339cd",
+    "semantic_hash": "f330fd41f3b6f82aaae095d6b5a339cd"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Ordenes/ConsultaOrdenesEfCore.cs": {
+    "mtime": 1784988322.9276972,
+    "ast_hash": "45c3fdd43571471314b1eac498990bbf",
+    "semantic_hash": "45c3fdd43571471314b1eac498990bbf"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/Ordenes/RepositorioOrdenesEfCore.cs": {
+    "mtime": 1784988322.9286976,
+    "ast_hash": "0ba84e2a3d7ab39f60043a57bfd08912",
+    "semantic_hash": "0ba84e2a3d7ab39f60043a57bfd08912"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/OrdersDbContext.cs": {
+    "mtime": 1784970132.7508545,
+    "ast_hash": "8e1653222a21a689771b698b3f267957",
+    "semantic_hash": "8e1653222a21a689771b698b3f267957"
+  },
+  "CaseritoApp/src/Orders/CaseritoApp.Orders.Infrastructure/UnitOfWorkOrders.cs": {
+    "mtime": 1784970132.7528555,
+    "ast_hash": "cac5cf141fa2df2eb557719c6f63ce18",
+    "semantic_hash": "cac5cf141fa2df2eb557719c6f63ce18"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/CaseritoApp.Reputation.Application.csproj": {
+    "mtime": 1784996038.464217,
+    "ast_hash": "0d4156a9b57c58b96df463f1ecc689ae",
+    "semantic_hash": "0d4156a9b57c58b96df463f1ecc689ae"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/CrearResenaCommand.cs": {
+    "mtime": 1784996038.468217,
+    "ast_hash": "8afa66db6165327f88dda88ecf2659c5",
+    "semantic_hash": "8afa66db6165327f88dda88ecf2659c5"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/DtosReputation.cs": {
+    "mtime": 1784996038.4712167,
+    "ast_hash": "4219ec545a0181b435a5c131c7022792",
+    "semantic_hash": "4219ec545a0181b435a5c131c7022792"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/IConsultaOrdenCalificable.cs": {
+    "mtime": 1784996038.4752169,
+    "ast_hash": "274d0eecf255e37eb8020c825d3545ee",
+    "semantic_hash": "274d0eecf255e37eb8020c825d3545ee"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/IConsultaResenas.cs": {
+    "mtime": 1784996038.478216,
+    "ast_hash": "2a473830cea87a5bbb47155ae3e82a2c",
+    "semantic_hash": "2a473830cea87a5bbb47155ae3e82a2c"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/IRepositorioResenas.cs": {
+    "mtime": 1784996038.4812183,
+    "ast_hash": "7f9ac08290d94e6a7d83676be60d8e06",
+    "semantic_hash": "7f9ac08290d94e6a7d83676be60d8e06"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/ListarResenasPublicasQuery.cs": {
+    "mtime": 1784996038.4881725,
+    "ast_hash": "e51de3d693e053240533a0d2f9b3873f",
+    "semantic_hash": "e51de3d693e053240533a0d2f9b3873f"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/ObtenerEstadoResenaOrdenQuery.cs": {
+    "mtime": 1784996038.4921744,
+    "ast_hash": "0bea815ef44c710551b219bcb16ccd6a",
+    "semantic_hash": "0bea815ef44c710551b219bcb16ccd6a"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Application/Resenas/ObtenerResumenReputacionQuery.cs": {
+    "mtime": 1784996038.4941735,
+    "ast_hash": "1abb24199c995ba18fc13a0ae8cfe1aa",
+    "semantic_hash": "1abb24199c995ba18fc13a0ae8cfe1aa"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Domain/CaseritoApp.Reputation.Domain.csproj": {
+    "mtime": 1783972805.3860514,
+    "ast_hash": "b4ed568930f8112676be6d46f73d6dac",
+    "semantic_hash": "b4ed568930f8112676be6d46f73d6dac"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Domain/Resenas/ErroresResena.cs": {
+    "mtime": 1784996038.4981728,
+    "ast_hash": "ca23c92415a8b60e9abe47085a4a44c3",
+    "semantic_hash": "ca23c92415a8b60e9abe47085a4a44c3"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Domain/Resenas/Resena.cs": {
+    "mtime": 1784996038.5041728,
+    "ast_hash": "48b84490325f7ab084886320bc02dcff",
+    "semantic_hash": "48b84490325f7ab084886320bc02dcff"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Domain/Resenas/RolAutorResena.cs": {
+    "mtime": 1784996038.5091734,
+    "ast_hash": "cb318c287f9fd836306278893a42ce9a",
+    "semantic_hash": "cb318c287f9fd836306278893a42ce9a"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/CaseritoApp.Reputation.Infrastructure.csproj": {
+    "mtime": 1784996038.5151746,
+    "ast_hash": "79e73a123c4ff1c525145b8ade6b4a7f",
+    "semantic_hash": "79e73a123c4ff1c525145b8ade6b4a7f"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/ConflictoUnicidadReputationException.cs": {
+    "mtime": 1784996038.5241735,
+    "ast_hash": "014f92f85255cf09e08fe59a6b53680b",
+    "semantic_hash": "014f92f85255cf09e08fe59a6b53680b"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/DependencyInjection.cs": {
+    "mtime": 1784996038.533174,
+    "ast_hash": "157e3e7399113db7dd832116c9ece858",
+    "semantic_hash": "157e3e7399113db7dd832116c9ece858"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/DesignTimeReputationDbContextFactory.cs": {
+    "mtime": 1784996038.5508382,
+    "ast_hash": "e87aed74a27ee7cc03e2b93dfca45fd4",
+    "semantic_hash": "e87aed74a27ee7cc03e2b93dfca45fd4"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Migrations/20260725150526_ReputationInicial.Designer.cs": {
+    "mtime": 1784996038.5598485,
+    "ast_hash": "db8518e040ad58729749e86404cf211e",
+    "semantic_hash": "db8518e040ad58729749e86404cf211e"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Migrations/20260725150526_ReputationInicial.cs": {
+    "mtime": 1784996038.564835,
+    "ast_hash": "c25711ae85c36806abfb01f152d92d81",
+    "semantic_hash": "c25711ae85c36806abfb01f152d92d81"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Migrations/ReputationDbContextModelSnapshot.cs": {
+    "mtime": 1784996038.5708418,
+    "ast_hash": "8ac57cf60edaa54564dde52ff4424293",
+    "semantic_hash": "8ac57cf60edaa54564dde52ff4424293"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/ReputationDbContext.cs": {
+    "mtime": 1784996038.5738373,
+    "ast_hash": "a5fd3a9599d529889a8086eadbabdf4d",
+    "semantic_hash": "a5fd3a9599d529889a8086eadbabdf4d"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Resenas/ConfiguracionResena.cs": {
+    "mtime": 1784996038.576838,
+    "ast_hash": "9335ecd33b151bc4641a3888cc5caeeb",
+    "semantic_hash": "9335ecd33b151bc4641a3888cc5caeeb"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Resenas/ConsultaResenasEfCore.cs": {
+    "mtime": 1784996038.5814662,
+    "ast_hash": "1b1a5f7c312e2f2c0186c5803a2f6512",
+    "semantic_hash": "1b1a5f7c312e2f2c0186c5803a2f6512"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/Resenas/RepositorioResenasEfCore.cs": {
+    "mtime": 1784996038.5854661,
+    "ast_hash": "ad616dc9f673e9b4b43940e4ee89abcf",
+    "semantic_hash": "ad616dc9f673e9b4b43940e4ee89abcf"
+  },
+  "CaseritoApp/src/Reputation/CaseritoApp.Reputation.Infrastructure/UnitOfWorkReputation.cs": {
+    "mtime": 1784996038.5894675,
+    "ast_hash": "495805eff129d07b086674cffd22da83",
+    "semantic_hash": "495805eff129d07b086674cffd22da83"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/BuildingBlocks/AggregateRootTests.cs": {
+    "mtime": 1783972805.3891294,
+    "ast_hash": "361a79ceff94ba8f9af37e5924acf071",
+    "semantic_hash": "361a79ceff94ba8f9af37e5924acf071"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/BuildingBlocks/EncryptorTests.cs": {
+    "mtime": 1784182811.776235,
+    "ast_hash": "e988327c29f57b9862cb7f7036f80300",
+    "semantic_hash": "e988327c29f57b9862cb7f7036f80300"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/BuildingBlocks/ResultTests.cs": {
+    "mtime": 1783972805.3911285,
+    "ast_hash": "d87c9396150e86718b4242fe0599f9d2",
+    "semantic_hash": "d87c9396150e86718b4242fe0599f9d2"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/BuildingBlocks/UnitOfWorkBehaviorTests.cs": {
+    "mtime": 1784314368.4913585,
+    "ast_hash": "cced5e8d66e78a6ef16928b2e12f6203",
+    "semantic_hash": "cced5e8d66e78a6ef16928b2e12f6203"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/BuildingBlocks/ValidationBehaviorTests.cs": {
+    "mtime": 1783972805.393449,
+    "ast_hash": "ad6392005dbdd191b8d462e45fd4e975",
+    "semantic_hash": "ad6392005dbdd191b8d462e45fd4e975"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/CaseritoApp.ArchitectureTests.csproj": {
+    "mtime": 1784572849.5157137,
+    "ast_hash": "6ddca8a590e2cc926f9bb0542485dc72",
+    "semantic_hash": "6ddca8a590e2cc926f9bb0542485dc72"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Chat/ChatModeracionArchitectureTests.cs": {
+    "mtime": 1784833548.037457,
+    "ast_hash": "199d71ce5e771a6775db34b092945ff3",
+    "semantic_hash": "199d71ce5e771a6775db34b092945ff3"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Chat/ChatPiiTests.cs": {
+    "mtime": 1784833548.0474977,
+    "ast_hash": "e4e49b36bd6b671072706303b18cb69f",
+    "semantic_hash": "e4e49b36bd6b671072706303b18cb69f"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Chat/ChatTiempoRealArchitectureTests.cs": {
+    "mtime": 1784833548.0563126,
+    "ast_hash": "c2f7ff1764d6c9d5bd02cea9db0eed3d",
+    "semantic_hash": "c2f7ff1764d6c9d5bd02cea9db0eed3d"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Identity/GeneradorTokensAccesoTests.cs": {
+    "mtime": 1784182811.7782345,
+    "ast_hash": "ceda0b340d183b2ea3842f5008b5a398",
+    "semantic_hash": "ceda0b340d183b2ea3842f5008b5a398"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Layering/AislamientoEntreContextosTests.cs": {
+    "mtime": 1783972805.3960016,
+    "ast_hash": "2f42fecff17a23419cc3920bcafc17e6",
+    "semantic_hash": "2f42fecff17a23419cc3920bcafc17e6"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Layering/CapasPorContextoTests.cs": {
+    "mtime": 1783972805.3970878,
+    "ast_hash": "98f1a90da2e19007ade460f4a275e7dd",
+    "semantic_hash": "98f1a90da2e19007ade460f4a275e7dd"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Persistence/SchemaPorContextoTests.cs": {
+    "mtime": 1783972805.3981285,
+    "ast_hash": "3f969e11472f545b0a5108349ea6d593",
+    "semantic_hash": "3f969e11472f545b0a5108349ea6d593"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/PiiRedactionTests.cs": {
+    "mtime": 1784572849.5207138,
+    "ast_hash": "78023a256107209b04eaeaaf93ade254",
+    "semantic_hash": "78023a256107209b04eaeaaf93ade254"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Reputation/ReputationArchitectureTests.cs": {
+    "mtime": 1784996038.5924664,
+    "ast_hash": "a7a32509bc218bc410f8f6fb5f153918",
+    "semantic_hash": "a7a32509bc218bc410f8f6fb5f153918"
+  },
+  "CaseritoApp/tests/CaseritoApp.ArchitectureTests/Reputation/ReputationPiiTests.cs": {
+    "mtime": 1784996038.5951214,
+    "ast_hash": "ab53033df75da79c94a71d3af21c029a",
+    "semantic_hash": "ab53033df75da79c94a71d3af21c029a"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/AdminEndpointTests.cs": {
+    "mtime": 1784121278.0224783,
+    "ast_hash": "261bcd022fb3ecf28fa437016d8d7c63",
+    "semantic_hash": "261bcd022fb3ecf28fa437016d8d7c63"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/AssemblyInfo.cs": {
+    "mtime": 1784482236.5028281,
+    "ast_hash": "134c97655edba028e6491e4820e49b71",
+    "semantic_hash": "134c97655edba028e6491e4820e49b71"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/AuthFlowTests.cs": {
+    "mtime": 1784028350.1494033,
+    "ast_hash": "530fc9d964a1dfe9debf3d9f79b51332",
+    "semantic_hash": "530fc9d964a1dfe9debf3d9f79b51332"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/AvisosFlujoTests.cs": {
+    "mtime": 1784369566.9604273,
+    "ast_hash": "9cc19fef66c9695fe65a8f1e11924980",
+    "semantic_hash": "9cc19fef66c9695fe65a8f1e11924980"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/BootstrapUsuariosPruebaTests.cs": {
+    "mtime": 1784970132.7558565,
+    "ast_hash": "492b3e8aebb0b45944a1815e953a8a24",
+    "semantic_hash": "492b3e8aebb0b45944a1815e953a8a24"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj": {
+    "mtime": 1784996038.60012,
+    "ast_hash": "9dd594a42cbb9220432050d591769966",
+    "semantic_hash": "9dd594a42cbb9220432050d591769966"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatCursoresTests.cs": {
+    "mtime": 1784572849.5244305,
+    "ast_hash": "88c3f08c4fdfe380db319e4c0831a7b9",
+    "semantic_hash": "88c3f08c4fdfe380db319e4c0831a7b9"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatDespachadorTiempoRealTests.cs": {
+    "mtime": 1784833548.0654027,
+    "ast_hash": "af9f492766c9139ea812de18d6cb2e49",
+    "semantic_hash": "af9f492766c9139ea812de18d6cb2e49"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatFlujoTests.cs": {
+    "mtime": 1784833548.0724022,
+    "ast_hash": "ee780cff86e035a8c17ade6e1fa94470",
+    "semantic_hash": "ee780cff86e035a8c17ade6e1fa94470"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatOutboxTests.cs": {
+    "mtime": 1784572849.528941,
+    "ast_hash": "3601f7f2bf632150c107ba32af31780a",
+    "semantic_hash": "3601f7f2bf632150c107ba32af31780a"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatPersistenciaTests.cs": {
+    "mtime": 1784744386.6106431,
+    "ast_hash": "d230c11e501deed11f2ef731a4cb98a4",
+    "semantic_hash": "d230c11e501deed11f2ef731a4cb98a4"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatSeguridadConcurrenciaTests.cs": {
+    "mtime": 1784833548.0784054,
+    "ast_hash": "4851c8bea5925eec9c2bd82e5b4751e0",
+    "semantic_hash": "4851c8bea5925eec9c2bd82e5b4751e0"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ChatTiempoRealTests.cs": {
+    "mtime": 1784833548.0824027,
+    "ast_hash": "94a3943f984689f493d0971e693f4ef3",
+    "semantic_hash": "94a3943f984689f493d0971e693f4ef3"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs": {
+    "mtime": 1784996038.60312,
+    "ast_hash": "dd9e8c3b7a72aca9630a35be7ded0ba7",
+    "semantic_hash": "dd9e8c3b7a72aca9630a35be7ded0ba7"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/FotosAvisoIntegrationTests.cs": {
+    "mtime": 1784475687.1820488,
+    "ast_hash": "4da6b06206919506724c67139509ee90",
+    "semantic_hash": "4da6b06206919506724c67139509ee90"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/GestionRolesTests.cs": {
+    "mtime": 1784144181.2333896,
+    "ast_hash": "656e831ed2ca50eb0a3e305a468b6fa0",
+    "semantic_hash": "656e831ed2ca50eb0a3e305a468b6fa0"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/HealthEndpointTests.cs": {
+    "mtime": 1784021210.866509,
+    "ast_hash": "4642d82234e76f5f6d2a95879f6892a8",
+    "semantic_hash": "4642d82234e76f5f6d2a95879f6892a8"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/Infrastructure/CaseritoApiFactory.cs": {
+    "mtime": 1784996038.6061192,
+    "ast_hash": "49b5af682f1d64a5d2646a21210fda50",
+    "semantic_hash": "49b5af682f1d64a5d2646a21210fda50"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/KycConcurrenciaTests.cs": {
+    "mtime": 1784289364.5772321,
+    "ast_hash": "ef05f2de28a6d6fd3945d6703144aba4",
+    "semantic_hash": "ef05f2de28a6d6fd3945d6703144aba4"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/KycFlujoTests.cs": {
+    "mtime": 1784182811.779268,
+    "ast_hash": "0df9ca8220a4fb9dd88ba3f5c2f2bc37",
+    "semantic_hash": "0df9ca8220a4fb9dd88ba3f5c2f2bc37"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ModeracionAvisosTests.cs": {
+    "mtime": 1784482236.5183477,
+    "ast_hash": "dbe66775e0ce9d7ae24d97ba6339f969",
+    "semantic_hash": "dbe66775e0ce9d7ae24d97ba6339f969"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ModeracionChatTests.cs": {
+    "mtime": 1784833548.086403,
+    "ast_hash": "4ffd54ba7a575a3e3970d015c7e740c8",
+    "semantic_hash": "4ffd54ba7a575a3e3970d015c7e740c8"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ObtenerAvisoContactableTests.cs": {
+    "mtime": 1784572849.5349407,
+    "ast_hash": "fff740724881f656cd6a5fef6787c0ad",
+    "semantic_hash": "fff740724881f656cd6a5fef6787c0ad"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/OrdersAdaptadoresTests.cs": {
+    "mtime": 1784970132.7628555,
+    "ast_hash": "7edd09a17338639baea8074ae58d7ff0",
+    "semantic_hash": "7edd09a17338639baea8074ae58d7ff0"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/OrdersFlujoTests.cs": {
+    "mtime": 1784989314.0514889,
+    "ast_hash": "68cc9b03a4f62b52afbe5654182b1f29",
+    "semantic_hash": "68cc9b03a4f62b52afbe5654182b1f29"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/OrdersPersistenciaTests.cs": {
+    "mtime": 1784988322.9296975,
+    "ast_hash": "1d8d7cebdc6c7fb748dfd7264ad022e7",
+    "semantic_hash": "1d8d7cebdc6c7fb748dfd7264ad022e7"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/PerfilTests.cs": {
+    "mtime": 1784182811.781783,
+    "ast_hash": "8e6e016040461a5b4b151d58a1202660",
+    "semantic_hash": "8e6e016040461a5b4b151d58a1202660"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/PersistenciaSmokeTests.cs": {
+    "mtime": 1784021210.8685086,
+    "ast_hash": "efb96a42a5cb9b7fdc8c26c9fff2f849",
+    "semantic_hash": "efb96a42a5cb9b7fdc8c26c9fff2f849"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/RefreshTokensTests.cs": {
+    "mtime": 1784028350.1554024,
+    "ast_hash": "c33142715ee943973de659817cb30840",
+    "semantic_hash": "c33142715ee943973de659817cb30840"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/RegistroAsignaRolTests.cs": {
+    "mtime": 1784121278.0264795,
+    "ast_hash": "7878afd7bbe7987c08cf99b910ecd111",
+    "semantic_hash": "7878afd7bbe7987c08cf99b910ecd111"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/ReputationPerfilPublicoTests.cs": {
+    "mtime": 1784996038.6081202,
+    "ast_hash": "04bd12858738bea976b84011655b1394",
+    "semantic_hash": "04bd12858738bea976b84011655b1394"
+  },
+  "CaseritoApp/tests/CaseritoApp.IntegrationTests/SeedRolesTests.cs": {
+    "mtime": 1784121278.0274775,
+    "ast_hash": "08fb0910f5eeeec6c736d617c546d188",
+    "semantic_hash": "08fb0910f5eeeec6c736d617c546d188"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Auth/GeneradorTokensAccesoTests.cs": {
+    "mtime": 1784182811.7837822,
+    "ast_hash": "6b5160a81745945affeba13e212e0b25",
+    "semantic_hash": "6b5160a81745945affeba13e212e0b25"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Auth/ProveedorClaveFirmaTests.cs": {
+    "mtime": 1784182811.784783,
+    "ast_hash": "9c3fe313832b07177187a50a13dc50ba",
+    "semantic_hash": "9c3fe313832b07177187a50a13dc50ba"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/AsignarRolCommandValidatorTests.cs": {
+    "mtime": 1784144181.2333896,
+    "ast_hash": "a398f60f806aa84b83ef3c8d9c912bc1",
+    "semantic_hash": "a398f60f806aa84b83ef3c8d9c912bc1"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/BuscarUsuariosQueryValidatorTests.cs": {
+    "mtime": 1784144181.2343893,
+    "ast_hash": "6c6fa624656be328affc3d08472d2b51",
+    "semantic_hash": "6c6fa624656be328affc3d08472d2b51"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/ListarRolesQueryTests.cs": {
+    "mtime": 1784144181.2354114,
+    "ast_hash": "34e855557a4dd0e0cf2411022aac7d57",
+    "semantic_hash": "34e855557a4dd0e0cf2411022aac7d57"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/MapaRolesPermisosTests.cs": {
+    "mtime": 1784121278.0344794,
+    "ast_hash": "6a7714cc61bc2e9c95f16a0df1f3ca51",
+    "semantic_hash": "6a7714cc61bc2e9c95f16a0df1f3ca51"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/QuitarRolCommandHandlerTests.cs": {
+    "mtime": 1784144181.2364416,
+    "ast_hash": "e1230018db590ebe7a022286ede2a927",
+    "semantic_hash": "e1230018db590ebe7a022286ede2a927"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Autorizacion/QuitarRolCommandValidatorTests.cs": {
+    "mtime": 1784144181.2364416,
+    "ast_hash": "ec91874c1dcdb47416776d414df8a1ba",
+    "semantic_hash": "ec91874c1dcdb47416776d414df8a1ba"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj": {
+    "mtime": 1784996038.6121905,
+    "ast_hash": "82e917b5e99de5d9fb4b7992e3172359",
+    "semantic_hash": "82e917b5e99de5d9fb4b7992e3172359"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/AvisoFotosTests.cs": {
+    "mtime": 1784988652.6790447,
+    "ast_hash": "a7ebfe3a5208eaef70b77d454d39ec54",
+    "semantic_hash": "a7ebfe3a5208eaef70b77d454d39ec54"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/AvisoTests.cs": {
+    "mtime": 1784988652.6800447,
+    "ast_hash": "1878c17d01f40edf4ebc4c85880cb589",
+    "semantic_hash": "1878c17d01f40edf4ebc4c85880cb589"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryHandlerTests.cs": {
+    "mtime": 1784572849.5380597,
+    "ast_hash": "b84ae4c93dab56e3bedad5263a8db774",
+    "semantic_hash": "b84ae4c93dab56e3bedad5263a8db774"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/BuscarAvisosQueryValidatorTests.cs": {
+    "mtime": 1784364800.970844,
+    "ast_hash": "da07f6a86f2ec2cbe8ede107a8f28dde",
+    "semantic_hash": "da07f6a86f2ec2cbe8ede107a8f28dde"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/CrearAvisoCommandHandlerTests.cs": {
+    "mtime": 1784475687.1955726,
+    "ast_hash": "89ce06b5a5ac4435d3416b8f5517afaf",
+    "semantic_hash": "89ce06b5a5ac4435d3416b8f5517afaf"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/CrearAvisoCommandValidatorTests.cs": {
+    "mtime": 1784314368.5096154,
+    "ast_hash": "be071d9e8deefb7c0c86d58232319af5",
+    "semantic_hash": "be071d9e8deefb7c0c86d58232319af5"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/DineroTests.cs": {
+    "mtime": 1784314368.5116127,
+    "ast_hash": "eafb4a62faef4dd4642b2dee02b40de2",
+    "semantic_hash": "eafb4a62faef4dd4642b2dee02b40de2"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/EditarAvisoCommandHandlerTests.cs": {
+    "mtime": 1784475687.1985724,
+    "ast_hash": "cf5e39552b3585c4066185ca8ceb0704",
+    "semantic_hash": "cf5e39552b3585c4066185ca8ceb0704"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/MarcarAvisoVendidoHandlerTests.cs": {
+    "mtime": 1784989000.340149,
+    "ast_hash": "208b84a91a090ac99685ddef7905f431",
+    "semantic_hash": "208b84a91a090ac99685ddef7905f431"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ModeracionDominioTests.cs": {
+    "mtime": 1784479304.3441644,
+    "ast_hash": "53032ae0ca96b75e7b1e8da9f566132d",
+    "semantic_hash": "53032ae0ca96b75e7b1e8da9f566132d"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ObtenerAvisoPublicoQueryHandlerTests.cs": {
+    "mtime": 1784996038.6151917,
+    "ast_hash": "e7ddc7e538f4a576c4844d12072d2bcf",
+    "semantic_hash": "e7ddc7e538f4a576c4844d12072d2bcf"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/QueriesAvisoHandlerTests.cs": {
+    "mtime": 1784479304.3461645,
+    "ast_hash": "8ac603aaa3f1eefc22458a2d0c829d57",
+    "semantic_hash": "8ac603aaa3f1eefc22458a2d0c829d57"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ReferenciaQueriesHandlerTests.cs": {
+    "mtime": 1784314368.515612,
+    "ast_hash": "489ca71fc408b41f2766cc7951bc38c7",
+    "semantic_hash": "489ca71fc408b41f2766cc7951bc38c7"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/SubirBorrarFotoCommandHandlerTests.cs": {
+    "mtime": 1784475687.2095752,
+    "ast_hash": "eb94dfa272100f61a85160c3b2310e83",
+    "semantic_hash": "eb94dfa272100f61a85160c3b2310e83"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/TransicionesAvisoHandlerTests.cs": {
+    "mtime": 1784475687.2163818,
+    "ast_hash": "ee4af9b5eafd65e141b003596c1a4ef8",
+    "semantic_hash": "ee4af9b5eafd65e141b003596c1a4ef8"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Catalog/ValidacionFotoAvisoTests.cs": {
+    "mtime": 1784475687.23015,
+    "ast_hash": "762f8018f7efe66ab04b0e60d8b7ae34",
+    "semantic_hash": "762f8018f7efe66ab04b0e60d8b7ae34"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/BloqueoUsuarioTests.cs": {
+    "mtime": 1784744386.6136434,
+    "ast_hash": "645e00ad5f79e13d0b07ea99fd275422",
+    "semantic_hash": "645e00ad5f79e13d0b07ea99fd275422"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/ConsultasChatHandlerTests.cs": {
+    "mtime": 1784833548.0894146,
+    "ast_hash": "11bf048bd2e4748cbcfc0b8a3cb41da0",
+    "semantic_hash": "11bf048bd2e4748cbcfc0b8a3cb41da0"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/ConversacionTests.cs": {
+    "mtime": 1784744386.6166413,
+    "ast_hash": "e9d9718a5f9edecd80d4e0005f884188",
+    "semantic_hash": "e9d9718a5f9edecd80d4e0005f884188"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/EnviarMensajeCommandHandlerTests.cs": {
+    "mtime": 1784833548.0908933,
+    "ast_hash": "6f502b3b6f387304587f4fbef5f4c2d6",
+    "semantic_hash": "6f502b3b6f387304587f4fbef5f4c2d6"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/IniciarConversacionCommandHandlerTests.cs": {
+    "mtime": 1784833548.095133,
+    "ast_hash": "cfdef1de10c19b18905d3c16a8cd4a44",
+    "semantic_hash": "cfdef1de10c19b18905d3c16a8cd4a44"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/MarcarLecturaCommandHandlerTests.cs": {
+    "mtime": 1784572849.546178,
+    "ast_hash": "cdbf4b5cad921d7394b6cf8f4f73d631",
+    "semantic_hash": "cdbf4b5cad921d7394b6cf8f4f73d631"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/MensajeTests.cs": {
+    "mtime": 1784572849.5472205,
+    "ast_hash": "65281aec82ceb6e8fedde31a75c54cfd",
+    "semantic_hash": "65281aec82ceb6e8fedde31a75c54cfd"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/ModeracionChatHandlerTests.cs": {
+    "mtime": 1784833548.0971315,
+    "ast_hash": "f8f09aa76e6d77dcd445be3b9118342a",
+    "semantic_hash": "f8f09aa76e6d77dcd445be3b9118342a"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/RegistroModeracionChatTests.cs": {
+    "mtime": 1784744386.6241918,
+    "ast_hash": "924e9940d2e296b1b150db4710700bc8",
+    "semantic_hash": "924e9940d2e296b1b150db4710700bc8"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/ReporteChatTests.cs": {
+    "mtime": 1784744386.6287062,
+    "ast_hash": "67e56dbf83e09b3c176b0d31fe1d62bb",
+    "semantic_hash": "67e56dbf83e09b3c176b0d31fe1d62bb"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Chat/SeguridadConversacionHandlerTests.cs": {
+    "mtime": 1784744386.629706,
+    "ast_hash": "a6b87cbaa7796690e7c74accda793c78",
+    "semantic_hash": "a6b87cbaa7796690e7c74accda793c78"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Identity/PerfilPublicoTests.cs": {
+    "mtime": 1784996038.6191926,
+    "ast_hash": "bac6ff8434e4b498d4560f3068aebc92",
+    "semantic_hash": "bac6ff8434e4b498d4560f3068aebc92"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/AprobarSolicitudKycCommandHandlerTests.cs": {
+    "mtime": 1784182811.7877848,
+    "ast_hash": "79eac8157aa450f4a0b9452ebfc40fb0",
+    "semantic_hash": "79eac8157aa450f4a0b9452ebfc40fb0"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/EnviarSolicitudKycCommandHandlerTests.cs": {
+    "mtime": 1784182811.789783,
+    "ast_hash": "534e0b5464254e0ed6ff2c50ba255267",
+    "semantic_hash": "534e0b5464254e0ed6ff2c50ba255267"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/FailFastEncryptorTests.cs": {
+    "mtime": 1784289364.5812325,
+    "ast_hash": "e53d82994a174085412bf93dec1a2584",
+    "semantic_hash": "e53d82994a174085412bf93dec1a2584"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/ValidacionImagenKycTests.cs": {
+    "mtime": 1784182811.7907834,
+    "ast_hash": "f8578398d07bf4f50f21039adf50e9b7",
+    "semantic_hash": "f8578398d07bf4f50f21039adf50e9b7"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/VerificacionKycTests.cs": {
+    "mtime": 1784182811.791785,
+    "ast_hash": "15be8310c5396ef85911c681cb3ae001",
+    "semantic_hash": "15be8310c5396ef85911c681cb3ae001"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/AceptarOrdenCommandHandlerTests.cs": {
+    "mtime": 1784988175.6604774,
+    "ast_hash": "ff8f1ac2a96b066cab139d2e285677fe",
+    "semantic_hash": "ff8f1ac2a96b066cab139d2e285677fe"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/CancelarOrdenCommandHandlerTests.cs": {
+    "mtime": 1784988175.6615336,
+    "ast_hash": "881ea57ae1ac457a74bfe6c2dcb500ed",
+    "semantic_hash": "881ea57ae1ac457a74bfe6c2dcb500ed"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/ConfirmarCierreOrdenCommandHandlerTests.cs": {
+    "mtime": 1784988175.6625803,
+    "ast_hash": "529b495e056a437a968476ea5c3ed2e5",
+    "semantic_hash": "529b495e056a437a968476ea5c3ed2e5"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/ConsultasOrdenesHandlerTests.cs": {
+    "mtime": 1784988175.663644,
+    "ast_hash": "3b098a65acfa5d60db683021804824b1",
+    "semantic_hash": "3b098a65acfa5d60db683021804824b1"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/MarcarOrdenVendidaCommandHandlerTests.cs": {
+    "mtime": 1784988175.664679,
+    "ast_hash": "94cbeed12e74ac92668106bb1561a9a9",
+    "semantic_hash": "94cbeed12e74ac92668106bb1561a9a9"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/OrdenTests.cs": {
+    "mtime": 1784987913.357085,
+    "ast_hash": "f1adde51835541fff0569e9573683cff",
+    "semantic_hash": "f1adde51835541fff0569e9573683cff"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Orders/SolicitarOrdenCommandHandlerTests.cs": {
+    "mtime": 1784988175.664679,
+    "ast_hash": "c0bc9aef12665ebb78345e606a56c2d7",
+    "semantic_hash": "c0bc9aef12665ebb78345e606a56c2d7"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Reputation/CrearResenaCommandHandlerTests.cs": {
+    "mtime": 1784996038.622192,
+    "ast_hash": "3ae285fbfb106bae4d646dbfcaf3a737",
+    "semantic_hash": "3ae285fbfb106bae4d646dbfcaf3a737"
+  },
+  "CaseritoApp/tests/CaseritoApp.UnitTests/Reputation/ResenaTests.cs": {
+    "mtime": 1784996038.6251957,
+    "ast_hash": "c85f67269bb504f8bbacf57cdb31dd39",
+    "semantic_hash": "c85f67269bb504f8bbacf57cdb31dd39"
+  },
+  "rebuild.ps1": {
+    "mtime": 1784836193.0931456,
+    "ast_hash": "71c84141925b3b723ad9438851638f81",
+    "semantic_hash": "71c84141925b3b723ad9438851638f81"
+  },
+  "rebuild.sh": {
+    "mtime": 1784836193.096144,
+    "ast_hash": "c2bd8c9cb8305e3681406f5ae12d4f28",
+    "semantic_hash": "c2bd8c9cb8305e3681406f5ae12d4f28"
+  },
+  "web/.prettierrc.json": {
+    "mtime": 1784573448.671169,
+    "ast_hash": "b5b743facc5ddd86b07270dad1a8623e",
+    "semantic_hash": "b5b743facc5ddd86b07270dad1a8623e"
+  },
+  "web/capacitor.config.ts": {
+    "mtime": 1784009390.7544754,
+    "ast_hash": "81aab17f1d0767e918c7e2331d4b2f48",
+    "semantic_hash": "81aab17f1d0767e918c7e2331d4b2f48"
+  },
+  "web/eslint.config.js": {
+    "mtime": 1784009390.7564745,
+    "ast_hash": "c888c6a129e90b4ab9c40f5e0c293940",
+    "semantic_hash": "c888c6a129e90b4ab9c40f5e0c293940"
+  },
+  "web/package.json": {
+    "mtime": 1784572849.5589259,
+    "ast_hash": "722db8e936aa08634c9452311f464d6a",
+    "semantic_hash": "722db8e936aa08634c9452311f464d6a"
+  },
+  "web/scripts/gen-pwa-icons.cjs": {
+    "mtime": 1784573448.6731708,
+    "ast_hash": "3c6195eafe7657316b0ecf711026ef3a",
+    "semantic_hash": "3c6195eafe7657316b0ecf711026ef3a"
+  },
+  "web/src/App.tsx": {
+    "mtime": 1784009390.7761304,
+    "ast_hash": "a655f9140c45ffd34609ca9f28ebb864",
+    "semantic_hash": "a655f9140c45ffd34609ca9f28ebb864"
+  },
+  "web/src/api/auth.ts": {
+    "mtime": 1784303485.229034,
+    "ast_hash": "db8e4b8f7420dffe3ccb70eef5ad6282",
+    "semantic_hash": "db8e4b8f7420dffe3ccb70eef5ad6282"
+  },
+  "web/src/api/avisos.test.ts": {
+    "mtime": 1784573448.6736856,
+    "ast_hash": "32489858acce75a544803c36870932e9",
+    "semantic_hash": "32489858acce75a544803c36870932e9"
+  },
+  "web/src/api/avisos.ts": {
+    "mtime": 1784573448.6746821,
+    "ast_hash": "e0d2d360d183287daf513b5ed50a5e44",
+    "semantic_hash": "e0d2d360d183287daf513b5ed50a5e44"
+  },
+  "web/src/api/catalogo.ts": {
+    "mtime": 1784369566.9679432,
+    "ast_hash": "baed54748e3e58d9f1e2c769b70a2c8c",
+    "semantic_hash": "baed54748e3e58d9f1e2c769b70a2c8c"
+  },
+  "web/src/api/chat.test.ts": {
+    "mtime": 1784836004.362194,
+    "ast_hash": "2e257176451dd2badbd5db9f481114d9",
+    "semantic_hash": "2e257176451dd2badbd5db9f481114d9"
+  },
+  "web/src/api/chat.ts": {
+    "mtime": 1784836004.3631942,
+    "ast_hash": "daab21216f273a1085ac44e416512dee",
+    "semantic_hash": "daab21216f273a1085ac44e416512dee"
+  },
+  "web/src/api/http.test.ts": {
+    "mtime": 1784303485.2330344,
+    "ast_hash": "413f185e905c10a6f349426f69a0f8b7",
+    "semantic_hash": "413f185e905c10a6f349426f69a0f8b7"
+  },
+  "web/src/api/http.ts": {
+    "mtime": 1784303485.2370365,
+    "ast_hash": "d83e75093725fafed5196dd1a35963f5",
+    "semantic_hash": "d83e75093725fafed5196dd1a35963f5"
+  },
+  "web/src/api/kyc.test.ts": {
+    "mtime": 1784573448.6756825,
+    "ast_hash": "3aa087a32e91abab855eb55efb17dad9",
+    "semantic_hash": "3aa087a32e91abab855eb55efb17dad9"
+  },
+  "web/src/api/kyc.ts": {
+    "mtime": 1784303485.2450354,
+    "ast_hash": "2b170afe5a87db96492d6d3a0d1ae623",
+    "semantic_hash": "2b170afe5a87db96492d6d3a0d1ae623"
+  },
+  "web/src/api/moderacion.ts": {
+    "mtime": 1784573448.6766825,
+    "ast_hash": "ecad1cd68655720b98eb5d98c6e05d79",
+    "semantic_hash": "ecad1cd68655720b98eb5d98c6e05d79"
+  },
+  "web/src/api/moderacionChat.test.ts": {
+    "mtime": 1784833548.108636,
+    "ast_hash": "0a153882e43561f80070e5b930b08443",
+    "semantic_hash": "0a153882e43561f80070e5b930b08443"
+  },
+  "web/src/api/moderacionChat.ts": {
+    "mtime": 1784833548.1106372,
+    "ast_hash": "b2913c491abde9679b913362c50b6fa7",
+    "semantic_hash": "b2913c491abde9679b913362c50b6fa7"
+  },
+  "web/src/api/orders.test.ts": {
+    "mtime": 1784989453.432978,
+    "ast_hash": "a9ddfabf4290270583bfb74f6916090a",
+    "semantic_hash": "a9ddfabf4290270583bfb74f6916090a"
+  },
+  "web/src/api/orders.ts": {
+    "mtime": 1784989453.4309762,
+    "ast_hash": "e5f535f2f3682cae2af9643645d46d07",
+    "semantic_hash": "e5f535f2f3682cae2af9643645d46d07"
+  },
+  "web/src/api/perfil.ts": {
+    "mtime": 1784303485.250034,
+    "ast_hash": "1ab727b26854e733a2b6d9f3de567236",
+    "semantic_hash": "1ab727b26854e733a2b6d9f3de567236"
+  },
+  "web/src/api/reputation.test.ts": {
+    "mtime": 1784996038.6378644,
+    "ast_hash": "1a6033beb251f445898caeca46cfa4a6",
+    "semantic_hash": "1a6033beb251f445898caeca46cfa4a6"
+  },
+  "web/src/api/reputation.ts": {
+    "mtime": 1784996038.6403754,
+    "ast_hash": "0690ac2655bf8b00eb9509ac9ee8caed",
+    "semantic_hash": "0690ac2655bf8b00eb9509ac9ee8caed"
+  },
+  "web/src/api/schema.d.ts": {
+    "mtime": 1784996038.6463406,
+    "ast_hash": "297fd521d018485b7df8f6d947767911",
+    "semantic_hash": "297fd521d018485b7df8f6d947767911"
+  },
+  "web/src/app/AppLayout.test.tsx": {
+    "mtime": 1784836004.3641944,
+    "ast_hash": "65788ff275e34efe7e1fa41be3bb0bab",
+    "semantic_hash": "65788ff275e34efe7e1fa41be3bb0bab"
+  },
+  "web/src/app/AppLayout.tsx": {
+    "mtime": 1784970132.803597,
+    "ast_hash": "914e4ed75834fa0b16c2422e99d684a3",
+    "semantic_hash": "914e4ed75834fa0b16c2422e99d684a3"
+  },
+  "web/src/app/providers.tsx": {
+    "mtime": 1784108370.8214016,
+    "ast_hash": "2757a2b0a2e8420549d6d91028f859c2",
+    "semantic_hash": "2757a2b0a2e8420549d6d91028f859c2"
+  },
+  "web/src/app/router.test.tsx": {
+    "mtime": 1784996038.6523416,
+    "ast_hash": "587756fa6e66603405b8d80bcaed5839",
+    "semantic_hash": "587756fa6e66603405b8d80bcaed5839"
+  },
+  "web/src/app/router.tsx": {
+    "mtime": 1784996038.65534,
+    "ast_hash": "0f90c3f6695533659bd9381899d3b6fc",
+    "semantic_hash": "0f90c3f6695533659bd9381899d3b6fc"
+  },
+  "web/src/auth/AuthContext.tsx": {
+    "mtime": 1784282204.1277208,
+    "ast_hash": "3fc04282c2fa3a79edf2a02b59566d76",
+    "semantic_hash": "3fc04282c2fa3a79edf2a02b59566d76"
+  },
+  "web/src/auth/ProtectedRoute.test.tsx": {
+    "mtime": 1784573448.678682,
+    "ast_hash": "ce5199d4abefdaf88ded729bb0dc3a7e",
+    "semantic_hash": "ce5199d4abefdaf88ded729bb0dc3a7e"
+  },
+  "web/src/auth/ProtectedRoute.tsx": {
+    "mtime": 1784108370.825976,
+    "ast_hash": "55d7714328f920fd3a2734bcc461224d",
+    "semantic_hash": "55d7714328f920fd3a2734bcc461224d"
+  },
+  "web/src/auth/RequierePermiso.test.tsx": {
+    "mtime": 1784303485.2570348,
+    "ast_hash": "3a57eadf46ccadd310c5ba80bed477f6",
+    "semantic_hash": "3a57eadf46ccadd310c5ba80bed477f6"
+  },
+  "web/src/auth/RequierePermiso.tsx": {
+    "mtime": 1784282204.1287205,
+    "ast_hash": "758b98a552bfae298cf613ca8f994e84",
+    "semantic_hash": "758b98a552bfae298cf613ca8f994e84"
+  },
+  "web/src/auth/jwt.test.ts": {
+    "mtime": 1784282204.1297207,
+    "ast_hash": "1ea5a228a6d8d9ee5977f01f804d1d52",
+    "semantic_hash": "1ea5a228a6d8d9ee5977f01f804d1d52"
+  },
+  "web/src/auth/jwt.ts": {
+    "mtime": 1784282204.1307201,
+    "ast_hash": "dfed2d51d6a25c2eac52cd92dd399c40",
+    "semantic_hash": "dfed2d51d6a25c2eac52cd92dd399c40"
+  },
+  "web/src/auth/session.test.ts": {
+    "mtime": 1784108370.8279727,
+    "ast_hash": "898ff54e4b567113282a1e56c25eb3d4",
+    "semantic_hash": "898ff54e4b567113282a1e56c25eb3d4"
+  },
+  "web/src/auth/session.ts": {
+    "mtime": 1784108370.8289723,
+    "ast_hash": "338383b6768b449801a92aa46147db1c",
+    "semantic_hash": "338383b6768b449801a92aa46147db1c"
+  },
+  "web/src/chat/ContadorChat.tsx": {
+    "mtime": 1784836004.3681946,
+    "ast_hash": "85bc4394f803336ae6b11f6695652cf7",
+    "semantic_hash": "85bc4394f803336ae6b11f6695652cf7"
+  },
+  "web/src/chat/sincronizacionMensajes.test.ts": {
+    "mtime": 1784572849.5659251,
+    "ast_hash": "91592eb82c7142c46fd4ab947d140b16",
+    "semantic_hash": "91592eb82c7142c46fd4ab947d140b16"
+  },
+  "web/src/chat/sincronizacionMensajes.ts": {
+    "mtime": 1784572849.5680473,
+    "ast_hash": "feda1d0ffb90d696a88e6f49d7b650a7",
+    "semantic_hash": "feda1d0ffb90d696a88e6f49d7b650a7"
+  },
+  "web/src/chat/tiempoReal.test.ts": {
+    "mtime": 1784833548.1325328,
+    "ast_hash": "fab150ae8790f46facd31e450f7004d9",
+    "semantic_hash": "fab150ae8790f46facd31e450f7004d9"
+  },
+  "web/src/chat/tiempoReal.ts": {
+    "mtime": 1784833548.1350787,
+    "ast_hash": "f835a13c8f9d92f6f6adf31b67eb01e8",
+    "semantic_hash": "f835a13c8f9d92f6f6adf31b67eb01e8"
+  },
+  "web/src/lib/formato.test.ts": {
+    "mtime": 1784369566.9729414,
+    "ast_hash": "853f9556626b91807b4a4ac7a7d49331",
+    "semantic_hash": "853f9556626b91807b4a4ac7a7d49331"
+  },
+  "web/src/lib/formato.ts": {
+    "mtime": 1784369566.9739404,
+    "ast_hash": "e681517189a7102c9acf05f29fef7462",
+    "semantic_hash": "e681517189a7102c9acf05f29fef7462"
+  },
+  "web/src/main.tsx": {
+    "mtime": 1784009390.7916746,
+    "ast_hash": "f1c84584db6863cf03c291138e443a0e",
+    "semantic_hash": "f1c84584db6863cf03c291138e443a0e"
+  },
+  "web/src/routes/AdminKycPage.test.tsx": {
+    "mtime": 1784282204.1317205,
+    "ast_hash": "92026edbd9780660115d60f910aab1a7",
+    "semantic_hash": "92026edbd9780660115d60f910aab1a7"
+  },
+  "web/src/routes/AdminKycPage.tsx": {
+    "mtime": 1784282204.1327202,
+    "ast_hash": "ad2d0f4605a7ab9e270a37c2f5d89659",
+    "semantic_hash": "ad2d0f4605a7ab9e270a37c2f5d89659"
+  },
+  "web/src/routes/AdminModeracionChatPage.test.tsx": {
+    "mtime": 1784833548.138592,
+    "ast_hash": "18bac2c664cf360643015a16b2c4d6fa",
+    "semantic_hash": "18bac2c664cf360643015a16b2c4d6fa"
+  },
+  "web/src/routes/AdminModeracionChatPage.tsx": {
+    "mtime": 1784833548.141135,
+    "ast_hash": "9bcafbb991d980323c248edda2e73435",
+    "semantic_hash": "9bcafbb991d980323c248edda2e73435"
+  },
+  "web/src/routes/AdminModeracionPage.tsx": {
+    "mtime": 1784573448.6796823,
+    "ast_hash": "8ea023cf412c2454c7958a37f87bac67",
+    "semantic_hash": "8ea023cf412c2454c7958a37f87bac67"
+  },
+  "web/src/routes/ConversacionPage.test.tsx": {
+    "mtime": 1784836004.3691945,
+    "ast_hash": "14b011b2fb0bedc2e3285e020d037148",
+    "semantic_hash": "14b011b2fb0bedc2e3285e020d037148"
+  },
+  "web/src/routes/ConversacionPage.tsx": {
+    "mtime": 1784836004.3701954,
+    "ast_hash": "a676f6dd33d0425992a72ce594eed2df",
+    "semantic_hash": "a676f6dd33d0425992a72ce594eed2df"
+  },
+  "web/src/routes/ConversacionesPage.test.tsx": {
+    "mtime": 1784996038.6589546,
+    "ast_hash": "b70e1182c9346e820e8c9943c00bfbf9",
+    "semantic_hash": "b70e1182c9346e820e8c9943c00bfbf9"
+  },
+  "web/src/routes/ConversacionesPage.tsx": {
+    "mtime": 1784836004.3727517,
+    "ast_hash": "2c331d8c4463dacb552dd36854fb60b1",
+    "semantic_hash": "2c331d8c4463dacb552dd36854fb60b1"
+  },
+  "web/src/routes/CrearAvisoPage.test.tsx": {
+    "mtime": 1784369566.9759786,
+    "ast_hash": "727a5a5f1063324d4c7a2c4af26152f9",
+    "semantic_hash": "727a5a5f1063324d4c7a2c4af26152f9"
+  },
+  "web/src/routes/CrearAvisoPage.tsx": {
+    "mtime": 1784573448.6796823,
+    "ast_hash": "d61d05ab8c6d3b128478e57918d32cc2",
+    "semantic_hash": "d61d05ab8c6d3b128478e57918d32cc2"
+  },
+  "web/src/routes/DetalleAcuerdoPage.test.tsx": {
+    "mtime": 1784996038.6619537,
+    "ast_hash": "417a8cf7beb493cc980b43ee741722dc",
+    "semantic_hash": "417a8cf7beb493cc980b43ee741722dc"
+  },
+  "web/src/routes/DetalleAcuerdoPage.tsx": {
+    "mtime": 1784996038.6669536,
+    "ast_hash": "1ceb210bb98b1f1be4ba9a28393f19e5",
+    "semantic_hash": "1ceb210bb98b1f1be4ba9a28393f19e5"
+  },
+  "web/src/routes/DetalleAvisoPage.test.tsx": {
+    "mtime": 1784996038.6709542,
+    "ast_hash": "3395bc029de135b6f092e64fdf485d96",
+    "semantic_hash": "3395bc029de135b6f092e64fdf485d96"
+  },
+  "web/src/routes/DetalleAvisoPage.tsx": {
+    "mtime": 1784996038.674471,
+    "ast_hash": "37c2a0d32882cf34bb17affa5deb8db5",
+    "semantic_hash": "37c2a0d32882cf34bb17affa5deb8db5"
+  },
+  "web/src/routes/EditarAvisoPage.test.tsx": {
+    "mtime": 1784479304.3707862,
+    "ast_hash": "091446062ec91c5dff1cda67da4882d8",
+    "semantic_hash": "091446062ec91c5dff1cda67da4882d8"
+  },
+  "web/src/routes/EditarAvisoPage.tsx": {
+    "mtime": 1784475687.2650254,
+    "ast_hash": "255361b4910c9e71f0b3b0d2d1db2f1a",
+    "semantic_hash": "255361b4910c9e71f0b3b0d2d1db2f1a"
+  },
+  "web/src/routes/ExplorarPage.test.tsx": {
+    "mtime": 1784475687.2670245,
+    "ast_hash": "0346ca1c5f7c4894574460f2c82469e5",
+    "semantic_hash": "0346ca1c5f7c4894574460f2c82469e5"
+  },
+  "web/src/routes/ExplorarPage.tsx": {
+    "mtime": 1784573448.681682,
+    "ast_hash": "af79e62aa466ef80b2c2b0c1bf7079bb",
+    "semantic_hash": "af79e62aa466ef80b2c2b0c1bf7079bb"
+  },
+  "web/src/routes/FormAviso.test.tsx": {
+    "mtime": 1784369566.9844904,
+    "ast_hash": "bc3bd609df0ba134390355cb7d403ee9",
+    "semantic_hash": "bc3bd609df0ba134390355cb7d403ee9"
+  },
+  "web/src/routes/FormAviso.tsx": {
+    "mtime": 1784573448.682682,
+    "ast_hash": "4db9120b74d9321b657816d4c94258c9",
+    "semantic_hash": "4db9120b74d9321b657816d4c94258c9"
+  },
+  "web/src/routes/KycPage.test.tsx": {
+    "mtime": 1784573448.6837294,
+    "ast_hash": "d6ff471572b19c46deda01769789b712",
+    "semantic_hash": "d6ff471572b19c46deda01769789b712"
+  },
+  "web/src/routes/KycPage.tsx": {
+    "mtime": 1784573448.6842434,
+    "ast_hash": "26ee41480b4aaac15cf273a890e9f415",
+    "semantic_hash": "26ee41480b4aaac15cf273a890e9f415"
+  },
+  "web/src/routes/LoginPage.test.tsx": {
+    "mtime": 1784282204.1357203,
+    "ast_hash": "71e929128a8f8b1b9985f3a32f13d008",
+    "semantic_hash": "71e929128a8f8b1b9985f3a32f13d008"
+  },
+  "web/src/routes/LoginPage.tsx": {
+    "mtime": 1784573448.6852393,
+    "ast_hash": "ac379f00362cf24b2baed1e616a5d003",
+    "semantic_hash": "ac379f00362cf24b2baed1e616a5d003"
+  },
+  "web/src/routes/MisAcuerdosPage.test.tsx": {
+    "mtime": 1784976141.4375744,
+    "ast_hash": "2ed33869978f16d4439763397dc87bc0",
+    "semantic_hash": "2ed33869978f16d4439763397dc87bc0"
+  },
+  "web/src/routes/MisAcuerdosPage.tsx": {
+    "mtime": 1784989587.401895,
+    "ast_hash": "5d9085efccc2684df0eec8264c1de864",
+    "semantic_hash": "5d9085efccc2684df0eec8264c1de864"
+  },
+  "web/src/routes/MisAvisosPage.test.tsx": {
+    "mtime": 1784989702.6331837,
+    "ast_hash": "69b00ecacf913402ffbe1edfd1856999",
+    "semantic_hash": "69b00ecacf913402ffbe1edfd1856999"
+  },
+  "web/src/routes/MisAvisosPage.tsx": {
+    "mtime": 1784989620.0511093,
+    "ast_hash": "a4ff0d6f1941bbee330e051bd750526e",
+    "semantic_hash": "a4ff0d6f1941bbee330e051bd750526e"
+  },
+  "web/src/routes/NotFoundPage.tsx": {
+    "mtime": 1784009390.7986772,
+    "ast_hash": "ea73d5abb32baa602e3fb86afd49874e",
+    "semantic_hash": "ea73d5abb32baa602e3fb86afd49874e"
+  },
+  "web/src/routes/PerfilPage.test.tsx": {
+    "mtime": 1784282204.136721,
+    "ast_hash": "4484e629311eb653cc633cff598bd47a",
+    "semantic_hash": "4484e629311eb653cc633cff598bd47a"
+  },
+  "web/src/routes/PerfilPage.tsx": {
+    "mtime": 1784573448.6872394,
+    "ast_hash": "6adcb4ee0e150aba57869d121514f6e2",
+    "semantic_hash": "6adcb4ee0e150aba57869d121514f6e2"
+  },
+  "web/src/routes/PerfilPublicoPage.test.tsx": {
+    "mtime": 1784996038.6784718,
+    "ast_hash": "b527856c47186308ae1400e2afe962c1",
+    "semantic_hash": "b527856c47186308ae1400e2afe962c1"
+  },
+  "web/src/routes/PerfilPublicoPage.tsx": {
+    "mtime": 1784996038.6834712,
+    "ast_hash": "1d0dedb9219ce825a61ad95752de8e4d",
+    "semantic_hash": "1d0dedb9219ce825a61ad95752de8e4d"
+  },
+  "web/src/routes/RegistroPage.tsx": {
+    "mtime": 1784108370.8329904,
+    "ast_hash": "79ea08bdc4c19ac64c57b2adcc68aead",
+    "semantic_hash": "79ea08bdc4c19ac64c57b2adcc68aead"
+  },
+  "web/src/test/setup.ts": {
+    "mtime": 1784009390.8006766,
+    "ast_hash": "39529208dfc584ff87969cf460d5f8e5",
+    "semantic_hash": "39529208dfc584ff87969cf460d5f8e5"
+  },
+  "web/src/test/smoke.test.ts": {
+    "mtime": 1784009390.8036773,
+    "ast_hash": "9fef8723bd3347a29ac75ccbfe1e8a39",
+    "semantic_hash": "9fef8723bd3347a29ac75ccbfe1e8a39"
+  },
+  "web/src/theme/theme.ts": {
+    "mtime": 1784009390.8056774,
+    "ast_hash": "354b09a73702f868ec76139e213258e1",
+    "semantic_hash": "354b09a73702f868ec76139e213258e1"
+  },
+  "web/tsconfig.app.json": {
+    "mtime": 1784009390.8086784,
+    "ast_hash": "3443f5ba2efb0837466f4fba85db7f6c",
+    "semantic_hash": "3443f5ba2efb0837466f4fba85db7f6c"
+  },
+  "web/tsconfig.json": {
+    "mtime": 1784009390.8106778,
+    "ast_hash": "6b3aefa5fa09603025ef47978847044f",
+    "semantic_hash": "6b3aefa5fa09603025ef47978847044f"
+  },
+  "web/tsconfig.node.json": {
+    "mtime": 1784009390.8132582,
+    "ast_hash": "0242d7d6631d6fd3576b71c7995a3dc4",
+    "semantic_hash": "0242d7d6631d6fd3576b71c7995a3dc4"
+  },
+  "web/vite.config.test.ts": {
+    "mtime": 1784970132.8255987,
+    "ast_hash": "0d71a535382f434bde2f03f5864f56af",
+    "semantic_hash": "0d71a535382f434bde2f03f5864f56af"
+  },
+  "web/vite.config.ts": {
+    "mtime": 1784970132.8279302,
+    "ast_hash": "05776999022f300f38488377cc74ab49",
+    "semantic_hash": "05776999022f300f38488377cc74ab49"
+  }
+}
