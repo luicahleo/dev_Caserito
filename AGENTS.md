@@ -61,6 +61,8 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 - No usar subagentes salvo trabajo verdaderamente independiente que compense el
   coste adicional.
 - Guardar decisiones duraderas en specs; no convertir el chat en documentación.
+- Seguir las pautas de `docs/ai/ECONOMIA_TOKENS.md` para modelo, sesiones y
+  exploración eficiente.
 
 Mapa de documentación y plantillas: `docs/ai/README.md`.
 
