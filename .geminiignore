@@ -1,0 +1,50 @@
+# Mantener sincronizado con .clineignore y .cursorignore.
+
+# Control de versiones y configuración local
+.git/
+.vs/
+.vscode/
+.idea/
+.env
+.env.*
+!.env.example
+
+# Dependencias y salidas generadas
+**/node_modules/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Oo]ut/
+web/dist/
+web/dev-dist/
+web/android/
+web/ios/
+
+# Pruebas, cobertura, cachés y logs
+**/[Tt]est[Rr]esult*/
+**/coverage/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+**/[Ll]og/
+**/[Ll]ogs/
+*.log
+.eslintcache
+graphify-out/cache/
+
+# Artefactos temporales de agentes
+.superpowers/sdd/
+CUserslrcahuanasourcereposdev_Caserito.superpowerssdd/
+
+# Binarios que no aportan contexto textual
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.ico
+*.pdf
+*.zip
+*.nupkg
+*.snupkg

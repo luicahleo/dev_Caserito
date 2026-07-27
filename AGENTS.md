@@ -14,11 +14,14 @@ corto: contiene solo reglas que aplican a casi cualquier tarea.
 
 ## Descubrimiento eficiente
 
-1. Empezar con `git status --short --branch`, `git log -5 --oneline` y `rg --files`.
-2. Buscar con `rg` antes de abrir archivos completos.
-3. Leer solo el spec, plan y código vinculados con la tarea actual.
-4. Ampliar contexto únicamente cuando exista una duda concreta.
-5. No pegar logs o diffs extensos en el chat; resumir el error causal.
+1. Empezar solo con `git status --short --branch` y `git log -5 --oneline`.
+2. No ejecutar listados recursivos ni `rg --files` sin filtros al iniciar.
+3. Buscar por término, símbolo o ruta probable con `rg`; limitar primero a
+   30 archivos o 100 líneas y refinar antes de ampliar.
+4. Leer fragmentos antes que archivos completos. Abrir solo el spec, plan,
+   código y tests vinculados con la tarea actual.
+5. Revisar primero `git diff --stat` y después solo los diffs relevantes.
+6. Resumir logs y errores por causa, archivo y línea; no pegar salidas extensas.
 
 No releer todos los specs históricos. `docs/superpowers/specs/` y
 `docs/superpowers/plans/` son memoria consultable, no contexto obligatorio.
@@ -68,8 +71,15 @@ This project has a knowledge graph at graphify-out/ with god nodes, community st
 When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
 
 Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Graphify is optional. Use it only when `graphify-out/graph.json` exists and
+  contains a usable graph; otherwise continue directly with scoped `rg`
+  searches.
+- For codebase questions, run `graphify query "<question>"` when the graph is
+  usable. Use `graphify path "<A>" "<B>"` for relationships and
+  `graphify explain "<concept>"` for focused concepts.
 - Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- Do not read `GRAPH_REPORT.md` or traverse `graphify-out/` as a fallback when
+  the graph is missing or incomplete.
+- After modifying code, run `graphify update .` only when Graphify is configured
+  and available.
