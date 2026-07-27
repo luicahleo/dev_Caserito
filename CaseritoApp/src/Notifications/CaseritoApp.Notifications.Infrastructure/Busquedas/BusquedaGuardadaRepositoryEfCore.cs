@@ -1,3 +1,5 @@
+using System.Data;
+using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Notifications.Application.Busquedas;
 using CaseritoApp.Notifications.Domain.Busquedas;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,31 @@ public sealed class BusquedaGuardadaRepositoryEfCore(NotificationsDbContext db)
     : IBusquedaGuardadaRepository
 {
     public void Agregar(BusquedaGuardada busqueda) => db.BusquedasGuardadas.Add(busqueda);
+
+    public async Task<Result> AgregarConLimiteAsync(
+        BusquedaGuardada busqueda,
+        int limite,
+        CancellationToken ct)
+    {
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
+
+        var cantidad = await db.BusquedasGuardadas
+            .CountAsync(b => b.UsuarioId == busqueda.UsuarioId, ct);
+
+        if (cantidad >= limite)
+        {
+            await tx.RollbackAsync(ct);
+            return Result.Fallo(new Error(
+                "limite_busquedas_alcanzado",
+                "Se alcanzó el límite de 20 búsquedas guardadas."));
+        }
+
+        db.BusquedasGuardadas.Add(busqueda);
+        await db.SaveChangesAsync(ct);
+        await tx.CommitAsync(ct);
+
+        return Result.Exito();
+    }
 
     public Task<BusquedaGuardada?> ObtenerAsync(
         Guid id,

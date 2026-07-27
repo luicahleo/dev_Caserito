@@ -1,10 +1,14 @@
+using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Notifications.Domain.Busquedas;
 
 namespace CaseritoApp.Notifications.Application.Busquedas;
 
 public interface IBusquedaGuardadaRepository
 {
-    public void Agregar(BusquedaGuardada busqueda);
+    public Task<Result> AgregarConLimiteAsync(
+        BusquedaGuardada busqueda,
+        int limite,
+        CancellationToken ct);
 
     public Task<BusquedaGuardada?> ObtenerAsync(Guid id, Guid usuarioId, CancellationToken ct);
 

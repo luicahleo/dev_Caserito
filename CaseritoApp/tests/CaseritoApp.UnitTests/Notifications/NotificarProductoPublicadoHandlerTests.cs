@@ -16,15 +16,13 @@ public sealed class NotificarProductoPublicadoHandlerTests
     private readonly IConsultaProductoParaAlerta _consulta = Substitute.For<IConsultaProductoParaAlerta>();
     private readonly IEmailSender _emailSender = Substitute.For<IEmailSender>();
     private readonly IConsultaEmailUsuario _consultaEmail = Substitute.For<IConsultaEmailUsuario>();
-    private readonly INotificacionRepository _notificaciones = Substitute.For<INotificacionRepository>();
 
     private NotificarProductoPublicadoHandler CrearHandler() => new(
         _sender,
         _busquedas,
         _consulta,
         _emailSender,
-        _consultaEmail,
-        _notificaciones);
+        _consultaEmail);
 
     [Fact]
     public async Task Handle_ProductoNoEncontrado_NoEnviaNada()
@@ -69,8 +67,6 @@ public sealed class NotificarProductoPublicadoHandlerTests
             {
                 CrearBusqueda(usuarioId, "iphone", "tecnología", "cochabamba"),
             });
-        _notificaciones.ExisteAsync(usuarioId, TipoNotificacion.AlertaBusqueda, evento.ProductId, Arg.Any<CancellationToken>())
-            .Returns(false);
         _sender.Send(Arg.Any<CrearNotificacionCommand>(), Arg.Any<CancellationToken>())
             .Returns(Result.Exito(Guid.NewGuid()));
         _consultaEmail.ObtenerEmailAsync(usuarioId, Arg.Any<CancellationToken>())
@@ -92,7 +88,7 @@ public sealed class NotificarProductoPublicadoHandlerTests
     }
 
     [Fact]
-    public async Task Handle_NotificacionExistente_NoDuplica()
+    public async Task Handle_DosBusquedasDelMismoUsuario_GeneranDosAlertas()
     {
         var evento = new ProductPublished(Guid.NewGuid(), DateTimeOffset.UtcNow, Guid.NewGuid(), Guid.NewGuid());
         var usuarioId = Guid.NewGuid();
@@ -106,15 +102,24 @@ public sealed class NotificarProductoPublicadoHandlerTests
                 producto.Precio,
                 producto.EstadoProducto,
                 Arg.Any<CancellationToken>())
-            .Returns(new List<BusquedaGuardada> { CrearBusqueda(usuarioId, "iphone", null, null) });
-        _notificaciones.ExisteAsync(usuarioId, TipoNotificacion.AlertaBusqueda, evento.ProductId, Arg.Any<CancellationToken>())
-            .Returns(true);
+            .Returns(new List<BusquedaGuardada>
+            {
+                CrearBusqueda(usuarioId, "iphone", null, null),
+                CrearBusqueda(usuarioId, "apple", null, null),
+            });
+        _sender.Send(Arg.Any<CrearNotificacionCommand>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Exito(Guid.NewGuid()));
+        _consultaEmail.ObtenerEmailAsync(usuarioId, Arg.Any<CancellationToken>())
+            .Returns("usuario@caserito.test");
 
         await CrearHandler().Handle(evento, CancellationToken.None);
 
-        await _sender.DidNotReceive().Send(Arg.Any<CrearNotificacionCommand>(), Arg.Any<CancellationToken>());
-        await _emailSender.DidNotReceive().EnviarAsync(
-            Arg.Any<string>(),
+        await _sender.Received(2).Send(
+            Arg.Is<CrearNotificacionCommand>(c =>
+                c.DestinatarioId == usuarioId && c.Tipo == TipoNotificacion.AlertaBusqueda),
+            Arg.Any<CancellationToken>());
+        await _emailSender.Received(2).EnviarAsync(
+            "usuario@caserito.test",
             Arg.Any<string>(),
             Arg.Any<string>(),
             ct: Arg.Any<CancellationToken>());
@@ -136,8 +141,6 @@ public sealed class NotificarProductoPublicadoHandlerTests
                 producto.EstadoProducto,
                 Arg.Any<CancellationToken>())
             .Returns(new List<BusquedaGuardada> { CrearBusqueda(usuarioId, "iphone", null, null) });
-        _notificaciones.ExisteAsync(usuarioId, TipoNotificacion.AlertaBusqueda, evento.ProductId, Arg.Any<CancellationToken>())
-            .Returns(false);
         _sender.Send(Arg.Any<CrearNotificacionCommand>(), Arg.Any<CancellationToken>())
             .Returns(Result.Exito(Guid.NewGuid()));
         _consultaEmail.ObtenerEmailAsync(usuarioId, Arg.Any<CancellationToken>())

@@ -10,8 +10,7 @@ public sealed class NotificarProductoPublicadoHandler(
     IBusquedaGuardadaRepository busquedas,
     IConsultaProductoParaAlerta consulta,
     IEmailSender emailSender,
-    IConsultaEmailUsuario consultaEmail,
-    INotificacionRepository notificaciones)
+    IConsultaEmailUsuario consultaEmail)
     : INotificationHandler<ProductPublished>
 {
     public async Task Handle(ProductPublished evento, CancellationToken cancellationToken)
@@ -30,20 +29,13 @@ public sealed class NotificarProductoPublicadoHandler(
             producto.EstadoProducto,
             cancellationToken);
 
-        foreach (var usuarioId in coincidentes.Select(b => b.UsuarioId))
+        foreach (var busqueda in coincidentes)
         {
-            if (await notificaciones.ExisteAsync(
-                usuarioId,
-                TipoNotificacion.AlertaBusqueda,
-                evento.ProductId,
-                cancellationToken))
-            {
-                continue;
-            }
+            _ = busqueda.Id;
 
             await sender.Send(
                 new CrearNotificacionCommand(
-                    usuarioId,
+                    busqueda.UsuarioId,
                     TipoNotificacion.AlertaBusqueda,
                     "Nuevo aviso que puede interesarte",
                     "Se publicó un aviso que coincide con tu búsqueda.",
@@ -51,7 +43,7 @@ public sealed class NotificarProductoPublicadoHandler(
                 cancellationToken);
 
             await EnviarEmailAsync(
-                usuarioId,
+                busqueda.UsuarioId,
                 "Nuevo aviso que puede interesarte",
                 "Se publicó un aviso que coincide con una de tus búsquedas guardadas.",
                 cancellationToken);

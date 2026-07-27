@@ -24,14 +24,6 @@ public sealed class CrearBusquedaGuardadaCommandHandler(
         CrearBusquedaGuardadaCommand request,
         CancellationToken cancellationToken)
     {
-        var cantidad = await repositorio.ContarPorUsuarioAsync(request.UsuarioId, cancellationToken);
-        if (cantidad >= LimiteBusquedasPorUsuario)
-        {
-            return Result.Fallo<Guid>(new Error(
-                "limite_busquedas_alcanzado",
-                "Se alcanzó el límite de 20 búsquedas guardadas."));
-        }
-
         var resultado = BusquedaGuardada.Crear(
             request.UsuarioId,
             request.PalabraClave,
@@ -47,8 +39,14 @@ public sealed class CrearBusquedaGuardadaCommandHandler(
             return Result.Fallo<Guid>(resultado.Error);
         }
 
-        repositorio.Agregar(resultado.Valor);
-        return Result.Exito(resultado.Valor.Id);
+        var agregado = await repositorio.AgregarConLimiteAsync(
+            resultado.Valor,
+            LimiteBusquedasPorUsuario,
+            cancellationToken);
+
+        return agregado.EsExito
+            ? Result.Exito(resultado.Valor.Id)
+            : Result.Fallo<Guid>(agregado.Error);
     }
 }
 
