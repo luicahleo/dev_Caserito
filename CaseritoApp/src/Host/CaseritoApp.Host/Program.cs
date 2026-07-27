@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Application.Behaviors;
+using CaseritoApp.BuildingBlocks.Infrastructure.Messaging;
 using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
@@ -19,6 +21,7 @@ using CaseritoApp.Reputation.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,9 @@ builder.Services.AddValidatorsFromAssembly(typeof(CrearResenaCommand).Assembly);
 // el host arranca sin BD.
 var cadenaConexion = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AgregarIdentity(builder.Configuration, builder.Environment);
+builder.Services.Replace(
+    ServiceDescriptor.Singleton<IPublicadorEventosIntegracion,
+        PublicadorEventosIntegracionMediatR>());
 builder.Services.AgregarAutenticacionJwt(builder.Configuration, builder.Environment);
 builder.Services.AgregarCatalog(builder.Configuration);
 builder.Services.AgregarChat(builder.Configuration);
