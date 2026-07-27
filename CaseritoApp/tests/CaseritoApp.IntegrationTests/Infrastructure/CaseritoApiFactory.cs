@@ -2,6 +2,7 @@ using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using CaseritoApp.Notifications.Infrastructure;
 using CaseritoApp.Orders.Infrastructure;
 using CaseritoApp.Reputation.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
@@ -51,6 +52,9 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
 
             servicios.RemoveAll<DbContextOptions<ReputationDbContext>>();
             servicios.AddDbContext<ReputationDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
+
+            servicios.RemoveAll<DbContextOptions<NotificationsDbContext>>();
+            servicios.AddDbContext<NotificationsDbContext>(o => o.UseSqlServer(_sql.GetConnectionString()));
         });
     }
 

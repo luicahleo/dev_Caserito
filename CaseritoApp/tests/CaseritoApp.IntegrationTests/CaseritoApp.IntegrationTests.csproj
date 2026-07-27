@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\Chat\CaseritoApp.Chat.Infrastructure\CaseritoApp.Chat.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Orders\CaseritoApp.Orders.Infrastructure\CaseritoApp.Orders.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Reputation\CaseritoApp.Reputation.Infrastructure\CaseritoApp.Reputation.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Notifications\CaseritoApp.Notifications.Infrastructure\CaseritoApp.Notifications.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
