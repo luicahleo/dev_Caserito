@@ -15,8 +15,8 @@ public sealed class NotificarProductoPublicadoHandler(
     ILogger<NotificarProductoPublicadoHandler> logger)
     : INotificationHandler<ProductPublished>
 {
-    private static readonly Action<ILogger, Exception> _logErrorEmail = LoggerMessage.Define(
-        LogLevel.Error,
+    private static readonly Action<ILogger, Exception> _logWarningEmail = LoggerMessage.Define(
+        LogLevel.Warning,
         new EventId(1, "EmailAlerta"),
         "Error al enviar el email de alerta de búsqueda.");
 
@@ -36,11 +36,12 @@ public sealed class NotificarProductoPublicadoHandler(
             producto.EstadoProducto,
             cancellationToken);
 
-        foreach (var usuarioId in coincidentes.Select(b => b.UsuarioId))
+#pragma warning disable S3267 // Se itera sobre cada búsqueda guardada; no se puede simplificar a Select porque se envía una alerta por búsqueda.
+        foreach (var busqueda in coincidentes)
         {
             await sender.Send(
                 new CrearNotificacionCommand(
-                    usuarioId,
+                    busqueda.UsuarioId,
                     TipoNotificacion.AlertaBusqueda,
                     "Nuevo aviso que puede interesarte",
                     "Se publicó un aviso que coincide con tu búsqueda.",
@@ -48,11 +49,12 @@ public sealed class NotificarProductoPublicadoHandler(
                 cancellationToken);
 
             await EnviarEmailAsync(
-                usuarioId,
+                busqueda.UsuarioId,
                 "Nuevo aviso que puede interesarte",
                 "Se publicó un aviso que coincide con una de tus búsquedas guardadas.",
                 cancellationToken);
         }
+#pragma warning restore S3267
     }
 
     private async Task EnviarEmailAsync(
@@ -71,7 +73,7 @@ public sealed class NotificarProductoPublicadoHandler(
         }
         catch (Exception ex)
         {
-            _logErrorEmail(logger, ex);
+            _logWarningEmail(logger, ex);
             // Email no debe fallar la alerta in-app.
         }
     }

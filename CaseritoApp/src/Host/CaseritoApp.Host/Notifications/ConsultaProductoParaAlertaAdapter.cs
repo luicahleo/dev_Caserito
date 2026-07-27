@@ -19,9 +19,9 @@ public sealed class ConsultaProductoParaAlertaAdapter(CatalogDbContext db)
             select new ProductoAlertaDto(
                 a.Id,
                 a.Titulo,
-                c.Nombre,
-                ci.Nombre,
-                a.Precio.Monto,
+                c == null ? null : c.Nombre,
+                ci == null ? null : ci.Nombre,
+                a.Precio == null ? null : a.Precio.Monto,
                 a.Condicion.ToString()))
             .FirstOrDefaultAsync(ct);
 
