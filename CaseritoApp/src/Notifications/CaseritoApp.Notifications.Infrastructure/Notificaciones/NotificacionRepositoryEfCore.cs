@@ -68,4 +68,17 @@ public sealed class NotificacionRepositoryEfCore(NotificationsDbContext db)
                 setters => setters.SetProperty(n => n.Leida, true),
                 ct);
     }
+
+    public Task<bool> ExisteAsync(
+        Guid destinatarioId,
+        TipoNotificacion tipo,
+        Guid entidadRelacionadaId,
+        CancellationToken ct)
+    {
+        return db.Notifications.AnyAsync(
+            n => n.DestinatarioId == destinatarioId
+                 && n.Tipo == tipo
+                 && n.EntidadRelacionadaId == entidadRelacionadaId,
+            ct);
+    }
 }

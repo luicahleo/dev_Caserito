@@ -16,6 +16,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
@@ -36,6 +37,7 @@
     <ProjectReference Include="..\..\src\Reputation\CaseritoApp.Reputation.Application\CaseritoApp.Reputation.Application.csproj" />
     <ProjectReference Include="..\..\src\Notifications\CaseritoApp.Notifications.Domain\CaseritoApp.Notifications.Domain.csproj" />
     <ProjectReference Include="..\..\src\Notifications\CaseritoApp.Notifications.Application\CaseritoApp.Notifications.Application.csproj" />
+    <ProjectReference Include="..\..\src\Notifications\CaseritoApp.Notifications.Infrastructure\CaseritoApp.Notifications.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

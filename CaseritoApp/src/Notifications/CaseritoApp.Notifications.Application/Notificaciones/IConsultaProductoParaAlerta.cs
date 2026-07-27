@@ -9,4 +9,10 @@ public interface IConsultaProductoParaAlerta
     public Task<ProductoAlertaDto?> ObtenerAsync(Guid avisoId, CancellationToken ct);
 }
 
-public sealed record ProductoAlertaDto(Guid AvisoId, string Titulo);
+public sealed record ProductoAlertaDto(
+    Guid AvisoId,
+    string Titulo,
+    string? Categoria,
+    string? Ciudad,
+    decimal? Precio,
+    string? EstadoProducto);

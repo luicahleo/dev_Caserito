@@ -1,5 +1,7 @@
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
+using CaseritoApp.Notifications.Application.Busquedas;
 using CaseritoApp.Notifications.Application.Notificaciones;
+using CaseritoApp.Notifications.Infrastructure.Busquedas;
 using CaseritoApp.Notifications.Infrastructure.Email;
 using CaseritoApp.Notifications.Infrastructure.Notificaciones;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +26,7 @@ public static class DependencyInjection
         }
 
         servicios.AddScoped<INotificacionRepository, NotificacionRepositoryEfCore>();
+        servicios.AddScoped<IBusquedaGuardadaRepository, BusquedaGuardadaRepositoryEfCore>();
         servicios.AddScoped<UnitOfWorkNotifications>();
         servicios.AddScoped<IUnitOfWork>(
             proveedor => proveedor.GetRequiredService<UnitOfWorkNotifications>());

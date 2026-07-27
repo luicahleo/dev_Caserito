@@ -18,4 +18,10 @@ public interface INotificacionRepository
     public Task<int> ContarNoLeidasAsync(Guid destinatarioId, CancellationToken ct);
 
     public Task<int> MarcarTodasLeidasAsync(Guid destinatarioId, CancellationToken ct);
+
+    public Task<bool> ExisteAsync(
+        Guid destinatarioId,
+        TipoNotificacion tipo,
+        Guid entidadRelacionadaId,
+        CancellationToken ct);
 }

@@ -71,6 +71,7 @@ builder.Services.AgregarNotifications(builder.Configuration, builder.Environment
 builder.Services.AddScoped<IConsultaAvisoContactable, ConsultaAvisoContactableAdapter>();
 builder.Services.AddScoped<IConsultaAvisoParaOrden, ConsultaAvisoParaOrdenAdapter>();
 builder.Services.AddScoped<IConsultaEmailUsuario, ConsultaEmailUsuarioAdapter>();
+builder.Services.AddScoped<IConsultaProductoParaAlerta, ConsultaProductoParaAlertaAdapter>();
 builder.Services.AddScoped<IConsultaParticipantesOrden, ConsultaParticipantesOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
 builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
@@ -199,6 +200,15 @@ builder.Services.AddRateLimiter(opciones =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    opciones.AddPolicy("busquedas-crear", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
@@ -297,6 +307,7 @@ app.MapModeracionChatEndpoints();
 app.MapChatEndpoints();
 app.MapOrdersEndpoints();
 app.MapReputationEndpoints();
+app.MapBusquedasGuardadasEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration
