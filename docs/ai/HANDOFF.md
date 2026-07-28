@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5, 6, 7 y 8 completadas; pendiente Task 9 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8 y 9 completadas; pendiente Task 10 en adelante.
 
 ## Contexto
 
@@ -120,22 +120,37 @@ Verificación:
 
 Commit: `ab93dfd` — `feat(kyc-argos): mensajes de verificacion automatica en KycPage`
 
+### Task 9: Frontend — admin ve score y decisión automática ✅
+
+Archivos modificados:
+- `web/src/routes/AdminKycPage.tsx` — columnas Score y Resolutor en la tabla; helper `formatearScore`/`formatearResolutor`; mensaje de resolución automática para solicitudes pendientes; se eliminaron botones y mutaciones de Aprobar/Rechazar.
+- `web/src/routes/AdminKycPage.test.tsx` — se ajustó el mock de solicitud con los nuevos campos y se reemplazaron tests de aprobar/rechazar por verificación de que una solicitud pendiente no muestra botones y muestra el mensaje de resolución automática.
+- `web/src/routes/KycPage.test.tsx` — se actualizó el test de estado pendiente al nuevo mensaje de verificación automática.
+- `web/src/api/schema.d.ts` — regenerado desde OpenAPI; incluye `scoreSimilitud` y `resueltaPor`.
+- `CaseritoApp/artifacts/openapi/CaseritoApp.Host.json` — regenerado con `ASPNETCORE_ENVIRONMENT=Testing dotnet build ... -p:GenerateOpenApi=true`.
+
+Verificación:
+- `ASPNETCORE_ENVIRONMENT=Testing dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -p:GenerateOpenApi=true` → exit 0.
+- `npm run generate:api` → tipos actualizados.
+- `npm run typecheck` → 0 errores.
+- `npm run lint` → 0 errores.
+- `npm run test -- --run` → 131 tests passed, 0 failed.
+
+Commit: `97288f2` — `feat(kyc-argos): admin muestra score y decision automatica`
+
 ## Siguiente sesión
 
-Continuar con **Task 9: Frontend — admin ve score y decisión automática** del plan.
+Continuar con **Task 10: Tests unitarios — handler y adaptador HTTP** del plan.
 
 Archivos principales:
-- `web/src/routes/AdminKycPage.tsx`
-- `web/src/api/kyc.ts` (solo si el tipo generado no incluye los campos nuevos)
-- `web/src/routes/AdminKycPage.test.tsx`
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/EnviarSolicitudKycCommandHandlerTests.cs`
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/VerificadorIdentidadArgosHttpTests.cs`
 
 Qué hacer:
-1. Regenerar tipos desde OpenAPI (`npm run generate:api`).
-2. Actualizar columnas de la tabla para mostrar Score y Resolutor.
-3. Quitar acciones de aprobar/rechazar para solicitudes pendientes.
-4. Ajustar tests de `AdminKycPage.test.tsx`.
-5. Verificar `npm run typecheck`, `npm run lint` y `npm run test -- --run`.
-6. Commit.
+1. Actualizar tests del handler con mocks de `IVerificadorIdentidadArgos` e `IPublicadorEventosIntegracion`.
+2. Crear tests del adaptador HTTP con `HttpMessageHandler` fake.
+3. Verificar `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj --filter "FullyQualifiedName~Kyc"`.
+4. Commit.
 
 ## Restricciones importantes
 
