@@ -61,8 +61,13 @@ Archivos modificados:
 Verificación:
 - `dotnet build src/Identity/CaseritoApp.Identity.Infrastructure/CaseritoApp.Identity.Infrastructure.csproj` → exit 0, 0 warnings.
 - `dotnet format src/Identity/CaseritoApp.Identity.Infrastructure/CaseritoApp.Identity.Infrastructure.csproj` aplicado para finales de línea CRLF.
+- `dotnet build CaseritoApp.sln` → exit 0, 0 warnings (requirió ajustar tests existentes a la nueva firma del handler).
+- `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj --filter "FullyQualifiedName~Kyc"` → 19 superados, 0 fallos.
 
-Commit: `acc2f27` — `feat(kyc-argos): adaptador HTTP a ARGOS y registro DI`
+Commits:
+- `acc2f27` — `feat(kyc-argos): adaptador HTTP a ARGOS y registro DI`
+- `c7c8412` — `test(kyc-argos): ajusta tests existentes a firma del handler`
+- `9083351` — `test(kyc-argos): ajusta asserts de test de pendiente a flujo actual`
 
 ## Siguiente sesión
 
