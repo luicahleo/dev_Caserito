@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
-using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
@@ -59,30 +58,15 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
         return c;
     }
 
-    // Registra un usuario, aprueba su KYC con un admin y devuelve un token ya verificado.
+    // Registra un usuario, sube KYC (con ARGOS mockeado a aprobar) y devuelve un token ya verificado.
     private async Task<string> UsuarioVerificadoAsync(HttpClient cliente)
     {
         var email = Email("aviso-user");
         var token = await RegistrarYLoguearAsync(cliente, email);
-        var tokenAdmin = await RegistrarYLoguearAsync(cliente, Email("aviso-admin"), RolesApp.AdminKyc);
 
         using var subir = Con(HttpMethod.Post, "/api/kyc/", token);
         subir.Content = FormularioKyc();
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
-
-        Guid usuarioId;
-        using (var scope = factory.Services.CreateScope())
-        {
-            var um = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            usuarioId = (await um.FindByEmailAsync(email))!.Id;
-        }
-
-        using var listar = Con(HttpMethod.Get, "/api/admin/kyc/?estado=Pendiente&tamano=100", tokenAdmin);
-        var pagina = await (await cliente.SendAsync(listar)).Content.ReadFromJsonAsync<PaginaKyc>();
-        var solicitud = pagina!.Items.Single(s => s.UsuarioId == usuarioId);
-
-        using var aprobar = Con(HttpMethod.Post, $"/api/admin/kyc/{solicitud.SolicitudId}/aprobar", tokenAdmin);
-        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(aprobar)).StatusCode);
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);
@@ -94,7 +78,7 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
     [Fact]
     public async Task Verificado_crea_lista_detalle_pausa_reactiva_y_elimina()
     {
-        using var cliente = factory.CreateClient();
+        using var cliente = factory.ConAprobadorArgos().CreateClient();
         var token = await UsuarioVerificadoAsync(cliente);
 
         // Crear
@@ -144,7 +128,7 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
     [Fact]
     public async Task No_dueno_no_puede_editar()
     {
-        using var cliente = factory.CreateClient();
+        using var cliente = factory.ConAprobadorArgos().CreateClient();
         var dueno = await UsuarioVerificadoAsync(cliente);
         var otro = await UsuarioVerificadoAsync(cliente);
 
@@ -191,7 +175,5 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
 
 sealed file record AvisoResumen(Guid Id, string Titulo, decimal Monto, string Moneda, Guid CategoriaId, Guid CiudadId, string Condicion, string Estado, DateTime FechaCreacion);
 sealed file record PaginaAvisos(AvisoResumen[] Items, int Pagina, int Tamano, int Total);
-sealed file record SolicitudKyc(Guid SolicitudId, Guid UsuarioId, string Estado, string TipoDocumento, DateTimeOffset EnviadaEn, DateTimeOffset? ResueltaEn);
-sealed file record PaginaKyc(SolicitudKyc[] Items, int Pagina, int Tamano, int Total);
 sealed file record CategoriaRef(Guid Id, string Nombre);
 sealed file record CiudadRef(Guid Id, string Nombre);

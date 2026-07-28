@@ -2,11 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
-using CaseritoApp.Identity.Domain.Autorizacion;
-using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CaseritoApp.IntegrationTests;
@@ -33,46 +29,21 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
         return req;
     }
 
-    /// <summary>Registra un usuario, lo verifica con KYC y devuelve un token verificado.</summary>
-    private async Task<string> UsuarioVerificadoAsync(HttpClient cliente)
+    /// <summary>Registra un usuario, sube KYC (con ARGOS mockeado a aprobar) y devuelve un token verificado.</summary>
+    private static async Task<string> UsuarioVerificadoAsync(HttpClient cliente)
     {
         var email = Email("fotos-user");
         var reg = await cliente.PostAsJsonAsync("/api/auth/register",
             new RegistroRequest(email, "Password123!", "Usuario Fotos", "La Paz"));
         Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
 
-        var adminEmail = Email("fotos-admin");
-        await cliente.PostAsJsonAsync("/api/auth/register",
-            new RegistroRequest(adminEmail, "Password123!", "Admin Fotos", "La Paz"));
-
-        using (var scope = factory.Services.CreateScope())
-        {
-            var um = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            await um.AddToRoleAsync((await um.FindByEmailAsync(adminEmail))!, RolesApp.AdminKyc);
-        }
-
-        var tokenAdmin = await LoguearAsync(cliente, adminEmail);
         var token = await LoguearAsync(cliente, email);
 
-        // Subir KYC y aprobarlo.
+        // Subir KYC; el verificador mockeado aprueba automáticamente.
         var formKyc = FormularioKyc();
         using var subKyc = Autorizada(HttpMethod.Post, "/api/kyc/", token);
         subKyc.Content = formKyc;
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subKyc)).StatusCode);
-
-        Guid usuarioId;
-        using (var scope = factory.Services.CreateScope())
-        {
-            var um = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            usuarioId = (await um.FindByEmailAsync(email))!.Id;
-        }
-
-        using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc/?estado=Pendiente&tamano=100", tokenAdmin);
-        var pagina = await (await cliente.SendAsync(listar)).Content.ReadFromJsonAsync<PaginaKycFotos>();
-        var solicitud = pagina!.Items.Single(s => s.UsuarioId == usuarioId);
-
-        using var aprobar = Autorizada(HttpMethod.Post, $"/api/admin/kyc/{solicitud.SolicitudId}/aprobar", tokenAdmin);
-        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(aprobar)).StatusCode);
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);
@@ -107,7 +78,7 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
 
     private async Task<(HttpClient cliente, string token, Guid avisoId)> PrepararAsync()
     {
-        var cliente = factory.CreateClient();
+        var cliente = factory.ConAprobadorArgos().CreateClient();
         var token = await UsuarioVerificadoAsync(cliente);
 
         using var crear = Autorizada(HttpMethod.Post, "/api/avisos/", token);
@@ -210,7 +181,5 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
     }
 }
 
-sealed file record PaginaKycFotos(SolicitudKycFotos[] Items, int Pagina, int Tamano, int Total);
-sealed file record SolicitudKycFotos(Guid SolicitudId, Guid UsuarioId, string Estado, string TipoDocumento, DateTimeOffset EnviadaEn, DateTimeOffset? ResueltaEn);
 sealed file record FotoRespuesta(Guid Id, string Url, int Orden);
 sealed file record AvisoPublicoDetalleConFotos(Guid Id, string Titulo, string Descripcion, FotoRespuesta[] Fotos);
