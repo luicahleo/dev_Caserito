@@ -9,6 +9,7 @@ using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Host.Health;
 using CaseritoApp.Host.Notifications;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Host.Orders;
@@ -107,6 +108,9 @@ builder.Services.AddSignalR(opciones =>
     opciones.MaximumParallelInvocationsPerClient = 1;
     opciones.HandshakeTimeout = TimeSpan.FromSeconds(tiempoReal.SegundosHandshake);
 });
+builder.Services.AddHealthChecks()
+    .AddCaseritoDbContextChecks(cadenaConexion);
+
 builder.Services.AddRateLimiter(opciones =>
 {
     opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -322,7 +326,7 @@ app.MapHub<ChatHub>("/hubs/chat", opciones =>
     opciones.TransportMaxBufferSize = tiempoReal.BufferTransporteBytes;
 }).RequireAuthorization(ChatHub.Politica);
 
-app.MapGet("/health", () => Results.Ok(new { estado = "ok" }));
+app.MapHealthChecks("/health");
 
 static string Particion(HttpContext contexto) =>
     contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
