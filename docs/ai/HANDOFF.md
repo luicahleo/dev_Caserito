@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5 y 6 completadas; pendiente Task 7 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5, 6 y 7 completadas; pendiente Task 8 en adelante.
 
 ## Contexto
 
@@ -98,18 +98,28 @@ Verificación:
 
 Commit: `845bd12` — `feat(kyc-argos): mapea error de ARGOS a HTTP 503`
 
+### Task 7: Application — exponer score en el listado admin ✅
+
+Archivos modificados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/DtosKyc.cs` — extiende `SolicitudKycResumenDto` con `ScoreSimilitud` y `ResueltaPor`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/RepositorioVerificacionKycEfCore.cs` — actualiza la proyección `Select(...)` para incluir `s.ScoreSimilitud` y `s.ResueltaPor`.
+
+Verificación:
+- `dotnet build CaseritoApp.sln` → exit 0, 0 errores, 0 advertencias.
+
+Commit: `9a0e382` — `feat(kyc-argos): expone score y resolutor en listado admin`
+
 ## Siguiente sesión
 
-Continuar con **Task 7: Application — exponer score en el listado admin** del plan.
+Continuar con **Task 8: Frontend — actualizar mensajes de KYC automático** del plan.
 
-Archivos principales:
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/DtosKyc.cs`
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/RepositorioVerificacionKycEfCore.cs`
+Archivo principal:
+- `web/src/routes/KycPage.tsx`
 
 Qué hacer:
-1. Extender `SolicitudKycResumenDto` con `ScoreSimilitud` y `ResueltaPor`.
-2. Actualizar la proyección `Select(...)` en `RepositorioVerificacionKycEfCore.cs`.
-3. Verificar build de la solución.
+1. Actualizar título y mensajes para indicar verificación automática.
+2. Añadir manejo del error HTTP 503.
+3. Verificar `npm run typecheck` y `npm run lint`.
 4. Commit.
 
 ## Restricciones importantes
