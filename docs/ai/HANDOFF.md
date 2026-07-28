@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8, 9 y 10 completadas; pendiente Task 11 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 y 11 completadas; pendiente Task 12 (verificación global y formato) o cierre del bloque.
 
 ## Contexto
 
@@ -151,20 +151,36 @@ Verificación:
 
 Commit: `32e935a` — `test(kyc-argos): handler y adaptador HTTP`
 
+### Task 11: Tests de integración — flujo completo con ARGOS mockeado ✅
+
+Archivos modificados:
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycArgosFlujoTests.cs` — creado; cubre coincidencia automática (estado `Aprobada`), rechazo automático (estado `Rechazada` con motivo) y servicio caído (HTTP 503) reemplazando `IVerificadorIdentidadArgos` en `WebApplicationFactory`.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycFlujoTests.cs` — ajustado al flujo automático: usa fake aprobador, elimina aprobación manual del admin y verifica que el segundo envío da 409 por `YaVerificado`.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycConcurrenciaTests.cs` — eliminado el test de aprobaciones HTTP concurrentes porque con KYC automático las aprobaciones manuales ya no ocurren; se conservan los tests de concurrencia a nivel de DbContext.
+
+Verificación:
+- `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter "FullyQualifiedName~Kyc"` → 9 superados, 0 fallos (requiere Docker).
+- `dotnet build CaseritoApp.sln` → exit 0, 0 errores, 0 advertencias.
+- `dotnet format CaseritoApp.sln --verify-no-changes` → 0 cambios necesarios.
+
+Commit: `bccb735` — `test(kyc-argos): tests de integracion con ARGOS mockeado`
+
 ## Siguiente sesión
 
-Continuar con **Task 11: Tests de integración — flujo completo con ARGOS mockeado** del plan.
+Continuar con **Task 12: Verificación global y formato** del plan, o cerrar el bloque si ya no queda trabajo.
 
 Archivos principales:
-- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycArgosFlujoTests.cs` (crear)
-- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycFlujoTests.cs` (modificar si es necesario)
+- Todos los archivos modificados en el bloque.
 
 Qué hacer:
-1. Crear tests de integración que reemplacen `IVerificadorIdentidadArgos` en `WebApplicationFactory`.
-2. Cubrir flujo de coincidencia automática, rechazo automático y servicio caído (HTTP 503).
-3. Ajustar `KycFlujoTests.cs` si el flujo manual ya no aplica.
-4. Verificar `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter "FullyQualifiedName~Kyc"` (requiere Docker).
-5. Commit.
+1. Ejecutar `dotnet build CaseritoApp.sln`.
+2. Ejecutar `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj`.
+3. Ejecutar `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj` (requiere Docker).
+4. Ejecutar `dotnet format CaseritoApp.sln --verify-no-changes`.
+5. Ejecutar frontend checks: `npm run generate:api`, `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
+6. Commit final.
+
+Nota: si se decide cerrar el bloque sin Task 12, crear un handoff que indique el estado y los checks pendientes.
 
 ## Restricciones importantes
 
