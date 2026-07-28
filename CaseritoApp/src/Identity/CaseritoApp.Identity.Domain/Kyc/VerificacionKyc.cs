@@ -35,20 +35,30 @@ public sealed class VerificacionKyc : AggregateRoot
     /// <summary>El usuario está verificado si alguna solicitud fue aprobada.</summary>
     public bool EstaVerificado => _solicitudes.Any(s => s.Estado == EstadoKyc.Aprobada);
 
-    /// <summary>Registra una nueva solicitud si no hay una pendiente ni una ya aprobada.</summary>
-    public Result<SolicitudKyc> EnviarSolicitud(
-        string referenciaDocumento, string referenciaSelfie, TipoDocumento tipo, DateTimeOffset cuando)
+    /// <summary>Indica si se puede registrar una nueva solicitud sin violar invariants.</summary>
+    public Result PuedeEnviarSolicitud()
     {
         if (EstaVerificado)
         {
-            return Result.Fallo<SolicitudKyc>(
-                new Error(ErroresKyc.YaVerificado, "El usuario ya está verificado."));
+            return Result.Fallo(new Error(ErroresKyc.YaVerificado, "El usuario ya está verificado."));
         }
 
         if (SolicitudActual?.Estado == EstadoKyc.Pendiente)
         {
-            return Result.Fallo<SolicitudKyc>(
-                new Error(ErroresKyc.SolicitudPendienteExiste, "Ya existe una solicitud pendiente."));
+            return Result.Fallo(new Error(ErroresKyc.SolicitudPendienteExiste, "Ya existe una solicitud pendiente."));
+        }
+
+        return Result.Exito();
+    }
+
+    /// <summary>Registra una nueva solicitud si no hay una pendiente ni una ya aprobada.</summary>
+    public Result<SolicitudKyc> EnviarSolicitud(
+        string referenciaDocumento, string referenciaSelfie, TipoDocumento tipo, DateTimeOffset cuando)
+    {
+        var validacion = PuedeEnviarSolicitud();
+        if (!validacion.EsExito)
+        {
+            return Result.Fallo<SolicitudKyc>(validacion.Error);
         }
 
         var solicitud = new SolicitudKyc(referenciaDocumento, referenciaSelfie, tipo, cuando);

@@ -34,6 +34,14 @@ public sealed class SolicitudKyc : Entity
     public DateTimeOffset? ResueltaEn { get; private set; }
     public Guid? ResueltaPor { get; private set; }
 
+    /// <summary>Score de similitud facial devuelto por ARGOS, para auditoría. Sin PII.</summary>
+    public double? ScoreSimilitud { get; private set; }
+
+    internal void RegistrarScoreSimilitud(double score)
+    {
+        ScoreSimilitud = score;
+    }
+
     internal void MarcarAprobada(Guid revisorId, DateTimeOffset cuando)
     {
         Estado = EstadoKyc.Aprobada;
