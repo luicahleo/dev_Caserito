@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1 y 2 completadas; pendiente Task 3 en adelante.
+> Estado: Tasks 1, 2 y 3 completadas; pendiente Task 4 en adelante.
 
 ## Contexto
 
@@ -38,18 +38,31 @@ Verificación:
 
 Commit: `6a4d659` — `feat(kyc-argos): puerto IVerificadorIdentidadArgos en Application`
 
+### Task 3: Application — handler envío automático ✅
+
+Archivos modificados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/EnviarSolicitudKycCommand.cs` — inyecta `IVerificadorIdentidadArgos` e `IPublicadorEventosIntegracion`; valida invariants antes de guardar blobs; consulta ARGOS; compensa eliminando blobs si falla; aplica `Aprobar`/`Rechazar` con `SistemaActor.Id`; publica `UserVerified` solo si aprobó.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/SolicitudKyc.cs` — `RegistrarScoreSimilitud` pasa a `public` para poder invocarse desde Application (no hay `InternalsVisibleTo`).
+
+Verificación:
+- `dotnet build src/Identity/CaseritoApp.Identity.Application/CaseritoApp.Identity.Application.csproj` → exit 0, 0 warnings.
+
+Commit: `50eb01a` — `feat(kyc-argos): envío automático aprueba/rechaza según ARGOS`
+
 ## Siguiente sesión
 
-Continuar con **Task 3: Application — handler envío automático** del plan.
+Continuar con **Task 4: Infrastructure — adaptador HTTP a ARGOS** del plan.
 
-Archivo principal:
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/EnviarSolicitudKycCommand.cs`
+Archivos principales:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/OpcionesArgos.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/VerificadorIdentidadArgosHttp.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs`
 
 Qué hacer:
-1. Inyectar `IVerificadorIdentidadArgos` y `IPublicadorEventosIntegracion` en el handler.
-2. Reordenar el flujo: validar invariants → guardar blobs → llamar ARGOS → aplicar `Aprobar`/`Rechazar` con `SistemaActor.Id` → publicar `UserVerified` si aprobó.
-3. Si ARGOS falla, compensar eliminando blobs y devolver `ServicioVerificacionNoDisponible`.
-4. Build de Application.
+1. Crear `OpcionesArgos.cs` con sección `Argos` (`Url`, `ApiKey`).
+2. Crear `VerificadorIdentidadArgosHttp.cs` que llame a `POST {ARGOS_URL}/api/verify` con imágenes en base64.
+3. Registrar opciones, validación fail-fast y `HttpClient` en `DependencyInjection.cs`.
+4. Build de Infrastructure.
 5. Commit.
 
 ## Restricciones importantes
