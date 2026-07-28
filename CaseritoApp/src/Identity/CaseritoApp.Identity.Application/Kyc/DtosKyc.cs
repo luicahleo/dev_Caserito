@@ -13,4 +13,6 @@ public sealed record SolicitudKycResumenDto(
     string Estado,
     string TipoDocumento,
     DateTimeOffset EnviadaEn,
-    DateTimeOffset? ResueltaEn);
+    DateTimeOffset? ResueltaEn,
+    double? ScoreSimilitud,
+    Guid? ResueltaPor);

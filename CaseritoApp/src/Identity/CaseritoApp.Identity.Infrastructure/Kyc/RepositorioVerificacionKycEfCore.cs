@@ -41,7 +41,9 @@ public sealed class RepositorioVerificacionKycEfCore(IdentityDbContext db) : IRe
                 s.Estado.ToString(),
                 s.TipoDocumento.ToString(),
                 s.EnviadaEn,
-                s.ResueltaEn))
+                s.ResueltaEn,
+                s.ScoreSimilitud,
+                s.ResueltaPor))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<SolicitudKycResumenDto>(items, pagina, tamano, total);
