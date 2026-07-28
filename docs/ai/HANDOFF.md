@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 y 11 completadas; pendiente Task 12 (verificación global y formato) o cierre del bloque.
+> Estado: **bloque completado**. Tasks 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 y 12 terminadas.
 
 ## Contexto
 
@@ -165,22 +165,33 @@ Verificación:
 
 Commit: `bccb735` — `test(kyc-argos): tests de integracion con ARGOS mockeado`
 
-## Siguiente sesión
+### Task 12: Verificación global y formato ✅
 
-Continuar con **Task 12: Verificación global y formato** del plan, o cerrar el bloque si ya no queda trabajo.
+Archivos modificados:
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/AvisosFlujoTests.cs` — usa `factory.ConAprobadorArgos().CreateClient()` y elimina aprobación manual KYC.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/DescubrimientoAvisosTests.cs` — igual; `UsuarioVerificadoAsync` pasa a `static`.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/FotosAvisoIntegrationTests.cs` — igual; `PrepararAsync` crea cliente con aprobador mockeado.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/Infrastructure/VerificadorArgosAprobador.cs` — fake de `IVerificadorIdentidadArgos` que aprueba automáticamente.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/Infrastructure/CaseritoApiFactoryExtensions.cs` — extensión `ConAprobadorArgos` para la factory.
 
-Archivos principales:
-- Todos los archivos modificados en el bloque.
+Verificación:
+- `dotnet build CaseritoApp.sln` → exit 0, 0 errores, 0 advertencias.
+- `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj` → 327 superados, 0 fallos.
+- `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj` → 169 superados, 0 fallos (requiere Docker; Testcontainers arrancó correctamente).
+- `dotnet format CaseritoApp.sln --verify-no-changes` → 0 cambios necesarios (se aplicó `dotnet format` a los archivos nuevos antes del commit).
+- `npm run generate:api` → tipos regenerados sin cambios.
+- `npm run typecheck` → 0 errores.
+- `npm run lint` → 0 errores.
+- `npm run test -- --run` → 131 tests passed, 0 failed.
+- `npm run build` → build exitoso.
 
-Qué hacer:
-1. Ejecutar `dotnet build CaseritoApp.sln`.
-2. Ejecutar `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj`.
-3. Ejecutar `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj` (requiere Docker).
-4. Ejecutar `dotnet format CaseritoApp.sln --verify-no-changes`.
-5. Ejecutar frontend checks: `npm run generate:api`, `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
-6. Commit final.
+Commit: `9970cc4` — `chore(kyc-argos): verificacion global y formato`
 
-Nota: si se decide cerrar el bloque sin Task 12, crear un handoff que indique el estado y los checks pendientes.
+## Estado final del bloque
+
+El bloque **KYC automático con ARGOS** está completo y verificado. No quedan tareas pendientes.
+
+Checks no ejecutados: ninguno.
 
 ## Restricciones importantes
 
