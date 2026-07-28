@@ -5,6 +5,7 @@ import { AppLayout } from './AppLayout';
 import * as authCtx from '../auth/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as chat from '../api/chat';
+import * as notificaciones from '../api/notificaciones';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -79,5 +80,14 @@ describe('AppLayout', () => {
     });
     montar();
     expect(await screen.findByRole('link', { name: 'Mensajes, 3 no leídos' })).toBeInTheDocument();
+  });
+
+  it('muestra el badge de notificaciones con el conteo', async () => {
+    mockAuth(true);
+    vi.spyOn(notificaciones, 'contarNoLeidas').mockResolvedValue(5);
+    montar();
+
+    expect(await screen.findByLabelText('Notificaciones')).toBeInTheDocument();
+    expect(await screen.findByText('5')).toBeInTheDocument();
   });
 });

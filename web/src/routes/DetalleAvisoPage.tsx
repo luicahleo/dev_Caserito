@@ -23,6 +23,7 @@ import { useAuth } from '../auth/AuthContext';
 import { formatearBob } from '../lib/formato';
 import { HttpError } from '../api/http';
 import { solicitarOrden } from '../api/orders';
+import { PuntosEncuentroLista } from '../notificaciones/PuntosEncuentroLista';
 
 export function DetalleAvisoPage() {
   const { id = '' } = useParams();
@@ -212,6 +213,7 @@ export function DetalleAvisoPage() {
           Inicia sesión para reportar
         </Button>
       )}
+      <PuntosEncuentroLista ciudad={data.nombreCiudad} />
       <Dialog open={reporteAbierto} onClose={() => setReporteAbierto(false)} fullWidth>
         <DialogTitle>Reportar aviso</DialogTitle>
         <DialogContent>

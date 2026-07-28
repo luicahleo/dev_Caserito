@@ -55,6 +55,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(CaseritoApp.Catalog.Applicatio
 builder.Services.AddValidatorsFromAssembly(typeof(IniciarConversacionCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(SolicitarOrdenCommand).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(CrearResenaCommand).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(CrearNotificacionCommand).Assembly);
 
 // El DbContext de Identity (y el resto de Identity Core) solo se registra si hay cadena de
 // conexión configurada (env, user-secrets o compose). Sin cadena (p. ej. tests de /health),
@@ -214,6 +215,33 @@ builder.Services.AddRateLimiter(opciones =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    opciones.AddPolicy("notifications-consultas", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 120,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("notifications-conteo", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 60,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
+    opciones.AddPolicy("notifications-acciones", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 
@@ -316,6 +344,7 @@ app.MapOrdersEndpoints();
 app.MapReputationEndpoints();
 app.MapBusquedasGuardadasEndpoints();
 app.MapPuntosEncuentroEndpoints();
+app.MapNotificationsEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration

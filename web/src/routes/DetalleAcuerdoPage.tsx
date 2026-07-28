@@ -24,6 +24,7 @@ import { aceptarOrden, confirmarCierreOrden, obtenerOrden } from '../api/orders'
 import { obtenerAvisoPublico } from '../api/avisos';
 import { formatearBob } from '../lib/formato';
 import { crearResena, obtenerEstadoResena } from '../api/reputation';
+import { PuntosEncuentroLista } from '../notificaciones/PuntosEncuentroLista';
 
 const esquemaResena = z.object({
   puntuacion: z.number().int().min(1, 'Elige una puntuación').max(5),
@@ -258,6 +259,7 @@ export function DetalleAcuerdoPage() {
           No se pudo confirmar el cierre. Inténtalo nuevamente.
         </Alert>
       )}
+      <PuntosEncuentroLista ciudad={aviso.data?.nombreCiudad ?? ''} />
       <Alert severity="info" sx={{ mt: 3 }}>
         Caserito no verifica el pago ni la entrega.
       </Alert>

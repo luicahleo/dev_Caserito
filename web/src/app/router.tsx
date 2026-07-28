@@ -20,6 +20,8 @@ import { ConversacionPage } from '../routes/ConversacionPage';
 import { MisAcuerdosPage } from '../routes/MisAcuerdosPage';
 import { DetalleAcuerdoPage } from '../routes/DetalleAcuerdoPage';
 import { PerfilPublicoPage } from '../routes/PerfilPublicoPage';
+import { NotificacionesPage } from '../routes/NotificacionesPage';
+import { BusquedasGuardadasPage } from '../routes/BusquedasGuardadasPage';
 
 export const router = createBrowserRouter([
   {
@@ -91,6 +93,22 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <PerfilPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/notificaciones',
+        element: (
+          <ProtectedRoute>
+            <NotificacionesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/busquedas-guardadas',
+        element: (
+          <ProtectedRoute>
+            <BusquedasGuardadasPage />
           </ProtectedRoute>
         ),
       },
