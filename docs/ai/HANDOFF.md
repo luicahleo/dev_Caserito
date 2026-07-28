@@ -1,39 +1,59 @@
-# Handoff — Fase 6 CaseritoApp
+# Handoff — KYC automático con ARGOS
 
-## Estado al cerrar sesión
+> Fecha: 2026-07-28  
+> Estado: diseño aprobado, listo para planificación.
 
-- **Task 3 completada y verificada:** Infrastructure de Notifications — persistencia y email.
-  - Configuración EF Core de `Notificacion` en `Notificaciones/ConfiguracionNotificacion.cs`.
-  - `NotificationsDbContext` actualizado con `DbSet<Notificacion>` y schema `notifications`.
-  - Repositorio EF Core `NotificacionRepositoryEfCore` implementado.
-  - `UnitOfWorkNotifications` creado.
-  - `IEmailSender` en Application; adaptadores `LogEmailSender` y `SmtpEmailSender` en Infrastructure.
-  - `DependencyInjection.AgregarNotifications(...)` y `DesignTimeNotificationsDbContextFactory` creados.
-  - Migración inicial `NotificationsInicial` generada.
-  - Test de persistencia `NotificationsPersistenciaTests` creado; `CaseritoApiFactory` registra `NotificationsDbContext` para la suite.
-  - Verificaciones:
-    - `dotnet build CaseritoApp.sln` → exit 0, 0 advertencias, 0 errores.
-    - `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj` → 286 correctos, 0 fallos.
-    - `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj` → 160 correctos, 0 fallos.
-    - `dotnet format CaseritoApp.sln --verify-no-changes` → exit 0.
-- No se realizó commit/push; el usuario gestionará los commits manualmente.
-- Worktree en `master`, con cambios sin commitear de Task 3.
+## Contexto
 
-## Prompt para la siguiente sesión
+CaseritoApp necesita usuarios con identidad verificada. El KYC actual es manual (admin aprueba/rechaza DNI + selfie). Se aprobó integrar ARGOS, un microservicio Python propio de reconocimiento facial (DeepFace/ArcFace), para automatizar la decisión.
 
-Continuar CaseritoApp Fase 6 — **Task 4: Handlers de eventos de integración para notificaciones**.
+## Spec aprobado
 
-Seguir el plan `docs/superpowers/plans/2026-07-27-fase-6-notificaciones-endurecimiento-piloto.md` al pie de la letra.
+`docs/superpowers/specs/2026-07-28-kyc-argos-design.md`
 
-Archivos principales:
-1. Crear `CaseritoApp/src/Notifications/CaseritoApp.Notifications.Application/Notificaciones/IConsultaParticipantesOrden.cs`
-2. Crear `CaseritoApp/src/Notifications/CaseritoApp.Notifications.Application/Notificaciones/IConsultaProductoParaAlerta.cs`
-3. Crear `CaseritoApp/src/Notifications/CaseritoApp.Notifications.Application/Notificaciones/IConsultaEmailUsuario.cs`
-4. Crear `CaseritoApp/src/Host/CaseritoApp.Host/Notifications/ConsultaEmailUsuarioAdapter.cs`
-5. Crear handlers de notificación.
+Resumen del diseño:
 
-Reglas:
-- No rediseñar; seguir el plan literalmente.
-- Código en inglés, textos de negocio y comentarios en español.
-- No hacer git commit/push sin autorización explícita.
-- Verificar build, tests y `dotnet format --verify-no-changes` antes de reportar completo.
+- El usuario sube **foto del DNI + selfie** desde `KycPage.tsx`.
+- El backend de Caserito (`EnviarSolicitudKycCommandHandler`) valida, guarda blobs cifrados y llama a `POST {ARGOS_URL}/api/verify` con ambas imágenes en base64.
+- Si ARGOS responde `verified: true`, la solicitud se aprueba automáticamente (`Aprobada`) y se publica `UserVerified`.
+- Si responde `verified: false` o no detecta rostro, se rechaza con motivo.
+- Si ARGOS no responde, se devuelve 503 sin persistir la solicitud.
+- Se registra el `ScoreSimilitud` en `SolicitudKyc` para auditoría.
+- La aprobación automática usa un actor de sistema (`SistemaActor.Id`) en lugar de un admin humano.
+
+## Proyecto ARGOS
+
+Ubicación local: `/c/Users/lrcahuana/source/repos/dev/ARGOS`
+
+- Endpoints relevantes: `POST /api/verify` (comparación 1:1), `POST /api/extract-embedding`, `POST /api/compare-embeddings`.
+- Grafo Graphify ya generado en `ARGOS/graphify-out/`.
+- Variables de configuración esperadas por Caserito: `Argos:Url`, `Argos:ApiKey` (mapeado a header `X-Service-Key`).
+
+## Siguiente paso
+
+Invocar el skill `superpowers:writing-plans` y crear el plan de implementación en:
+
+`docs/superpowers/plans/YYYY-MM-DD-kyc-argos.md`
+
+El plan debe descomponer el trabajo en tareas secuenciales y verificables: domain, application, infrastructure, host, frontend, tests.
+
+## Restricciones importantes
+
+- No escribir código de implementación en la sesión de planificación.
+- Respetar `AGENTS.md` raíz, `CaseritoApp/AGENTS.md` y `web/AGENTS.md`.
+- Clean Architecture / CQRS-lite: domain puro, puertos en Application, adaptadores en Infrastructure.
+- Anti-PII: nunca loguear bytes de imágenes, base64, embeddings ni datos del DNI.
+- ARGOS es un servicio interno; no llamarlo desde el frontend.
+- Fail-fast: fuera de `Development`/`Testing`, Caserito no debe arrancar sin `Argos:Url`.
+- No hacer push/merge sin autorización explícita.
+- Priorizar economía de tokens: si el plan es extenso, dividir en sesiones nuevas.
+
+## Verificaciones esperadas por paso
+
+- Backend: `dotnet build CaseritoApp.sln`, `dotnet test CaseritoApp.sln`, `dotnet format CaseritoApp.sln --verify-no-changes`.
+- Frontend: `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
+
+## Notas
+
+- ARGOS no hace liveness ni OCR; eso queda como follow-up futuro.
+- El umbral de verificación se delega al default de ARGOS (`0.68` distancia coseno) en este bloque.
