@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4 y 5 completadas; pendiente Task 6 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5 y 6 completadas; pendiente Task 7 en adelante.
 
 ## Contexto
 
@@ -88,17 +88,28 @@ Commit: `4f2eb86` — `feat(kyc-argos): mapeo y migracion EF Core para ScoreSimi
 
 Nota: los archivos de migración generados por EF Core incluían BOM; se eliminó para cumplir `charset = utf-8` del `.editorconfig` y pasar el hook `dotnet-format-staged`.
 
+### Task 6: Host — mapear error de servicio no disponible a 503 ✅
+
+Archivo modificado:
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/KycEndpoints.cs` — extiende `DesdeResult` para devolver HTTP 503 cuando el error es `ErroresKyc.ServicioVerificacionNoDisponible`, y documenta el endpoint POST con `.ProducesProblem(StatusCodes.Status503ServiceUnavailable)`.
+
+Verificación:
+- `dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj` → exit 0, 0 errores, 0 advertencias.
+
+Commit: `845bd12` — `feat(kyc-argos): mapea error de ARGOS a HTTP 503`
+
 ## Siguiente sesión
 
-Continuar con **Task 6: Host — mapear error de servicio no disponible a 503** del plan.
+Continuar con **Task 7: Application — exponer score en el listado admin** del plan.
 
 Archivos principales:
-- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/KycEndpoints.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/DtosKyc.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/RepositorioVerificacionKycEfCore.cs`
 
 Qué hacer:
-1. Extender `DesdeResult` con `ErroresKyc.ServicioVerificacionNoDisponible` → `Results.Problem(statusCode: 503)`.
-2. Agregar `.ProducesProblem(StatusCodes.Status503ServiceUnavailable)` al endpoint POST.
-3. Verificar build de Host.
+1. Extender `SolicitudKycResumenDto` con `ScoreSimilitud` y `ResueltaPor`.
+2. Actualizar la proyección `Select(...)` en `RepositorioVerificacionKycEfCore.cs`.
+3. Verificar build de la solución.
 4. Commit.
 
 ## Restricciones importantes
