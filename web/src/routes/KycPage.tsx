@@ -76,12 +76,13 @@ export function KycPage() {
   }
 
   const es409 = mutacion.error instanceof HttpError && mutacion.error.status === 409;
+  const es503 = mutacion.error instanceof HttpError && mutacion.error.status === 503;
   const mostrarFormulario = estado?.estado === 'NoIniciado' || estado?.estado === 'Rechazada';
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Verificación de identidad
+        Verificación de identidad automática
       </Typography>
 
       {estado?.estado === 'Aprobada' && (
@@ -90,7 +91,7 @@ export function KycPage() {
 
       {estado?.estado === 'Pendiente' && (
         <Alert severity="info" sx={{ my: 2 }}>
-          Tu solicitud está en revisión. Te avisaremos cuando haya una decisión.
+          Tu solicitud está siendo verificada automáticamente. Te avisaremos cuando haya una decisión.
         </Alert>
       )}
 
@@ -104,8 +105,8 @@ export function KycPage() {
       {mostrarFormulario && (
         <Stack spacing={3} sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Sube una foto de tu documento de identidad y una selfie. Formatos JPG o PNG, máximo 5 MB
-            cada uno.
+            Sube una foto de tu documento de identidad y una selfie. Nuestro sistema las comparará
+            automáticamente. Formatos JPG o PNG, máximo 5 MB cada uno.
           </Typography>
 
           <Box>
@@ -146,13 +147,18 @@ export function KycPage() {
             {errorSelfie && <Alert severity="warning" sx={{ mt: 1 }}>{errorSelfie}</Alert>}
           </Box>
 
+          {mutacion.isError && es503 && (
+            <Alert severity="warning">
+              El servicio de verificación no está disponible en este momento. Inténtalo más tarde.
+            </Alert>
+          )}
           {mutacion.isError && es409 && (
             <Alert severity="info">
               Tu solicitud ya no se puede enviar en este estado; actualizamos tu estado de
               verificación.
             </Alert>
           )}
-          {mutacion.isError && !es409 && (
+          {mutacion.isError && !es409 && !es503 && (
             <Alert severity="error">
               No se pudo enviar la solicitud. Verifica los archivos e inténtalo de nuevo.
             </Alert>
