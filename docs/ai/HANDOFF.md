@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2 y 3 completadas; pendiente Task 4 en adelante.
+> Estado: Tasks 1, 2, 3, 4 y 5 completadas; pendiente Task 6 en adelante.
 
 ## Contexto
 
@@ -69,20 +69,37 @@ Commits:
 - `c7c8412` — `test(kyc-argos): ajusta tests existentes a firma del handler`
 - `9083351` — `test(kyc-argos): ajusta asserts de test de pendiente a flujo actual`
 
+### Task 5: Infrastructure — mapeo EF Core y migración ✅
+
+Archivos modificados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConfiguracionKyc.cs` — agrega mapeo de `SolicitudKyc.ScoreSimilitud`.
+
+Archivos creados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260728145214_KycArgosScoreSimilitud.cs` — agrega columna `ScoreSimilitud` nullable de tipo `float` en el schema `identity`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/20260728145214_KycArgosScoreSimilitud.Designer.cs` — snapshot actualizado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/IdentityDbContextModelSnapshot.cs` — snapshot actualizado.
+
+Verificación:
+- `dotnet ef migrations add KycArgosScoreSimilitud --startup-project ../../Host/CaseritoApp.Host/CaseritoApp.Host.csproj` → migración generada.
+- Revisión manual: `Up()` solo contiene `AddColumn<double>(name: "ScoreSimilitud", table: "SolicitudesKyc", type: "float", nullable: true)`.
+- `dotnet build CaseritoApp.sln` → exit 0, 0 errores, 0 advertencias.
+
+Commit: `4f2eb86` — `feat(kyc-argos): mapeo y migracion EF Core para ScoreSimilitud`
+
+Nota: los archivos de migración generados por EF Core incluían BOM; se eliminó para cumplir `charset = utf-8` del `.editorconfig` y pasar el hook `dotnet-format-staged`.
+
 ## Siguiente sesión
 
-Continuar con **Task 5: Infrastructure — mapeo EF Core y migración** del plan.
+Continuar con **Task 6: Host — mapear error de servicio no disponible a 503** del plan.
 
 Archivos principales:
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConfiguracionKyc.cs`
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/`
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/KycEndpoints.cs`
 
 Qué hacer:
-1. Mapear `ScoreSimilitud` en `ConfiguracionKyc.cs`.
-2. Generar migración `KycArgosScoreSimilitud`.
-3. Verificar que la migración solo agregue la columna nullable.
-4. Build de la solución.
-5. Commit.
+1. Extender `DesdeResult` con `ErroresKyc.ServicioVerificacionNoDisponible` → `Results.Problem(statusCode: 503)`.
+2. Agregar `.ProducesProblem(StatusCodes.Status503ServiceUnavailable)` al endpoint POST.
+3. Verificar build de Host.
+4. Commit.
 
 ## Restricciones importantes
 
