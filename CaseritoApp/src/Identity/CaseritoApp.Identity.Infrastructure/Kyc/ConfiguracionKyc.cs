@@ -45,6 +45,7 @@ public static class ConfiguracionKyc
             e.Property(s => s.ReferenciaDocumento).HasMaxLength(200).IsRequired();
             e.Property(s => s.ReferenciaSelfie).HasMaxLength(200).IsRequired();
             e.Property(s => s.MotivoRechazo).HasMaxLength(500);
+            e.Property(s => s.ScoreSimilitud); // Score de similitud devuelto por ARGOS; nullable.
             e.HasIndex("VerificacionKycId");
         });
     }
