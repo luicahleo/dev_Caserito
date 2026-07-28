@@ -3,17 +3,20 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Host.Endpoints;
-using CaseritoApp.Identity.Domain.Autorizacion;
+using CaseritoApp.Identity.Application.Kyc;
+using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CaseritoApp.IntegrationTests;
 
-/// <summary>Flujo completo de KYC: subir → listar (admin) → aprobar → badge/claim verificado.</summary>
+/// <summary>Flujo completo de KYC automático: subir → verificado en perfil y token.</summary>
 public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];
@@ -58,46 +61,32 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
         return solicitud;
     }
 
+    private WebApplicationFactory<Program> FactoryConVerificador(Result<VerificacionFacialResultado> resultado) =>
+        factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+        {
+            s.AddSingleton<IVerificadorIdentidadArgos>(_ => new VerificadorArgosEstatico(resultado));
+        }));
+
     [Fact]
-    public async Task Subir_aprobar_y_ver_verificado_en_perfil_y_token()
+    public async Task Subir_con_aprobacion_automatica_verifica_perfil_y_token()
     {
-        using var cliente = factory.CreateClient();
+        using var cliente = FactoryConVerificador(
+            Result.Exito(new VerificacionFacialResultado(true, 94.5, null))).CreateClient();
         var email = Email("kyc-user");
         var tokenUsuario = await RegistrarYLoguearAsync(cliente, email, rolExtra: null);
-        var tokenAdmin = await RegistrarYLoguearAsync(cliente, Email("kyc-admin"), RolesApp.AdminKyc);
 
-        // 1) Subir CI + selfie.
+        // 1) Subir CI + selfie; ARGOS mockeado aprueba automáticamente.
         using var subir = Autorizada(HttpMethod.Post, "/api/kyc/", tokenUsuario);
         subir.Content = Formulario();
         var respSubir = await cliente.SendAsync(subir);
         Assert.Equal(HttpStatusCode.NoContent, respSubir.StatusCode);
 
-        // 2) Admin lista pendientes y localiza la solicitud del usuario.
-        using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc/?estado=Pendiente&tamano=100", tokenAdmin);
-        var pagina = await (await cliente.SendAsync(listar)).Content.ReadFromJsonAsync<PaginaKycResponse>();
-        Assert.NotNull(pagina);
-
-        Guid usuarioId;
-        using (var scope = factory.Services.CreateScope())
-        {
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            usuarioId = (await userManager.FindByEmailAsync(email))!.Id;
-        }
-        var solicitud = pagina!.Items.Single(s => s.UsuarioId == usuarioId);
-
-        // 3) Admin accede al blob (queda auditado) y aprueba.
-        using var verDoc = Autorizada(HttpMethod.Get, $"/api/admin/kyc/{solicitud.SolicitudId}/documento", tokenAdmin);
-        Assert.Equal(HttpStatusCode.OK, (await cliente.SendAsync(verDoc)).StatusCode);
-
-        using var aprobar = Autorizada(HttpMethod.Post, $"/api/admin/kyc/{solicitud.SolicitudId}/aprobar", tokenAdmin);
-        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(aprobar)).StatusCode);
-
-        // 4) Perfil del usuario muestra verificado=true.
+        // 2) Perfil del usuario muestra verificado=true.
         using var perfil = Autorizada(HttpMethod.Get, "/api/perfil/", tokenUsuario);
         var perfilBody = await (await cliente.SendAsync(perfil)).Content.ReadFromJsonAsync<PerfilResponse>();
         Assert.True(perfilBody!.Verificado);
 
-        // 5) Al re-loguear, el JWT trae claim verificado=true.
+        // 3) Al re-loguear, el JWT trae claim verificado=true.
         var relogin = await cliente.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, "Password123!"));
         var tokenNuevo = (await relogin.Content.ReadFromJsonAsync<TokenAccesoResponse>())!.AccessToken;
         var jwt = new JwtSecurityTokenHandler().ReadJwtToken(tokenNuevo);
@@ -105,9 +94,10 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
     }
 
     [Fact]
-    public async Task Subir_dos_veces_sin_resolver_da_409()
+    public async Task Subir_dos_veces_da_409_por_ya_verificado()
     {
-        using var cliente = factory.CreateClient();
+        using var cliente = FactoryConVerificador(
+            Result.Exito(new VerificacionFacialResultado(true, 94.5, null))).CreateClient();
         var token = await RegistrarYLoguearAsync(cliente, Email("kyc-dup"), rolExtra: null);
 
         using var primera = Autorizada(HttpMethod.Post, "/api/kyc/", token);
@@ -122,17 +112,20 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
     [Fact]
     public async Task Listar_kyc_sin_permiso_da_403()
     {
-        using var cliente = factory.CreateClient();
+        using var cliente = FactoryConVerificador(
+            Result.Exito(new VerificacionFacialResultado(true, 94.5, null))).CreateClient();
         var token = await RegistrarYLoguearAsync(cliente, Email("kyc-noperm"), rolExtra: null);
 
         using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc/", token);
         Assert.Equal(HttpStatusCode.Forbidden, (await cliente.SendAsync(listar)).StatusCode);
     }
+
+    private sealed class VerificadorArgosEstatico(Result<VerificacionFacialResultado> resultado) : IVerificadorIdentidadArgos
+    {
+        public Task<Result<VerificacionFacialResultado>> VerificarAsync(
+            byte[] imagenDocumento, byte[] imagenSelfie, CancellationToken ct) =>
+            Task.FromResult(resultado);
+    }
 }
 
 sealed file record PerfilResponse(Guid Id, string Email, string Nombre, string Ciudad, bool Verificado);
-
-sealed file record SolicitudKycResponse(
-    Guid SolicitudId, Guid UsuarioId, string Estado, string TipoDocumento, DateTimeOffset EnviadaEn, DateTimeOffset? ResueltaEn);
-
-sealed file record PaginaKycResponse(SolicitudKycResponse[] Items, int Pagina, int Tamano, int Total);
