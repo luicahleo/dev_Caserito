@@ -37,7 +37,7 @@ public sealed class SolicitudKyc : Entity
     /// <summary>Score de similitud facial devuelto por ARGOS, para auditoría. Sin PII.</summary>
     public double? ScoreSimilitud { get; private set; }
 
-    internal void RegistrarScoreSimilitud(double score)
+    public void RegistrarScoreSimilitud(double score)
     {
         ScoreSimilitud = score;
     }
