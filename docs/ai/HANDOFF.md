@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5, 6 y 7 completadas; pendiente Task 8 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5, 6, 7 y 8 completadas; pendiente Task 9 en adelante.
 
 ## Contexto
 
@@ -109,18 +109,33 @@ Verificación:
 
 Commit: `9a0e382` — `feat(kyc-argos): expone score y resolutor en listado admin`
 
+### Task 8: Frontend — actualizar mensajes de KYC automático ✅
+
+Archivo modificado:
+- `web/src/routes/KycPage.tsx` — título cambiado a "Verificación de identidad automática", mensaje de pendiente actualizado a "está siendo verificada automáticamente", descripción del formulario indica que el sistema comparará las imágenes automáticamente, y se añade alerta específica para el error HTTP 503.
+
+Verificación:
+- `npm run typecheck` → 0 errores.
+- `npm run lint` → 0 errores.
+
+Commit: `ab93dfd` — `feat(kyc-argos): mensajes de verificacion automatica en KycPage`
+
 ## Siguiente sesión
 
-Continuar con **Task 8: Frontend — actualizar mensajes de KYC automático** del plan.
+Continuar con **Task 9: Frontend — admin ve score y decisión automática** del plan.
 
-Archivo principal:
-- `web/src/routes/KycPage.tsx`
+Archivos principales:
+- `web/src/routes/AdminKycPage.tsx`
+- `web/src/api/kyc.ts` (solo si el tipo generado no incluye los campos nuevos)
+- `web/src/routes/AdminKycPage.test.tsx`
 
 Qué hacer:
-1. Actualizar título y mensajes para indicar verificación automática.
-2. Añadir manejo del error HTTP 503.
-3. Verificar `npm run typecheck` y `npm run lint`.
-4. Commit.
+1. Regenerar tipos desde OpenAPI (`npm run generate:api`).
+2. Actualizar columnas de la tabla para mostrar Score y Resolutor.
+3. Quitar acciones de aprobar/rechazar para solicitudes pendientes.
+4. Ajustar tests de `AdminKycPage.test.tsx`.
+5. Verificar `npm run typecheck`, `npm run lint` y `npm run test -- --run`.
+6. Commit.
 
 ## Restricciones importantes
 
