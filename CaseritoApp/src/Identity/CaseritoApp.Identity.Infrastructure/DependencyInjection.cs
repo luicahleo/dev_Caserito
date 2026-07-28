@@ -52,6 +52,16 @@ public static class DependencyInjection
         servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
+        servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
+
+        var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
+        servicios.AddOptions<OpcionesArgos>()
+            .Validate(
+                o => permiteArgosOpcional || !string.IsNullOrWhiteSpace(o.Url),
+                "Argos:Url es obligatorio fuera de Development/Testing")
+            .ValidateOnStart();
+
+        servicios.AddHttpClient<IVerificadorIdentidadArgos, VerificadorIdentidadArgosHttp>();
 
         // Fail-fast de PII: fuera de Development/Testing no existe un encryptor real cableado
         // (envelope/KMS diferido), así que se aborta la composición en vez de escribir CI/selfie en
