@@ -49,20 +49,34 @@ Verificación:
 
 Commit: `50eb01a` — `feat(kyc-argos): envío automático aprueba/rechaza según ARGOS`
 
+### Task 4: Infrastructure — adaptador HTTP a ARGOS ✅
+
+Archivos creados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/OpcionesArgos.cs` — sección `Argos` con `Url` y `ApiKey`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/VerificadorIdentidadArgosHttp.cs` — adaptador HTTP que envía documento/selfie en base64 a `POST {Url}/api/verify`, mapea errores de red/HTTP/JSON a `ServicioVerificacionNoDisponible` y `success: false` a `VerificacionFacialFallida`.
+
+Archivos modificados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs` — registra `OpcionesArgos`, validación fail-fast de `Argos:Url` fuera de Development/Testing, y `HttpClient` tipado para `IVerificadorIdentidadArgos`.
+
+Verificación:
+- `dotnet build src/Identity/CaseritoApp.Identity.Infrastructure/CaseritoApp.Identity.Infrastructure.csproj` → exit 0, 0 warnings.
+- `dotnet format src/Identity/CaseritoApp.Identity.Infrastructure/CaseritoApp.Identity.Infrastructure.csproj` aplicado para finales de línea CRLF.
+
+Commit: `acc2f27` — `feat(kyc-argos): adaptador HTTP a ARGOS y registro DI`
+
 ## Siguiente sesión
 
-Continuar con **Task 4: Infrastructure — adaptador HTTP a ARGOS** del plan.
+Continuar con **Task 5: Infrastructure — mapeo EF Core y migración** del plan.
 
 Archivos principales:
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/OpcionesArgos.cs`
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/VerificadorIdentidadArgosHttp.cs`
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConfiguracionKyc.cs`
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Migrations/`
 
 Qué hacer:
-1. Crear `OpcionesArgos.cs` con sección `Argos` (`Url`, `ApiKey`).
-2. Crear `VerificadorIdentidadArgosHttp.cs` que llame a `POST {ARGOS_URL}/api/verify` con imágenes en base64.
-3. Registrar opciones, validación fail-fast y `HttpClient` en `DependencyInjection.cs`.
-4. Build de Infrastructure.
+1. Mapear `ScoreSimilitud` en `ConfiguracionKyc.cs`.
+2. Generar migración `KycArgosScoreSimilitud`.
+3. Verificar que la migración solo agregue la columna nullable.
+4. Build de la solución.
 5. Commit.
 
 ## Restricciones importantes
