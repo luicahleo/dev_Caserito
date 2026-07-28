@@ -97,7 +97,7 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
 
         Assert.False(r.EsExito);
         Assert.Equal(ErroresKyc.SolicitudPendienteExiste, r.Error.Code);
-        Assert.Equal(2, almacen.Guardados);
-        Assert.Equal(2, almacen.Eliminados);
+        Assert.Equal(0, almacen.Guardados);
+        Assert.Equal(0, almacen.Eliminados);
     }
 }
