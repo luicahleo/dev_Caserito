@@ -1,3 +1,6 @@
+using CaseritoApp.BuildingBlocks.Application.Abstractions;
+using CaseritoApp.BuildingBlocks.Contracts;
+using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Kyc;
@@ -43,6 +46,19 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             Task.FromResult(new ResultadoPaginado<SolicitudKycResumenDto>([], pagina, tamano, 0));
     }
 
+    private sealed class VerificadorFake : IVerificadorIdentidadArgos
+    {
+        public Task<Result<VerificacionFacialResultado>> VerificarAsync(
+            byte[] imagenDocumento, byte[] imagenSelfie, CancellationToken ct) =>
+            Task.FromResult(Result.Exito(new VerificacionFacialResultado(true, 95.0, null)));
+    }
+
+    private sealed class PublicadorFake : IPublicadorEventosIntegracion
+    {
+        public Task PublicarAsync(IIntegrationEvent evento, CancellationToken ct) =>
+            Task.CompletedTask;
+    }
+
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     [Fact]
@@ -51,7 +67,7 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
         var almacen = new AlmacenFake();
         var repo = new RepoFake(existente: null);
         var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+            repo, almacen, new VerificadorFake(), new PublicadorFake(), TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
 
         var r = await handler.Handle(
             new EnviarSolicitudKycCommand(Guid.NewGuid(), _png, "image/png", _png, "image/png"),
@@ -73,7 +89,7 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
         var almacen = new AlmacenFake();
         var repo = new RepoFake(existente);
         var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+            repo, almacen, new VerificadorFake(), new PublicadorFake(), TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
 
         var r = await handler.Handle(
             new EnviarSolicitudKycCommand(usuarioId, _png, "image/png", _png, "image/png"),
