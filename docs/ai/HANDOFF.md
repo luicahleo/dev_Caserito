@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-28  
 > Rama: `feat/kyc-argos`  
-> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8 y 9 completadas; pendiente Task 10 en adelante.
+> Estado: Tasks 1, 2, 3, 4, 5, 6, 7, 8, 9 y 10 completadas; pendiente Task 11 en adelante.
 
 ## Contexto
 
@@ -138,19 +138,33 @@ Verificación:
 
 Commit: `97288f2` — `feat(kyc-argos): admin muestra score y decision automatica`
 
+### Task 10: Tests unitarios — handler y adaptador HTTP ✅
+
+Archivos modificados:
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/EnviarSolicitudKycCommandHandlerTests.cs` — fakes inyectables para `IVerificadorIdentidadArgos` e `IPublicadorEventosIntegracion`; tests de coincidencia automática, rechazo automático y compensación de blobs cuando ARGOS está caído.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/VerificadorIdentidadArgosHttpTests.cs` — adaptador HTTP testeado con `HttpMessageHandler` fake; cubre `verified: true`, `verified: false`, error de red, HTTP 500, JSON inválido y `success: false`.
+
+Verificación:
+- `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj --filter "FullyQualifiedName~Kyc"` → 28 superados, 0 fallos.
+- `dotnet build CaseritoApp.sln` → exit 0, 0 errores, 0 advertencias.
+- `dotnet format CaseritoApp.sln --verify-no-changes` → 0 cambios necesarios.
+
+Commit: `32e935a` — `test(kyc-argos): handler y adaptador HTTP`
+
 ## Siguiente sesión
 
-Continuar con **Task 10: Tests unitarios — handler y adaptador HTTP** del plan.
+Continuar con **Task 11: Tests de integración — flujo completo con ARGOS mockeado** del plan.
 
 Archivos principales:
-- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/EnviarSolicitudKycCommandHandlerTests.cs`
-- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/VerificadorIdentidadArgosHttpTests.cs`
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycArgosFlujoTests.cs` (crear)
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycFlujoTests.cs` (modificar si es necesario)
 
 Qué hacer:
-1. Actualizar tests del handler con mocks de `IVerificadorIdentidadArgos` e `IPublicadorEventosIntegracion`.
-2. Crear tests del adaptador HTTP con `HttpMessageHandler` fake.
-3. Verificar `dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj --filter "FullyQualifiedName~Kyc"`.
-4. Commit.
+1. Crear tests de integración que reemplacen `IVerificadorIdentidadArgos` en `WebApplicationFactory`.
+2. Cubrir flujo de coincidencia automática, rechazo automático y servicio caído (HTTP 503).
+3. Ajustar `KycFlujoTests.cs` si el flujo manual ya no aplica.
+4. Verificar `dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter "FullyQualifiedName~Kyc"` (requiere Docker).
+5. Commit.
 
 ## Restricciones importantes
 
