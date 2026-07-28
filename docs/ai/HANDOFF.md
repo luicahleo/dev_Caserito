@@ -1,52 +1,65 @@
 # Handoff — KYC automático con ARGOS
 
 > Fecha: 2026-07-28  
-> Estado: diseño aprobado, listo para planificación.
+> Rama: `feat/kyc-argos`  
+> Estado: Tasks 1 y 2 completadas; pendiente Task 3 en adelante.
 
 ## Contexto
 
 CaseritoApp necesita usuarios con identidad verificada. El KYC actual es manual (admin aprueba/rechaza DNI + selfie). Se aprobó integrar ARGOS, un microservicio Python propio de reconocimiento facial (DeepFace/ArcFace), para automatizar la decisión.
 
-## Spec aprobado
+## Spec y plan
 
-`docs/superpowers/specs/2026-07-28-kyc-argos-design.md`
+- Spec: `docs/superpowers/specs/2026-07-28-kyc-argos-design.md`
+- Plan: `docs/superpowers/plans/2026-07-28-kyc-argos.md`
 
-Resumen del diseño:
+## Progreso de esta sesión
 
-- El usuario sube **foto del DNI + selfie** desde `KycPage.tsx`.
-- El backend de Caserito (`EnviarSolicitudKycCommandHandler`) valida, guarda blobs cifrados y llama a `POST {ARGOS_URL}/api/verify` con ambas imágenes en base64.
-- Si ARGOS responde `verified: true`, la solicitud se aprueba automáticamente (`Aprobada`) y se publica `UserVerified`.
-- Si responde `verified: false` o no detecta rostro, se rechaza con motivo.
-- Si ARGOS no responde, se devuelve 503 sin persistir la solicitud.
-- Se registra el `ScoreSimilitud` en `SolicitudKyc` para auditoría.
-- La aprobación automática usa un actor de sistema (`SistemaActor.Id`) en lugar de un admin humano.
+### Task 1: Domain — score, errores y actor de sistema ✅
 
-## Proyecto ARGOS
+Archivos modificados:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/SolicitudKyc.cs` — agrega `ScoreSimilitud` y `RegistrarScoreSimilitud`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/ErroresKyc.cs` — agrega `VerificacionFacialFallida` y `ServicioVerificacionNoDisponible`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/SistemaActor.cs` — actor de sistema para resoluciones automáticas.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/VerificacionKyc.cs` — agrega `PuedeEnviarSolicitud()` para validar invariants antes de escribir blobs.
 
-Ubicación local: `/c/Users/lrcahuana/source/repos/dev/ARGOS`
+Verificación:
+- `dotnet build src/Identity/CaseritoApp.Identity.Domain/CaseritoApp.Identity.Domain.csproj` → exit 0, 0 warnings.
 
-- Endpoints relevantes: `POST /api/verify` (comparación 1:1), `POST /api/extract-embedding`, `POST /api/compare-embeddings`.
-- Grafo Graphify ya generado en `ARGOS/graphify-out/`.
-- Variables de configuración esperadas por Caserito: `Argos:Url`, `Argos:ApiKey` (mapeado a header `X-Service-Key`).
+Commit: `d646762` — `feat(kyc-argos): score, errores y actor de sistema en dominio`
 
-## Siguiente paso
+### Task 2: Application — puerto `IVerificadorIdentidadArgos` ✅
 
-Invocar el skill `superpowers:writing-plans` y crear el plan de implementación en:
+Archivo creado:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IVerificadorIdentidadArgos.cs` — define el puerto y el record `VerificacionFacialResultado`.
 
-`docs/superpowers/plans/YYYY-MM-DD-kyc-argos.md`
+Verificación:
+- `dotnet build src/Identity/CaseritoApp.Identity.Application/CaseritoApp.Identity.Application.csproj` → exit 0, 0 warnings.
 
-El plan debe descomponer el trabajo en tareas secuenciales y verificables: domain, application, infrastructure, host, frontend, tests.
+Commit: `6a4d659` — `feat(kyc-argos): puerto IVerificadorIdentidadArgos en Application`
+
+## Siguiente sesión
+
+Continuar con **Task 3: Application — handler envío automático** del plan.
+
+Archivo principal:
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/EnviarSolicitudKycCommand.cs`
+
+Qué hacer:
+1. Inyectar `IVerificadorIdentidadArgos` y `IPublicadorEventosIntegracion` en el handler.
+2. Reordenar el flujo: validar invariants → guardar blobs → llamar ARGOS → aplicar `Aprobar`/`Rechazar` con `SistemaActor.Id` → publicar `UserVerified` si aprobó.
+3. Si ARGOS falla, compensar eliminando blobs y devolver `ServicioVerificacionNoDisponible`.
+4. Build de Application.
+5. Commit.
 
 ## Restricciones importantes
 
-- No escribir código de implementación en la sesión de planificación.
-- Respetar `AGENTS.md` raíz, `CaseritoApp/AGENTS.md` y `web/AGENTS.md`.
+- No escribir código de implementación en la sesión de planificación (ya terminó; ahora se implementa).
 - Clean Architecture / CQRS-lite: domain puro, puertos en Application, adaptadores en Infrastructure.
 - Anti-PII: nunca loguear bytes de imágenes, base64, embeddings ni datos del DNI.
 - ARGOS es un servicio interno; no llamarlo desde el frontend.
-- Fail-fast: fuera de `Development`/`Testing`, Caserito no debe arrancar sin `Argos:Url`.
 - No hacer push/merge sin autorización explícita.
-- Priorizar economía de tokens: si el plan es extenso, dividir en sesiones nuevas.
+- Priorizar economía de tokens: una o dos tareas por sesión, handoff breve al cerrar.
 
 ## Verificaciones esperadas por paso
 
