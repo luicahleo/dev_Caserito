@@ -27,10 +27,12 @@ describe('KycPage', () => {
     expect(await screen.findByText(/identidad verificada/i)).toBeInTheDocument();
   });
 
-  it('estado Pendiente muestra "en revisión" y no muestra formulario', async () => {
+  it('estado Pendiente muestra "verificación automática" y no muestra formulario', async () => {
     vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'Pendiente', motivoRechazo: null });
     montar();
-    expect(await screen.findByText(/en revisión/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/está siendo verificada automáticamente/i),
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument();
   });
 

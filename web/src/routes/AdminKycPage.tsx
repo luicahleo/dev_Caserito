@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -21,31 +21,38 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  aprobarKyc,
   listarSolicitudesKyc,
   obtenerImagenKyc,
-  rechazarKyc,
   type EstadoKyc,
   type SolicitudKycResumen,
 } from '../api/kyc';
 
 const ESTADOS: EstadoKyc[] = ['Pendiente', 'Aprobada', 'Rechazada'];
+const SISTEMA_ID = '00000000-0000-0000-0000-000000000001';
 
-// Panel de revisión: previsualiza documento y selfie de una solicitud y permite resolver.
+function formatearScore(score: string | number | null | undefined): string {
+  if (score === null || score === undefined) return '-';
+  const n = typeof score === 'string' ? Number.parseFloat(score) : score;
+  if (Number.isNaN(n)) return '-';
+  return n.toFixed(1);
+}
+
+function formatearResolutor(resueltaPor: string | null | undefined): string {
+  if (!resueltaPor) return '-';
+  return resueltaPor === SISTEMA_ID ? 'Sistema' : resueltaPor;
+}
+
+// Panel de revisión: previsualiza documento y selfie de una solicitud.
 function PanelRevision({
   solicitud,
   onCerrar,
-  onResuelta,
 }: {
   solicitud: SolicitudKycResumen;
   onCerrar: () => void;
-  onResuelta: () => void;
 }) {
   const [urlDoc, setUrlDoc] = useState<string | null>(null);
   const [urlSelfie, setUrlSelfie] = useState<string | null>(null);
   const [errorImg, setErrorImg] = useState(false);
-  const [rechazando, setRechazando] = useState(false);
-  const [motivo, setMotivo] = useState('');
 
   useEffect(() => {
     let doc: string | null = null;
@@ -78,22 +85,6 @@ function PanelRevision({
     };
   }, [solicitud.solicitudId]);
 
-  const aprobar = useMutation({
-    mutationFn: () => aprobarKyc(solicitud.solicitudId),
-    onSuccess: () => {
-      onResuelta();
-      onCerrar();
-    },
-  });
-
-  const rechazar = useMutation({
-    mutationFn: () => rechazarKyc(solicitud.solicitudId, motivo),
-    onSuccess: () => {
-      onResuelta();
-      onCerrar();
-    },
-  });
-
   return (
     <Dialog open onClose={onCerrar} maxWidth="md" fullWidth>
       <DialogTitle>Revisar solicitud</DialogTitle>
@@ -118,51 +109,17 @@ function PanelRevision({
           </Box>
         </Stack>
 
-        {rechazando && (
-          <TextField
-            label="Motivo"
-            fullWidth
-            multiline
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        )}
-        {(aprobar.isError || rechazar.isError) && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            No se pudo resolver la solicitud. Inténtalo de nuevo.
-          </Alert>
-        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onCerrar}>Cerrar</Button>
-        {solicitud.estado !== 'Pendiente' ? (
+        {solicitud.estado === 'Pendiente' ? (
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+            Esta solicitud será resuelta automáticamente por el sistema.
+          </Typography>
+        ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
             Esta solicitud ya fue resuelta.
           </Typography>
-        ) : !rechazando ? (
-          <>
-            <Button color="error" onClick={() => setRechazando(true)}>
-              Rechazar
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => aprobar.mutate()}
-              disabled={aprobar.isPending}
-            >
-              Aprobar
-            </Button>
-          </>
-        ) : (
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => rechazar.mutate()}
-            disabled={motivo.trim().length === 0 || rechazar.isPending}
-          >
-            Confirmar rechazo
-          </Button>
         )}
       </DialogActions>
     </Dialog>
@@ -170,7 +127,6 @@ function PanelRevision({
 }
 
 export function AdminKycPage() {
-  const queryClient = useQueryClient();
   const [filtro, setFiltro] = useState<EstadoKyc>('Pendiente');
   const [seleccion, setSeleccion] = useState<SolicitudKycResumen | null>(null);
 
@@ -178,8 +134,6 @@ export function AdminKycPage() {
     queryKey: ['admin', 'kyc', filtro],
     queryFn: () => listarSolicitudesKyc(filtro),
   });
-
-  const refrescar = () => queryClient.invalidateQueries({ queryKey: ['admin', 'kyc'] });
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -215,6 +169,8 @@ export function AdminKycPage() {
               <TableCell>Documento</TableCell>
               <TableCell>Enviada</TableCell>
               <TableCell>Estado</TableCell>
+              <TableCell>Score</TableCell>
+              <TableCell>Resolutor</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
@@ -225,6 +181,8 @@ export function AdminKycPage() {
                 <TableCell>{s.tipoDocumento}</TableCell>
                 <TableCell>{new Date(s.enviadaEn).toLocaleDateString()}</TableCell>
                 <TableCell>{s.estado}</TableCell>
+                <TableCell>{formatearScore(s.scoreSimilitud)}</TableCell>
+                <TableCell>{formatearResolutor(s.resueltaPor)}</TableCell>
                 <TableCell>
                   <Button size="small" onClick={() => setSeleccion(s)}>
                     Revisar
@@ -240,7 +198,6 @@ export function AdminKycPage() {
         <PanelRevision
           solicitud={seleccion}
           onCerrar={() => setSeleccion(null)}
-          onResuelta={refrescar}
         />
       )}
     </Container>

@@ -514,6 +514,16 @@
               }
             }
           },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -5774,7 +5784,9 @@
           "estado",
           "tipoDocumento",
           "enviadaEn",
-          "resueltaEn"
+          "resueltaEn",
+          "scoreSimilitud",
+          "resueltaPor"
         ],
         "type": "object",
         "properties": {
@@ -5802,6 +5814,22 @@
               "string"
             ],
             "format": "date-time"
+          },
+          "scoreSimilitud": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "resueltaPor": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
