@@ -12,6 +12,7 @@ using CaseritoApp.Identity.Infrastructure.Correo;
 using CaseritoApp.Identity.Infrastructure.Kyc;
 using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -58,6 +59,11 @@ public static class DependencyInjection
         servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
         servicios.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
         servicios.AddScoped<IPlantillaCorreo, PlantillaCorreoTextoPlano>();
+        servicios.AddSingleton<IGeneradorTokenEmail>(sp =>
+        {
+            var dataProtection = sp.GetRequiredService<IDataProtectionProvider>();
+            return new GeneradorTokenEmailDataProtector(dataProtection);
+        });
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
         servicios.AddOptions<OpcionesArgos>()
