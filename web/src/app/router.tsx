@@ -7,6 +7,7 @@ import { EditarAvisoPage } from '../routes/EditarAvisoPage';
 import { MisAvisosPage } from '../routes/MisAvisosPage';
 import { LoginPage } from '../routes/LoginPage';
 import { RegistroPage } from '../routes/RegistroPage';
+import { ConfirmarEmailPage } from '../routes/ConfirmarEmailPage';
 import { PerfilPage } from '../routes/PerfilPage';
 import { NotFoundPage } from '../routes/NotFoundPage';
 import { KycPage } from '../routes/KycPage';
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: '/usuarios/:id', element: <PerfilPublicoPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/registro', element: <RegistroPage /> },
+      { path: '/confirmar-email', element: <ConfirmarEmailPage /> },
       {
         path: '/mensajes',
         element: (

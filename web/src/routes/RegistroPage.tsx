@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { Button, Container, Stack, TextField, Typography, Alert, Link } from '@mui/material';
 import { useAuth } from '../auth/AuthContext';
 
@@ -16,8 +16,8 @@ type Datos = z.infer<typeof esquema>;
 
 export function RegistroPage() {
   const { registrar } = useAuth();
-  const navigate = useNavigate();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
+  const [registrado, setRegistrado] = useState(false);
   const {
     register,
     handleSubmit,
@@ -30,11 +30,30 @@ export function RegistroPage() {
     setErrorGeneral(null);
     try {
       await registrar(datos);
-      navigate('/perfil');
+      setRegistrado(true);
     } catch {
       setErrorGeneral('No se pudo registrar');
     }
   };
+
+  if (registrado) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 4 }}>
+        <Stack spacing={2}>
+          <Typography variant="h4" component="h1">
+            Revisa tu correo
+          </Typography>
+          <Alert severity="info">
+            Te enviamos un correo de confirmación. Revisa tu bandeja de entrada y haz clic en el
+            enlace para activar tu cuenta.
+          </Alert>
+          <Link component={RouterLink} to="/perfil">
+            Continuar a mi perfil
+          </Link>
+        </Stack>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>

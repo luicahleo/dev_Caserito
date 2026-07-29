@@ -36,3 +36,11 @@ export async function cerrarSesion(): Promise<void> {
     clearAccessToken();
   }
 }
+
+export async function confirmarEmail(usuarioId: string, token: string): Promise<void> {
+  desempaquetar(await api.POST('/api/auth/confirm-email', { body: { usuarioId, token } }));
+}
+
+export async function reenviarConfirmacionEmail(): Promise<void> {
+  desempaquetar(await api.POST('/api/auth/resend-confirmation'));
+}
