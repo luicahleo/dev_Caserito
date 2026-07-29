@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **en implementación: Tasks 1, 2, 3 y 4 completadas; Task 5 pendiente**.
+> Estado: **en implementación: Tasks 1 a 5 completadas; Task 6 pendiente**.
 
 ## Contexto de esta sesión
 
@@ -40,6 +40,11 @@
 - `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Correo/IGeneradorTokenEmail.cs` — creado.
 - `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Correo/GeneradorTokenEmailDataProtector.cs` — creado.
 - `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/GeneradorTokenEmailDataProtectorTests.cs` — creado.
+- `CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Messaging/IDomainEventConsumer.cs` — creado (interfaz semántica para handlers de eventos de dominio, evita el sufijo prohibido por CA1711).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Usuarios/UsuarioRegistrado.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Auth/EnviarConfirmacionEmailHandler.cs` — creado.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AuthEndpoints.cs` — modificado para publicar `UsuarioRegistrado` tras registro exitoso.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Auth/EnviarConfirmacionEmailHandlerTests.cs` — creado.
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -65,11 +70,12 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - ✅ Task 2 — Puerto e implementación de `IServicioCorreo` con MailKit 4.16.0.
 - ✅ Task 3 — Puerto e implementación de `IPlantillaCorreo`.
 - ✅ Task 4 — Generador de tokens de confirmación de email.
-- ⏳ Task 5 — Evento `UsuarioRegistrado` y handler de confirmación.
+- ✅ Task 5 — Evento `UsuarioRegistrado` y handler de confirmación.
+- ⏳ Task 6 — Comando y endpoint para confirmar email.
 
 ## Próximo paso
 
-Continuar con la Task 5 del plan: crear el evento de dominio `UsuarioRegistrado`, el handler `EnviarConfirmacionEmailHandler`, publicar el evento tras el registro y agregar sus tests unitarios.
+Continuar con la Task 6 del plan: crear `ConfirmarEmailCommand` y su handler, agregar los endpoints `confirm-email` y `resend-confirmation` en `AuthEndpoints`, y agregar tests unitarios e integración.
 
 ## Restricciones
 
