@@ -2,6 +2,7 @@ using CaseritoApp.BuildingBlocks.Application.Messaging;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Domain.Kyc;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace CaseritoApp.Identity.Application.Kyc;
@@ -9,9 +10,10 @@ namespace CaseritoApp.Identity.Application.Kyc;
 /// <summary>Rechaza una solicitud pendiente con un motivo (visible al usuario).</summary>
 public sealed record RechazarSolicitudKycCommand(Guid SolicitudId, Guid RevisorId, string Motivo) : ICommand;
 
-/// <summary>Handler: rechaza en el agregado. No publica evento.</summary>
+/// <summary>Handler: rechaza en el agregado y, si tiene éxito, publica <c>KycResuelto</c> para notificar al usuario.</summary>
 public sealed partial class RechazarSolicitudKycCommandHandler(
     IRepositorioVerificacionKyc repositorio,
+    IPublisher publisher,
     TimeProvider tiempo,
     ILogger<RechazarSolicitudKycCommandHandler> logger)
     : ICommandHandler<RechazarSolicitudKycCommand>
@@ -25,7 +27,15 @@ public sealed partial class RechazarSolicitudKycCommandHandler(
             return Result.Fallo(new Error(ErroresKyc.SolicitudNoEncontrada, "La solicitud no existe."));
         }
 
-        var resultado = verificacion.Rechazar(request.SolicitudId, request.RevisorId, request.Motivo, tiempo.GetUtcNow());
+        var ahora = tiempo.GetUtcNow();
+        var resultado = verificacion.Rechazar(request.SolicitudId, request.RevisorId, request.Motivo, ahora);
+
+        if (resultado.EsExito)
+        {
+            await publisher.Publish(
+                new KycResuelto(Guid.NewGuid(), ahora, verificacion.UsuarioId, request.SolicitudId, EstadoKyc.Rechazada, request.Motivo),
+                cancellationToken);
+        }
 
         RegistrarResolucion(
             logger, "rechazar", request.RevisorId, request.SolicitudId,

@@ -57,5 +57,8 @@ public sealed class OrdersAdaptadoresTests
     {
         public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(verificado);
+
+        public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult<UsuarioKycDto?>(null);
     }
 }

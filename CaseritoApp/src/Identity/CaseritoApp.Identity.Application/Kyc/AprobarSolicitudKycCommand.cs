@@ -3,17 +3,19 @@ using CaseritoApp.BuildingBlocks.Application.Messaging;
 using CaseritoApp.BuildingBlocks.Contracts.Identity;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Domain.Kyc;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace CaseritoApp.Identity.Application.Kyc;
 
-/// <summary>Aprueba una solicitud pendiente y publica <c>UserVerified</c>.</summary>
+/// <summary>Aprueba una solicitud pendiente y publica <c>UserVerified</c> y <c>KycResuelto</c>.</summary>
 public sealed record AprobarSolicitudKycCommand(Guid SolicitudId, Guid RevisorId) : ICommand;
 
-/// <summary>Handler: aprueba en el agregado y, si tiene éxito, publica el evento de integración.</summary>
+/// <summary>Handler: aprueba en el agregado y, si tiene éxito, publica los eventos de integración y de dominio.</summary>
 public sealed partial class AprobarSolicitudKycCommandHandler(
     IRepositorioVerificacionKyc repositorio,
     IPublicadorEventosIntegracion publicador,
+    IPublisher publisher,
     TimeProvider tiempo,
     ILogger<AprobarSolicitudKycCommandHandler> logger)
     : ICommandHandler<AprobarSolicitudKycCommand>
@@ -34,6 +36,9 @@ public sealed partial class AprobarSolicitudKycCommandHandler(
         {
             await publicador.PublicarAsync(
                 new UserVerified(Guid.NewGuid(), ahora, verificacion.UsuarioId), cancellationToken);
+            await publisher.Publish(
+                new KycResuelto(Guid.NewGuid(), ahora, verificacion.UsuarioId, request.SolicitudId, EstadoKyc.Aprobada, null),
+                cancellationToken);
         }
 
         RegistrarResolucion(

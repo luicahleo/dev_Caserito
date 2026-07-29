@@ -12,4 +12,10 @@ public sealed class ConsultaVerificacionKycEfCore(IdentityDbContext db) : IConsu
             .Where(v => v.Id == usuarioId)
             .SelectMany(v => v.Solicitudes)
             .AnyAsync(s => s.Estado == EstadoKyc.Aprobada, ct);
+
+    public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
+        db.Users
+            .Where(u => u.Id == usuarioId)
+            .Select(u => new UsuarioKycDto(u.Email!, u.Nombre))
+            .FirstOrDefaultAsync(ct);
 }

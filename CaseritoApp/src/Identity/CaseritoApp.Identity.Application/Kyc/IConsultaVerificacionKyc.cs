@@ -7,4 +7,10 @@ namespace CaseritoApp.Identity.Application.Kyc;
 public interface IConsultaVerificacionKyc
 {
     public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct);
+
+    /// <summary>Datos mínimos del usuario para notificarle el resultado de su KYC.</summary>
+    public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct);
 }
+
+/// <summary>Contacto del usuario al que se le notifica la resolución de su KYC.</summary>
+public sealed record UsuarioKycDto(string Email, string Nombre);
