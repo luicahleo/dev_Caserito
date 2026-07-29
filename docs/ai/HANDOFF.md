@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **en implementación: Tasks 1 a 8 completadas; Task 9 (frontend) pendiente**.
+> Estado: **implementación completa: Tasks 1 a 9 hechas; pendiente Task 10 (verificación global y cierre)**.
 
 ## Contexto de esta sesión
 
@@ -70,6 +70,13 @@
 - `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs` — crear y editar aviso exigen la policy `EmailConfirmado`.
 - `CaseritoApp/tests/CaseritoApp.IntegrationTests/AuthFlowTests.cs` — agregado test: usuario sin email confirmado recibe 403 al enviar KYC.
 - Helpers de registro en `KycFlujoTests`, `KycArgosFlujoTests`, `AvisosFlujoTests`, `DescubrimientoAvisosTests`, `FotosAvisoIntegrationTests`, `FlujoCriticoTests`, `OrdersFlujoTests` y `ModeracionAvisosTests` — ahora marcan `EmailConfirmed = true` antes del login, porque esos flujos exigen la policy.
+- `CaseritoApp/artifacts/openapi/CaseritoApp.Host.json` — regenerado con `-p:GenerateOpenApi=true` y `ASPNETCORE_ENVIRONMENT=Testing` (con Production falla el fail-fast de IEncryptor; con Development falla la validación de servicios sin cadena de conexión).
+- `web/src/api/schema.d.ts` — regenerado con `npm run generate:api` (incluye `confirm-email` y `resend-confirmation`).
+- `web/src/api/auth.ts` — agregadas `confirmarEmail` y `reenviarConfirmacionEmail` (openapi-fetch + `desempaquetar`, no ky como sugería el plan).
+- `web/src/routes/ConfirmarEmailPage.tsx` — creada (lee `userId`/`token` de la query, confirma y muestra éxito/error).
+- `web/src/app/router.tsx` — agregada la ruta pública `/confirmar-email`.
+- `web/src/routes/RegistroPage.tsx` — tras registrarse muestra "Revisa tu correo" en lugar de navegar directo al perfil.
+- `web/src/routes/ConfirmarEmailPage.test.tsx` — creado (éxito, token inválido, parámetros faltantes).
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -105,11 +112,12 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - ✅ Task 6 — Comando y endpoints para confirmar/reenviar email.
 - ✅ Task 7 — Notificación de KYC (evento `KycResuelto` + handler `NotificarKycResueltoHandler`).
 - ✅ Task 8 — Restricciones de autorización por `EmailConfirmed` en KYC y avisos.
-- ⏳ Task 9 — Frontend: pantallas post-registro y confirmación de email.
+- ✅ Task 9 — Frontend: pantallas post-registro y confirmación de email.
+- ⏳ Task 10 — Verificación global y cierre.
 
 ## Próximo paso
 
-Continuar con la Task 9 del plan (frontend en `web/`): funciones `confirmarEmail`/`reenviarConfirmacionEmail` en `web/src/api/auth.ts`, pantalla `ConfirmarEmailPage.tsx`, mensaje post-registro en `RegisterPage.tsx`, ruta en el router y tests. Verificaciones: `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
+Task 10 del plan: verificación global (build, tests y formato de backend; typecheck, lint, tests y build de frontend) y cierre del bloque. Sin push/merge sin autorización explícita.
 
 ## Restricciones
 
@@ -130,3 +138,4 @@ Continuar con la Task 9 del plan (frontend en `web/`): funciones `confirmarEmail
 - `dotnet build CaseritoApp.sln` ✅
 - `dotnet test CaseritoApp.sln` ✅ (Unit: 344, Architecture: 57, Integration: 176)
 - `dotnet format CaseritoApp.sln --verify-no-changes` ✅ (requirió corregir finales de línea LF→CRLF en los archivos nuevos con `dotnet format`)
+- `npm run typecheck` ✅ · `npm run lint` ✅ · `npm run test -- --run` ✅ (134) · `npm run build` ✅
