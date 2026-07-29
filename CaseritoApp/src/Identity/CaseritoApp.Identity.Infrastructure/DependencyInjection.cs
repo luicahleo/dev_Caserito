@@ -57,6 +57,7 @@ public static class DependencyInjection
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
         servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
         servicios.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
+        servicios.AddScoped<IPlantillaCorreo, PlantillaCorreoTextoPlano>();
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
         servicios.AddOptions<OpcionesArgos>()
