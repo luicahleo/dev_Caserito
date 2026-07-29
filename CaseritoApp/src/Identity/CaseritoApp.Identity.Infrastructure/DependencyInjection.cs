@@ -1,6 +1,7 @@
 using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Infrastructure.Security;
+using CaseritoApp.Identity.Application.Auth;
 using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Application.Correo;
 using CaseritoApp.Identity.Application.Kyc;
@@ -51,6 +52,7 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();
 
         servicios.AddScoped<IRepositorioPerfil, RepositorioPerfilUserManager>();
+        servicios.AddScoped<IRepositorioConfirmacionEmail, RepositorioConfirmacionEmail>();
         servicios.AddScoped<IRepositorioRolesUsuario, RepositorioRolesUsuarioUserManager>();
         servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();

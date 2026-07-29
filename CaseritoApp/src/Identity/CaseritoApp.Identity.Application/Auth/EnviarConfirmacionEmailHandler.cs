@@ -22,10 +22,20 @@ public sealed partial class EnviarConfirmacionEmailHandler(
             plantilla.AsuntoConfirmacionEmail(evento.Nombre),
             plantilla.CuerpoConfirmacionEmail(evento.Nombre, url));
 
-        await servicioCorreo.EnviarAsync(mensaje, cancellationToken);
-        RegistrarEnvio(logger, evento.UsuarioId);
+        try
+        {
+            await servicioCorreo.EnviarAsync(mensaje, cancellationToken);
+            RegistrarEnvio(logger, evento.UsuarioId);
+        }
+        catch (Exception ex)
+        {
+            RegistrarFalloEnvio(logger, evento.UsuarioId, ex);
+        }
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Correo de confirmacion enviado: usuario={UsuarioId}")]
     private static partial void RegistrarEnvio(ILogger logger, Guid usuarioId);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Fallo el envio de correo de confirmacion: usuario={UsuarioId}")]
+    private static partial void RegistrarFalloEnvio(ILogger logger, Guid usuarioId, Exception ex);
 }

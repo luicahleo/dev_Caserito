@@ -45,6 +45,12 @@ public sealed class EnviarConfirmacionEmailHandlerTests
         }
     }
 
+    private sealed class ServicioCorreoQueFalla : IServicioCorreo
+    {
+        public Task EnviarAsync(MensajeCorreo mensaje, CancellationToken ct)
+            => throw new InvalidOperationException("SMTP no disponible");
+    }
+
     [Fact]
     public async Task Handle_envia_correo_de_confirmacion_con_url()
     {
@@ -67,5 +73,27 @@ public sealed class EnviarConfirmacionEmailHandlerTests
         Assert.NotNull(servicio.UltimoMensaje);
         Assert.Contains("token-fake", servicio.UltimoMensaje.CuerpoTexto);
         Assert.Equal("test@test.com", servicio.UltimoMensaje.Para);
+    }
+
+    [Fact]
+    public async Task Handle_no_propaga_excepcion_cuando_falla_el_envio()
+    {
+        var handler = new EnviarConfirmacionEmailHandler(
+            new ServicioCorreoQueFalla(),
+            new PlantillaFake(),
+            new GeneradorTokenFake(),
+            NullLogger<EnviarConfirmacionEmailHandler>.Instance);
+
+        var evento = new UsuarioRegistrado(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            Guid.NewGuid(),
+            "test@test.com",
+            "Luis");
+
+        var excepcion = await Record.ExceptionAsync(
+            () => handler.Handle(evento, CancellationToken.None));
+
+        Assert.Null(excepcion);
     }
 }

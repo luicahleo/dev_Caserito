@@ -1,7 +1,12 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Application.Correo;
+using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CaseritoApp.IntegrationTests;
@@ -119,6 +124,89 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         Assert.Contains("HttpOnly", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("SameSite=Strict", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Path=/api/auth", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Confirmar_email_con_token_valido_marca_email_confirmado()
+    {
+        using var cliente = factory.CreateClient();
+        var email = $"confirm-email-{Guid.NewGuid():N}@caserito.test";
+        const string password = "Password123!";
+
+        var registroRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistroRequest(email, password, "Usuario de Prueba", "Lima"));
+        Assert.Equal(HttpStatusCode.OK, registroRespuesta.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var generadorToken = scope.ServiceProvider.GetRequiredService<IGeneradorTokenEmail>();
+
+        var usuario = await userManager.FindByEmailAsync(email);
+        Assert.NotNull(usuario);
+        Assert.False(usuario!.EmailConfirmed);
+
+        var token = generadorToken.Generar(usuario.Id);
+        var confirmarRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/confirm-email",
+            new ConfirmarEmailRequest(usuario.Id, token));
+        Assert.Equal(HttpStatusCode.NoContent, confirmarRespuesta.StatusCode);
+
+        using var scopeConfirmado = factory.Services.CreateScope();
+        var userManagerConfirmado = scopeConfirmado.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuarioConfirmado = await userManagerConfirmado.FindByEmailAsync(email);
+        Assert.NotNull(usuarioConfirmado);
+        Assert.True(usuarioConfirmado!.EmailConfirmed);
+    }
+
+    [Fact]
+    public async Task Confirmar_email_con_token_invalido_devuelve_400()
+    {
+        using var cliente = factory.CreateClient();
+
+        var respuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/confirm-email",
+            new ConfirmarEmailRequest(Guid.NewGuid(), "token-invalido"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reenviar_confirmacion_sin_autenticacion_devuelve_401()
+    {
+        using var cliente = factory.CreateClient();
+
+        var respuesta = await cliente.PostAsync("/api/auth/resend-confirmation", null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task Reenviar_confirmacion_para_usuario_no_confirmado_devuelve_204()
+    {
+        using var cliente = factory.CreateClient();
+        var email = $"resend-confirm-{Guid.NewGuid():N}@caserito.test";
+        const string password = "Password123!";
+
+        var registroRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistroRequest(email, password, "Usuario de Prueba", "Lima"));
+        Assert.Equal(HttpStatusCode.OK, registroRespuesta.StatusCode);
+
+        var loginRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest(email, password));
+        Assert.Equal(HttpStatusCode.OK, loginRespuesta.StatusCode);
+
+        var loginBody = await loginRespuesta.Content.ReadFromJsonAsync<TokenAccesoResponse>();
+        Assert.NotNull(loginBody);
+        Assert.False(string.IsNullOrWhiteSpace(loginBody!.AccessToken));
+
+        cliente.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", loginBody.AccessToken);
+
+        var respuesta = await cliente.PostAsync("/api/auth/resend-confirmation", null);
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
     }
 
     private static string? ExtraerCookie(HttpResponseMessage respuesta, string nombreCookie)
