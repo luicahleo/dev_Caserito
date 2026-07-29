@@ -2,6 +2,7 @@ using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Infrastructure.Security;
 using CaseritoApp.Identity.Application.Autorizacion;
+using CaseritoApp.Identity.Application.Correo;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Domain.Autorizacion;
@@ -55,6 +56,7 @@ public static class DependencyInjection
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
         servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
+        servicios.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
         servicios.AddOptions<OpcionesArgos>()
