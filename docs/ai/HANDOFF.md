@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **en implementación: Tasks 1 a 5 completadas; Task 6 pendiente**.
+> Estado: **en implementación: Tasks 1 a 7 completadas; Task 8 pendiente**.
 
 ## Contexto de esta sesión
 
@@ -42,9 +42,25 @@
 - `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/GeneradorTokenEmailDataProtectorTests.cs` — creado.
 - `CaseritoApp/src/BuildingBlocks/CaseritoApp.BuildingBlocks.Application/Messaging/IDomainEventConsumer.cs` — creado (interfaz semántica para handlers de eventos de dominio, evita el sufijo prohibido por CA1711).
 - `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Usuarios/UsuarioRegistrado.cs` — creado.
-- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Auth/EnviarConfirmacionEmailHandler.cs` — creado.
-- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AuthEndpoints.cs` — modificado para publicar `UsuarioRegistrado` tras registro exitoso.
-- `CaseritoApp/tests/CaseritoApp.UnitTests/Auth/EnviarConfirmacionEmailHandlerTests.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Auth/EnviarConfirmacionEmailHandler.cs` — creado; **corregido en esta sesión** para capturar y loguear fallos de SMTP sin propagar la excepción (cumple con el spec: registro no se bloquea si el relay no responde).
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AuthEndpoints.cs` — modificado para publicar `UsuarioRegistrado` tras registro exitoso; **agregados endpoints** `POST /api/auth/confirm-email` y `POST /api/auth/resend-confirmation`.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Auth/EnviarConfirmacionEmailHandlerTests.cs` — creado; **extendido** con test de tolerancia a fallo SMTP.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Auth/ConfirmarEmailCommand.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Auth/IRepositorioConfirmacionEmail.cs` — creado (puerto para mantener Application libre de Infrastructure).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/RepositorioConfirmacionEmail.cs` — creado (implementación sobre `UserManager<ApplicationUser>`).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs` — registrado `IRepositorioConfirmacionEmail`.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Auth/ConfirmarEmailCommandHandlerTests.cs` — creado.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/AuthFlowTests.cs` — **extendido** con flujos de confirmación de email y reenvío.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Kyc/KycResuelto.cs` — creado (evento de dominio con usuario, solicitud, estado y motivo de rechazo).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/NotificarKycResueltoHandler.cs` — creado; captura y loguea fallos SMTP sin propagar (mismo criterio que la confirmación de email).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/IConsultaVerificacionKyc.cs` — extendido con `ObtenerUsuarioAsync` y el record `UsuarioKycDto`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Kyc/ConsultaVerificacionKycEfCore.cs` — implementado `ObtenerUsuarioAsync` sobre `db.Users`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/AprobarSolicitudKycCommand.cs` — publica `KycResuelto` (MediatR `IPublisher`) tras aprobar.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Kyc/RechazarSolicitudKycCommand.cs` — publica `KycResuelto` con el motivo tras rechazar.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/NotificarKycResueltoHandlerTests.cs` — creado (aprobado, rechazado con motivo, usuario no encontrado, tolerancia a fallo SMTP).
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/AprobarSolicitudKycCommandHandlerTests.cs` — actualizado al nuevo constructor y con aserción de `KycResuelto`.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycNotificacionTests.cs` — creado (aprobar/rechazar KYC como admin envía el correo correcto, con `IServicioCorreo` capturador en memoria).
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/OrdersAdaptadoresTests.cs` — fake de `IConsultaVerificacionKyc` actualizado al nuevo miembro de la interfaz.
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -55,6 +71,10 @@
 - Plantillas iniciales en texto plano (Scriban/HTML queda para fase futura).
 - Tokens de confirmación de email con `IDataProtector` + expiración de 24h.
 - El email confirmado es requisito previo para enviar KYC y publicar avisos.
+- Para preservar Clean Architecture, `ConfirmarEmailCommandHandler` no depende directamente de `UserManager<ApplicationUser>`; usa el puerto `IRepositorioConfirmacionEmail` con implementación en Infrastructure.
+- El handler de confirmación por email **no propaga excepciones de SMTP**: se loguea el fallo y el registro devuelve 200, tal como indica el spec.
+- `NotificarKycResueltoHandler` sigue el mismo criterio: un fallo SMTP se loguea y no revierte la resolución del KYC.
+- `KycResuelto` se publica con `IPublisher` de MediatR desde los handlers de aprobar/rechazar (no desde los endpoints), porque el comando no expone el `UsuarioId` al endpoint.
 
 ## Estado de los servicios al cerrar
 
@@ -71,11 +91,13 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - ✅ Task 3 — Puerto e implementación de `IPlantillaCorreo`.
 - ✅ Task 4 — Generador de tokens de confirmación de email.
 - ✅ Task 5 — Evento `UsuarioRegistrado` y handler de confirmación.
-- ⏳ Task 6 — Comando y endpoint para confirmar email.
+- ✅ Task 6 — Comando y endpoints para confirmar/reenviar email.
+- ✅ Task 7 — Notificación de KYC (evento `KycResuelto` + handler `NotificarKycResueltoHandler`).
+- ⏳ Task 8 — Restricciones de autorización por `EmailConfirmed` en KYC y avisos.
 
 ## Próximo paso
 
-Continuar con la Task 6 del plan: crear `ConfirmarEmailCommand` y su handler, agregar los endpoints `confirm-email` y `resend-confirmation` en `AuthEndpoints`, y agregar tests unitarios e integración.
+Continuar con la Task 8 del plan: crear `RequisitoEmailConfirmado` + handler de autorización, agregar el claim `emailConfirmed` al JWT, registrar la política `EmailConfirmado` y aplicarla a `KycEndpoints` y `AvisosEndpoints`, con test de integración (usuario sin confirmar recibe 403).
 
 ## Restricciones
 
@@ -90,3 +112,9 @@ Continuar con la Task 6 del plan: crear `ConfirmarEmailCommand` y su handler, ag
 
 - Backend: `dotnet build CaseritoApp.sln`, `dotnet test CaseritoApp.sln`, `dotnet format CaseritoApp.sln --verify-no-changes`.
 - Frontend: `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
+
+## Checks ejecutados en esta sesión
+
+- `dotnet build CaseritoApp.sln` ✅
+- `dotnet test CaseritoApp.sln` ✅ (Unit: 344, Architecture: 57, Integration: 175)
+- `dotnet format CaseritoApp.sln --verify-no-changes` ✅ (requirió corregir finales de línea LF→CRLF en los archivos nuevos con `dotnet format`)
