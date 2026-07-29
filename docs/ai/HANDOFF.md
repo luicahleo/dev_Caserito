@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **en implementación: Tasks 1 a 7 completadas; Task 8 pendiente**.
+> Estado: **en implementación: Tasks 1 a 8 completadas; Task 9 (frontend) pendiente**.
 
 ## Contexto de esta sesión
 
@@ -61,6 +61,15 @@
 - `CaseritoApp/tests/CaseritoApp.UnitTests/Kyc/AprobarSolicitudKycCommandHandlerTests.cs` — actualizado al nuevo constructor y con aserción de `KycResuelto`.
 - `CaseritoApp/tests/CaseritoApp.IntegrationTests/KycNotificacionTests.cs` — creado (aprobar/rechazar KYC como admin envía el correo correcto, con `IServicioCorreo` capturador en memoria).
 - `CaseritoApp/tests/CaseritoApp.IntegrationTests/OrdersAdaptadoresTests.cs` — fake de `IConsultaVerificacionKyc` actualizado al nuevo miembro de la interfaz.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Domain/Autorizacion/ClaimsApp.cs` — agregado claim `EmailConfirmado` ("emailConfirmed").
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/PoliticasAutorizacion.cs` — agregada constante de policy `EmailConfirmado`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Auth/GeneradorTokensAcceso.cs` — el JWT incluye el claim `emailConfirmed` desde `ApplicationUser.EmailConfirmed`.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Auth/RequisitoEmailConfirmado.cs` — creado (requirement + handler de autorización).
+- `CaseritoApp/src/Host/CaseritoApp.Host/Program.cs` — registrada la policy `EmailConfirmado` y el `IAuthorizationHandler`.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/KycEndpoints.cs` — grupo `/api/kyc` exige la policy `EmailConfirmado`.
+- `CaseritoApp/src/Host/CaseritoApp.Host/Endpoints/AvisosEndpoints.cs` — crear y editar aviso exigen la policy `EmailConfirmado`.
+- `CaseritoApp/tests/CaseritoApp.IntegrationTests/AuthFlowTests.cs` — agregado test: usuario sin email confirmado recibe 403 al enviar KYC.
+- Helpers de registro en `KycFlujoTests`, `KycArgosFlujoTests`, `AvisosFlujoTests`, `DescubrimientoAvisosTests`, `FotosAvisoIntegrationTests`, `FlujoCriticoTests`, `OrdersFlujoTests` y `ModeracionAvisosTests` — ahora marcan `EmailConfirmed = true` antes del login, porque esos flujos exigen la policy.
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -75,6 +84,8 @@
 - El handler de confirmación por email **no propaga excepciones de SMTP**: se loguea el fallo y el registro devuelve 200, tal como indica el spec.
 - `NotificarKycResueltoHandler` sigue el mismo criterio: un fallo SMTP se loguea y no revierte la resolución del KYC.
 - `KycResuelto` se publica con `IPublisher` de MediatR desde los handlers de aprobar/rechazar (no desde los endpoints), porque el comando no expone el `UsuarioId` al endpoint.
+- La policy `EmailConfirmado` se basa en el claim `emailConfirmed` del JWT: un usuario que confirma su correo desbloquea KYC y avisos en su siguiente login o refresh (no en el token ya emitido).
+- La policy se aplicó a todo el grupo `/api/kyc` (incluido `GET /estado`) y solo a crear/editar de `/api/avisos`; pausar, reactivar, eliminar y fotos quedan como estaban (autenticación + reglas de dominio).
 
 ## Estado de los servicios al cerrar
 
@@ -93,11 +104,12 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - ✅ Task 5 — Evento `UsuarioRegistrado` y handler de confirmación.
 - ✅ Task 6 — Comando y endpoints para confirmar/reenviar email.
 - ✅ Task 7 — Notificación de KYC (evento `KycResuelto` + handler `NotificarKycResueltoHandler`).
-- ⏳ Task 8 — Restricciones de autorización por `EmailConfirmed` en KYC y avisos.
+- ✅ Task 8 — Restricciones de autorización por `EmailConfirmed` en KYC y avisos.
+- ⏳ Task 9 — Frontend: pantallas post-registro y confirmación de email.
 
 ## Próximo paso
 
-Continuar con la Task 8 del plan: crear `RequisitoEmailConfirmado` + handler de autorización, agregar el claim `emailConfirmed` al JWT, registrar la política `EmailConfirmado` y aplicarla a `KycEndpoints` y `AvisosEndpoints`, con test de integración (usuario sin confirmar recibe 403).
+Continuar con la Task 9 del plan (frontend en `web/`): funciones `confirmarEmail`/`reenviarConfirmacionEmail` en `web/src/api/auth.ts`, pantalla `ConfirmarEmailPage.tsx`, mensaje post-registro en `RegisterPage.tsx`, ruta en el router y tests. Verificaciones: `npm run typecheck`, `npm run lint`, `npm run test -- --run`, `npm run build`.
 
 ## Restricciones
 
@@ -116,5 +128,5 @@ Continuar con la Task 8 del plan: crear `RequisitoEmailConfirmado` + handler de 
 ## Checks ejecutados en esta sesión
 
 - `dotnet build CaseritoApp.sln` ✅
-- `dotnet test CaseritoApp.sln` ✅ (Unit: 344, Architecture: 57, Integration: 175)
+- `dotnet test CaseritoApp.sln` ✅ (Unit: 344, Architecture: 57, Integration: 176)
 - `dotnet format CaseritoApp.sln --verify-no-changes` ✅ (requirió corregir finales de línea LF→CRLF en los archivos nuevos con `dotnet format`)
