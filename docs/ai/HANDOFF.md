@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **implementación completa: Tasks 1 a 9 hechas; pendiente Task 10 (verificación global y cierre)**.
+> Estado: **bloque completo: Tasks 1 a 10 hechas y verificación global en verde; pendiente decisión de integración (merge) — requiere autorización explícita**.
 
 ## Contexto de esta sesión
 
@@ -113,11 +113,11 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - ✅ Task 7 — Notificación de KYC (evento `KycResuelto` + handler `NotificarKycResueltoHandler`).
 - ✅ Task 8 — Restricciones de autorización por `EmailConfirmed` en KYC y avisos.
 - ✅ Task 9 — Frontend: pantallas post-registro y confirmación de email.
-- ⏳ Task 10 — Verificación global y cierre.
+- ✅ Task 10 — Verificación global y cierre.
 
 ## Próximo paso
 
-Task 10 del plan: verificación global (build, tests y formato de backend; typecheck, lint, tests y build de frontend) y cierre del bloque. Sin push/merge sin autorización explícita.
+Bloque terminado. Integración de la rama `feature/confirmacion-email-notificaciones-kyc` (merge/PR) pendiente de autorización explícita del usuario. Follow-ups diferidos en el spec: plantillas centralizadas en MailApiService, retry/outbox de correos, confirmación por SMS y rate limiting del reenvío.
 
 ## Restricciones
 
