@@ -1,0 +1,71 @@
+using CaseritoApp.Identity.Application.Auth;
+using CaseritoApp.Identity.Application.Correo;
+using CaseritoApp.Identity.Domain.Usuarios;
+using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
+
+namespace CaseritoApp.UnitTests.Auth;
+
+public sealed class EnviarConfirmacionEmailHandlerTests
+{
+    private sealed class ServicioCorreoFake : IServicioCorreo
+    {
+        public MensajeCorreo? UltimoMensaje { get; private set; }
+
+        public Task EnviarAsync(MensajeCorreo mensaje, CancellationToken ct)
+        {
+            UltimoMensaje = mensaje;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class PlantillaFake : IPlantillaCorreo
+    {
+        public string AsuntoConfirmacionEmail(string nombre) => "Asunto";
+
+        public string CuerpoConfirmacionEmail(string nombre, string urlConfirmacion) => urlConfirmacion;
+
+        public string AsuntoKycAprobado(string nombre) => "";
+
+        public string CuerpoKycAprobado(string nombre) => "";
+
+        public string AsuntoKycRechazado(string nombre) => "";
+
+        public string CuerpoKycRechazado(string nombre, string motivo) => "";
+    }
+
+    private sealed class GeneradorTokenFake : IGeneradorTokenEmail
+    {
+        public string Generar(Guid usuarioId) => "token-fake";
+
+        public bool Validar(string token, out Guid usuarioId)
+        {
+            usuarioId = Guid.Empty;
+            return false;
+        }
+    }
+
+    [Fact]
+    public async Task Handle_envia_correo_de_confirmacion_con_url()
+    {
+        var servicio = new ServicioCorreoFake();
+        var handler = new EnviarConfirmacionEmailHandler(
+            servicio,
+            new PlantillaFake(),
+            new GeneradorTokenFake(),
+            NullLogger<EnviarConfirmacionEmailHandler>.Instance);
+
+        var evento = new UsuarioRegistrado(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            Guid.NewGuid(),
+            "test@test.com",
+            "Luis");
+
+        await handler.Handle(evento, CancellationToken.None);
+
+        Assert.NotNull(servicio.UltimoMensaje);
+        Assert.Contains("token-fake", servicio.UltimoMensaje.CuerpoTexto);
+        Assert.Equal("test@test.com", servicio.UltimoMensaje.Para);
+    }
+}

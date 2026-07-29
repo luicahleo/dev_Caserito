@@ -1,7 +1,9 @@
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Autorizacion;
+using CaseritoApp.Identity.Domain.Usuarios;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
@@ -48,7 +50,10 @@ public static class AuthEndpoints
 
     private static async Task<IResult> RegistrarAsync(
         RegistroRequest request,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IPublisher publisher,
+        TimeProvider tiempo,
+        CancellationToken ct)
     {
         var usuario = new ApplicationUser
         {
@@ -78,6 +83,10 @@ public static class AuthEndpoints
                     e => e.Code,
                     e => new[] { e.Description }));
         }
+
+        await publisher.Publish(
+            new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombre),
+            ct);
 
         return Results.Ok();
     }
