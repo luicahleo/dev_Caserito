@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **spec y plan aprobados, pendiente de implementación**.
+> Estado: **en implementación: Tasks 1 y 2 completadas; Task 3 pendiente**.
 
 ## Contexto de esta sesión
 
@@ -26,6 +26,14 @@
 - `docker-compose.argos.yml` — eliminado `depends_on` cíclico de `api` hacia `argos`.
 - `docs/superpowers/specs/2026-07-29-confirmacion-email-notificaciones-kyc-design.md` — creado.
 - `docs/superpowers/plans/2026-07-29-confirmacion-email-notificaciones-kyc.md` — creado.
+- `CaseritoApp/Directory.Packages.props` — agregado `MailKit` 4.16.0 (versión actualizada respecto al plan por vulnerabilidades conocidas en 4.11.0).
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Correo/OpcionesCorreo.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/DependencyInjection.cs` — registradas `OpcionesCorreo` y `IServicioCorreo`.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Correo/IServicioCorreo.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Correo/MensajeCorreo.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Correo/ServicioCorreoSmtp.cs` — creado.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/OpcionesCorreoTests.cs` — creado.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/ServicioCorreoSmtpTests.cs` — creado.
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -45,9 +53,15 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 - `caserito-api` ✅ up
 - `caserito-web` ✅ up
 
+## Progreso de implementación
+
+- ✅ Task 1 — Configuración de correo y registro DI.
+- ✅ Task 2 — Puerto e implementación de `IServicioCorreo` con MailKit 4.16.0.
+- ⏳ Task 3 — Puerto e implementación de `IPlantillaCorreo`.
+
 ## Próximo paso
 
-Implementar el plan `2026-07-29-confirmacion-email-notificaciones-kyc.md` task por task, empezando por Task 1 (configuración SMTP y DI).
+Continuar con la Task 3 del plan: crear el puerto `IPlantillaCorreo`, la implementación en texto plano, registrarla en DI y agregar sus tests unitarios.
 
 ## Restricciones
 
