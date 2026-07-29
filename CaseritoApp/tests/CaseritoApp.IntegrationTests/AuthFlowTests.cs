@@ -209,6 +209,31 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
     }
 
+    [Fact]
+    public async Task Usuario_sin_email_confirmado_no_puede_enviar_kyc()
+    {
+        using var cliente = factory.CreateClient();
+        var email = $"kyc-sin-confirmar-{Guid.NewGuid():N}@caserito.test";
+        const string password = "Password123!";
+
+        var registroRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegistroRequest(email, password, "Usuario de Prueba", "Lima"));
+        Assert.Equal(HttpStatusCode.OK, registroRespuesta.StatusCode);
+
+        var loginRespuesta = await cliente.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginRequest(email, password));
+        Assert.Equal(HttpStatusCode.OK, loginRespuesta.StatusCode);
+        var loginBody = await loginRespuesta.Content.ReadFromJsonAsync<TokenAccesoResponse>();
+
+        using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/kyc/");
+        solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.Forbidden, respuesta.StatusCode);
+    }
+
     private static string? ExtraerCookie(HttpResponseMessage respuesta, string nombreCookie)
     {
         if (!respuesta.Headers.TryGetValues("Set-Cookie", out var valores))

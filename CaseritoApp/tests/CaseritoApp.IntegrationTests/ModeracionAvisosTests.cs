@@ -142,6 +142,9 @@ public sealed class ModeracionAvisosTests(CaseritoApiFactory factory) : IClassFi
             var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var usuario = (await usuarios.FindByEmailAsync(email))!;
             id = usuario.Id;
+            // Los flujos de KYC y avisos exigen correo confirmado (policy EmailConfirmado).
+            usuario.EmailConfirmed = true;
+            Assert.True((await usuarios.UpdateAsync(usuario)).Succeeded);
             if (rol is not null)
             {
                 Assert.True((await usuarios.AddToRoleAsync(usuario, rol)).Succeeded);

@@ -21,7 +21,7 @@ public static class KycEndpoints
     /// <summary>Mapea los grupos de KYC de usuario y de administrador.</summary>
     public static IEndpointRouteBuilder MapKycEndpoints(this IEndpointRouteBuilder app)
     {
-        var usuario = app.MapGroup("/api/kyc").RequireAuthorization();
+        var usuario = app.MapGroup("/api/kyc").RequireAuthorization(PoliticasAutorizacion.EmailConfirmado);
         usuario.MapPost("/", EnviarAsync).DisableAntiforgery()
             .Accepts<IFormFile>("multipart/form-data")
             .Produces(StatusCodes.Status204NoContent)

@@ -24,11 +24,16 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
         var reg = await cliente.PostAsJsonAsync("/api/auth/register", new RegistroRequest(email, "Password123!", "Usuario", "La Paz"));
         Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
 
+        using var scope = factory.Services.CreateScope();
+        var um = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = (await um.FindByEmailAsync(email))!;
+        // Los flujos de KYC y avisos exigen correo confirmado (policy EmailConfirmado).
+        usuario.EmailConfirmed = true;
+        await um.UpdateAsync(usuario);
+
         if (rolExtra is not null)
         {
-            using var scope = factory.Services.CreateScope();
-            var um = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            await um.AddToRoleAsync((await um.FindByEmailAsync(email))!, rolExtra);
+            await um.AddToRoleAsync(usuario, rolExtra);
         }
 
         return await LoguearAsync(cliente, email);

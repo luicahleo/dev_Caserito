@@ -3,6 +3,7 @@ using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Catalog.Application.Avisos;
 using CaseritoApp.Catalog.Domain.Avisos;
+using CaseritoApp.Identity.Infrastructure.Auth;
 using FluentValidation;
 using MediatR;
 
@@ -31,6 +32,7 @@ public static class AvisosEndpoints
         var grupo = app.MapGroup("/api/avisos").RequireAuthorization();
 
         grupo.MapPost("/", CrearAsync)
+            .RequireAuthorization(PoliticasAutorizacion.EmailConfirmado)
             .Accepts<CrearAvisoRequest>("application/json")
             .Produces<AvisoCreadoResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -38,6 +40,7 @@ public static class AvisosEndpoints
             .ProducesValidationProblem();
 
         grupo.MapPut("/{id:guid}", EditarAsync)
+            .RequireAuthorization(PoliticasAutorizacion.EmailConfirmado)
             .Accepts<EditarAvisoRequest>("application/json")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)

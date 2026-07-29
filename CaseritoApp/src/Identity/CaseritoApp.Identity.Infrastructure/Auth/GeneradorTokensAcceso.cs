@@ -38,6 +38,7 @@ public sealed class GeneradorTokensAcceso(
 
         claims.AddRange(permisos.Select(p => new Claim(ClaimsApp.Permiso, p)));
         claims.Add(new Claim(ClaimsApp.Verificado, verificado ? "true" : "false"));
+        claims.Add(new Claim(ClaimsApp.EmailConfirmado, usuario.EmailConfirmed ? "true" : "false"));
 
         var token = new JwtSecurityToken(
             issuer: _o.Issuer,

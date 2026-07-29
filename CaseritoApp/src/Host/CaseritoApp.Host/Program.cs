@@ -7,6 +7,7 @@ using CaseritoApp.BuildingBlocks.Infrastructure.Messaging;
 using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
+using CaseritoApp.Host.Auth;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.Health;
@@ -16,6 +17,7 @@ using CaseritoApp.Host.Orders;
 using CaseritoApp.Host.Reputation;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Notifications.Application.Notificaciones;
 using CaseritoApp.Notifications.Infrastructure;
 using CaseritoApp.Notifications.Infrastructure.PuntosEncuentro;
@@ -25,6 +27,7 @@ using CaseritoApp.Reputation.Application.Resenas;
 using CaseritoApp.Reputation.Infrastructure;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -98,6 +101,13 @@ builder.Services.AddAuthorizationBuilder().AddPolicy(ChatHub.Politica, politica 
             contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub),
             out var usuarioId)
         && usuarioId != Guid.Empty));
+
+// Policy de correo confirmado: bloquea acciones de riesgo (iniciar KYC, crear/editar avisos)
+// a usuarios que aún no confirmaron su email. El claim se emite en el JWT, así que surte
+// efecto en el siguiente login o refresh.
+builder.Services.AddAuthorizationBuilder().AddPolicy(PoliticasAutorizacion.EmailConfirmado, politica =>
+    politica.Requirements.Add(new RequisitoEmailConfirmado()));
+builder.Services.AddSingleton<IAuthorizationHandler, EmailConfirmadoHandler>();
 builder.Services.AddSignalR(opciones =>
 {
     var tiempoReal = builder.Configuration

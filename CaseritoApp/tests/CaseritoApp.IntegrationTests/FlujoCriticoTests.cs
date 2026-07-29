@@ -67,6 +67,9 @@ public sealed class FlujoCriticoTests(CaseritoApiFactory factory) : IClassFixtur
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var usuario = await userManager.FindByEmailAsync(email);
         Assert.NotNull(usuario);
+        // Los flujos de KYC y avisos exigen correo confirmado (policy EmailConfirmado).
+        usuario!.EmailConfirmed = true;
+        await userManager.UpdateAsync(usuario);
 
         var login = await cliente.PostAsJsonAsync(
             "/api/auth/login",

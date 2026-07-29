@@ -2,7 +2,10 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CaseritoApp.IntegrationTests;
@@ -30,12 +33,19 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
     }
 
     /// <summary>Registra un usuario, sube KYC (con ARGOS mockeado a aprobar) y devuelve un token verificado.</summary>
-    private static async Task<string> UsuarioVerificadoAsync(HttpClient cliente)
+    private async Task<string> UsuarioVerificadoAsync(HttpClient cliente)
     {
         var email = Email("fotos-user");
         var reg = await cliente.PostAsJsonAsync("/api/auth/register",
             new RegistroRequest(email, "Password123!", "Usuario Fotos", "La Paz"));
         Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
+
+        // Los flujos de KYC y avisos exigen correo confirmado (policy EmailConfirmado).
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = (await userManager.FindByEmailAsync(email))!;
+        usuario.EmailConfirmed = true;
+        await userManager.UpdateAsync(usuario);
 
         var token = await LoguearAsync(cliente, email);
 

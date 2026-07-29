@@ -266,13 +266,19 @@ public sealed class OrdersFlujoTests(CaseritoApiFactory factory)
             "/api/auth/register",
             new RegistroRequest(email, "Password123!", "Usuario", "La Paz"));
         Assert.Equal(HttpStatusCode.OK, registro.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = (await usuarios.FindByEmailAsync(email))!;
+        // Los flujos de KYC y avisos exigen correo confirmado (policy EmailConfirmado).
+        usuario.EmailConfirmed = true;
+        await usuarios.UpdateAsync(usuario);
+
         var login = await cliente.PostAsJsonAsync(
             "/api/auth/login",
             new LoginRequest(email, "Password123!"));
         var token = (await login.Content.ReadFromJsonAsync<TokenAccesoResponse>())!.AccessToken;
-        using var scope = factory.Services.CreateScope();
-        var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        return ((await usuarios.FindByEmailAsync(email))!.Id, token, email);
+        return (usuario.Id, token, email);
     }
 
     private static async Task<string> LoguearAsync(HttpClient cliente, string email)
