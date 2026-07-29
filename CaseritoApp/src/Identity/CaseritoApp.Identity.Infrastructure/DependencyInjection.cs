@@ -7,6 +7,7 @@ using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.Identity.Infrastructure.Autorizacion;
+using CaseritoApp.Identity.Infrastructure.Correo;
 using CaseritoApp.Identity.Infrastructure.Kyc;
 using CaseritoApp.Identity.Infrastructure.Perfil;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -53,6 +54,7 @@ public static class DependencyInjection
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
+        servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
         servicios.AddOptions<OpcionesArgos>()

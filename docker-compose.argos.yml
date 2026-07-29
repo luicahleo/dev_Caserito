@@ -37,6 +37,6 @@ services:
     environment:
       Argos__Url: "http://argos:5000"
       Argos__ApiKey: "${ARGOS_API_KEY:-}"
-    depends_on:
-      argos:
-        condition: service_healthy
+    # ARGOS es un microservicio opcional para Caserito; la API debe arrancar
+    # independientemente de su estado. Si ARGOS no responde, el adaptador HTTP
+    # de KYC devuelve HTTP 503 sin dejar caer el resto de la aplicación.
