@@ -2,7 +2,7 @@
 
 > Fecha: 2026-07-29  
 > Contexto: continuación desde el cierre del bloque KYC automático con ARGOS.  
-> Estado: **en implementación: Tasks 1 y 2 completadas; Task 3 pendiente**.
+> Estado: **en implementación: Tasks 1, 2 y 3 completadas; Task 4 pendiente**.
 
 ## Contexto de esta sesión
 
@@ -34,6 +34,9 @@
 - `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Correo/ServicioCorreoSmtp.cs` — creado.
 - `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/OpcionesCorreoTests.cs` — creado.
 - `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/ServicioCorreoSmtpTests.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Application/Correo/IPlantillaCorreo.cs` — creado.
+- `CaseritoApp/src/Identity/CaseritoApp.Identity.Infrastructure/Correo/PlantillaCorreoTextoPlano.cs` — creado.
+- `CaseritoApp/tests/CaseritoApp.UnitTests/Correo/PlantillaCorreoTextoPlanoTests.cs` — creado.
 - `docs/ai/HANDOFF.md` — este archivo.
 
 ## Decisiones importantes
@@ -57,11 +60,12 @@ Todos los contenedores de desarrollo estaban levantados y healthy:
 
 - ✅ Task 1 — Configuración de correo y registro DI.
 - ✅ Task 2 — Puerto e implementación de `IServicioCorreo` con MailKit 4.16.0.
-- ⏳ Task 3 — Puerto e implementación de `IPlantillaCorreo`.
+- ✅ Task 3 — Puerto e implementación de `IPlantillaCorreo`.
+- ⏳ Task 4 — Generador de tokens de confirmación de email.
 
 ## Próximo paso
 
-Continuar con la Task 3 del plan: crear el puerto `IPlantillaCorreo`, la implementación en texto plano, registrarla en DI y agregar sus tests unitarios.
+Continuar con la Task 4 del plan: crear el puerto `IGeneradorTokenEmail`, la implementación con `IDataProtector` + expiración, registrarla en DI y agregar sus tests unitarios.
 
 ## Restricciones
 
