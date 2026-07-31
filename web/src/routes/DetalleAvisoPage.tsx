@@ -28,7 +28,7 @@ import { PuntosEncuentroLista } from '../notificaciones/PuntosEncuentroLista';
 export function DetalleAvisoPage() {
   const { id = '' } = useParams();
   const navigate = useNavigate();
-  const { estaAutenticado, verificado } = useAuth();
+  const { estaAutenticado, identidadHabilitada } = useAuth();
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [reporteAbierto, setReporteAbierto] = useState(false);
   const [motivo, setMotivo] = useState('EstafaOEngano');
@@ -163,7 +163,7 @@ export function DetalleAvisoPage() {
             >
               {contacto.isPending ? 'Abriendo conversación…' : 'Contactar al vendedor'}
             </Button>
-            {verificado && (
+            {identidadHabilitada && (
               <Button variant="outlined" onClick={() => setPropuestaAbierta(true)}>
                 Proponer compra
               </Button>

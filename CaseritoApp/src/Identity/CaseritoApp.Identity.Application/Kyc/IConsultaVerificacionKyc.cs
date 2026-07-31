@@ -8,6 +8,9 @@ public interface IConsultaVerificacionKyc
 {
     public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct);
 
+    /// <summary>Indica si el usuario tiene KYC aprobado o posee el rol AdminPlataforma.</summary>
+    public Task<bool> EstaHabilitadoParaMarketplaceAsync(Guid usuarioId, CancellationToken ct);
+
     /// <summary>Datos mínimos del usuario para notificarle el resultado de su KYC.</summary>
     public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct);
 }

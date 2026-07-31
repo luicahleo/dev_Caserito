@@ -3,9 +3,10 @@
 export interface ClaimsJwt {
   permisos: string[];
   verificado: boolean;
+  identidadHabilitada: boolean;
 }
 
-const VACIO: ClaimsJwt = { permisos: [], verificado: false };
+const VACIO: ClaimsJwt = { permisos: [], verificado: false, identidadHabilitada: false };
 
 export function decodificarClaims(token: string | null): ClaimsJwt {
   if (!token) return VACIO;
@@ -21,7 +22,11 @@ export function decodificarClaims(token: string | null): ClaimsJwt {
       : typeof perm === 'string'
         ? [perm]
         : [];
-    return { permisos, verificado: payload['verificado'] === 'true' };
+    return {
+      permisos,
+      verificado: payload['verificado'] === 'true',
+      identidadHabilitada: payload['identidadHabilitada'] === 'true',
+    };
   } catch {
     return VACIO;
   }

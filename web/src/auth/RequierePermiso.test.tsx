@@ -13,6 +13,7 @@ function montarCon(permisos: string[]) {
     cargando: false,
     permisos,
     verificado: false,
+    identidadHabilitada: false,
     tienePermiso: (p: string) => permisos.includes(p),
     iniciarSesion: vi.fn(),
     registrar: vi.fn(),

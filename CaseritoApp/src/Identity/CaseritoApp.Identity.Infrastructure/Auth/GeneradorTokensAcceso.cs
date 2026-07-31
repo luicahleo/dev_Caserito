@@ -13,7 +13,11 @@ public interface IGeneradorTokensAcceso
     /// Genera un JWT firmado (HS256) con los claims del usuario, sus permisos (claims <c>perm</c>)
     /// y expiración configurable.
     /// </summary>
-    public string Generar(ApplicationUser usuario, IReadOnlyCollection<string> permisos, bool verificado);
+    public string Generar(
+        ApplicationUser usuario,
+        IReadOnlyCollection<string> permisos,
+        bool verificado,
+        bool identidadHabilitada = false);
 }
 
 /// <inheritdoc cref="IGeneradorTokensAcceso"/>
@@ -24,7 +28,11 @@ public sealed class GeneradorTokensAcceso(
     private readonly OpcionesJwt _o = opciones.Value;
 
     /// <inheritdoc/>
-    public string Generar(ApplicationUser usuario, IReadOnlyCollection<string> permisos, bool verificado)
+    public string Generar(
+        ApplicationUser usuario,
+        IReadOnlyCollection<string> permisos,
+        bool verificado,
+        bool identidadHabilitada = false)
     {
         var credenciales = new SigningCredentials(proveedorClave.Clave, SecurityAlgorithms.HmacSha256);
         var ahora = tiempo.GetUtcNow();
@@ -38,6 +46,7 @@ public sealed class GeneradorTokensAcceso(
 
         claims.AddRange(permisos.Select(p => new Claim(ClaimsApp.Permiso, p)));
         claims.Add(new Claim(ClaimsApp.Verificado, verificado ? "true" : "false"));
+        claims.Add(new Claim(ClaimsApp.IdentidadHabilitada, identidadHabilitada ? "true" : "false"));
         claims.Add(new Claim(ClaimsApp.EmailConfirmado, usuario.EmailConfirmed ? "true" : "false"));
 
         var token = new JwtSecurityToken(

@@ -133,7 +133,8 @@ public static class AuthEndpoints
         var roles = await userManager.GetRolesAsync(usuario);
         var permisos = MapaRolesPermisos.PermisosDe(roles);
         var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
-        var accessToken = generadorTokens.Generar(usuario, permisos, verificado);
+        var identidadHabilitada = verificado || roles.Contains(RolesApp.AdminPlataforma);
+        var accessToken = generadorTokens.Generar(usuario, permisos, verificado, identidadHabilitada);
         var refreshTokenPlano = await servicioRefreshTokens.EmitirAsync(usuario.Id, ct);
 
         EstablecerCookieRefresh(contexto, refreshTokenPlano, entorno);
@@ -175,7 +176,8 @@ public static class AuthEndpoints
         var roles = await userManager.GetRolesAsync(usuario);
         var permisos = MapaRolesPermisos.PermisosDe(roles);
         var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
-        var accessToken = generadorTokens.Generar(usuario, permisos, verificado);
+        var identidadHabilitada = verificado || roles.Contains(RolesApp.AdminPlataforma);
+        var accessToken = generadorTokens.Generar(usuario, permisos, verificado, identidadHabilitada);
         EstablecerCookieRefresh(contexto, nuevoTokenPlano, entorno);
 
         return Results.Ok(new TokenAccesoResponse(accessToken));

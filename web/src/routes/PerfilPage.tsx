@@ -15,7 +15,7 @@ const esquema = z.object({
 type Datos = z.infer<typeof esquema>;
 
 export function PerfilPage() {
-  const { usuario, cerrarSesion, verificado, tienePermiso } = useAuth();
+  const { usuario, cerrarSesion, verificado, identidadHabilitada, tienePermiso } = useAuth();
   const navigate = useNavigate();
   const [perfilGuardado, setPerfilGuardado] = useState<Perfil | null>(null);
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
@@ -70,11 +70,11 @@ export function PerfilPage() {
         />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip
-            color={verificado ? 'success' : 'default'}
-            label={verificado ? 'Verificado' : 'Sin verificar'}
+            color={verificado ? 'success' : identidadHabilitada ? 'info' : 'default'}
+            label={verificado ? 'Verificado' : identidadHabilitada ? 'Exento por rol de administrador' : 'Sin verificar'}
           />
           <Link component={RouterLink} to="/kyc">
-            {verificado ? 'Ver estado' : 'Verificar identidad'}
+            {verificado ? 'Ver estado' : identidadHabilitada ? 'Consultar rol' : 'Verificar identidad'}
           </Link>
         </Box>
         {tienePermiso('kyc.revisar') && (

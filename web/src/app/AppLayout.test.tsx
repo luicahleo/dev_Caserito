@@ -13,6 +13,7 @@ function mockAuth(estaAutenticado: boolean, permisos: string[] = []) {
   vi.spyOn(authCtx, 'useAuth').mockReturnValue({
     estaAutenticado,
     verificado: false,
+    identidadHabilitada: false,
     cargando: false,
     usuario: null,
     permisos,

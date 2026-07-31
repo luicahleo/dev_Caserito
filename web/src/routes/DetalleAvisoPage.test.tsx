@@ -11,6 +11,7 @@ import { HttpError } from '../api/http';
 const estadoAuth = {
   estaAutenticado: true,
   verificado: true,
+  identidadHabilitada: true,
   usuario: { id: 'comprador', email: '', nombre: 'Comprador', ciudad: '', verificado: false },
 };
 vi.mock('../auth/AuthContext', () => ({ useAuth: () => estadoAuth }));

@@ -10,16 +10,16 @@ function tokenCon(payload: Record<string, unknown>): string {
 
 describe('decodificarClaims', () => {
   it('devuelve claims vacíos si el token es null', () => {
-    expect(decodificarClaims(null)).toEqual({ permisos: [], verificado: false });
+    expect(decodificarClaims(null)).toEqual({ permisos: [], verificado: false, identidadHabilitada: false });
   });
 
   it('devuelve claims vacíos si el token está malformado', () => {
-    expect(decodificarClaims('no-es-jwt')).toEqual({ permisos: [], verificado: false });
+    expect(decodificarClaims('no-es-jwt')).toEqual({ permisos: [], verificado: false, identidadHabilitada: false });
   });
 
   it('lee un permiso único (string) y verificado=true', () => {
     const t = tokenCon({ perm: 'kyc.revisar', verificado: 'true' });
-    expect(decodificarClaims(t)).toEqual({ permisos: ['kyc.revisar'], verificado: true });
+    expect(decodificarClaims(t)).toEqual({ permisos: ['kyc.revisar'], verificado: true, identidadHabilitada: false });
   });
 
   it('lee múltiples permisos (array) y verificado=false', () => {
@@ -27,11 +27,21 @@ describe('decodificarClaims', () => {
     expect(decodificarClaims(t)).toEqual({
       permisos: ['kyc.revisar', 'usuarios.gestionar'],
       verificado: false,
+      identidadHabilitada: false,
     });
   });
 
   it('sin claim perm devuelve lista vacía', () => {
     const t = tokenCon({ verificado: 'true' });
-    expect(decodificarClaims(t)).toEqual({ permisos: [], verificado: true });
+    expect(decodificarClaims(t)).toEqual({ permisos: [], verificado: true, identidadHabilitada: false });
+  });
+
+  it('distingue identidad habilitada de KYC verificado', () => {
+    const t = tokenCon({ verificado: 'false', identidadHabilitada: 'true' });
+    expect(decodificarClaims(t)).toEqual({
+      permisos: [],
+      verificado: false,
+      identidadHabilitada: true,
+    });
   });
 });

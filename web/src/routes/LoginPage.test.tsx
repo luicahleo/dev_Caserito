@@ -16,6 +16,7 @@ function montar(iniciarSesion = vi.fn()) {
     cargando: false,
     permisos: [],
     verificado: false,
+    identidadHabilitada: false,
     tienePermiso: () => false,
     iniciarSesion,
     registrar: vi.fn(),

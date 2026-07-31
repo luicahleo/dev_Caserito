@@ -8,7 +8,7 @@ import { useAuth } from '../auth/AuthContext';
 import { HttpError } from '../api/http';
 
 export function CrearAvisoPage() {
-  const { verificado } = useAuth();
+  const { identidadHabilitada } = useAuth();
   const navigate = useNavigate();
   const fotasLocalesRef = useRef<File[]>([]);
 
@@ -35,7 +35,7 @@ export function CrearAvisoPage() {
 
   const es403 = mutacion.error instanceof HttpError && mutacion.error.status === 403;
 
-  if (!verificado) {
+  if (!identidadHabilitada) {
     return (
       <Container maxWidth="sm" sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>

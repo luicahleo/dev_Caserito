@@ -10,6 +10,7 @@ interface EstadoAuth {
   cargando: boolean;
   permisos: string[];
   verificado: boolean;
+  identidadHabilitada: boolean;
   tienePermiso: (p: string) => boolean;
   iniciarSesion: (cred: auth.Credenciales) => Promise<void>;
   registrar: (datos: auth.RegistroDatos) => Promise<void>;
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         cargando,
         permisos: claims.permisos,
         verificado: claims.verificado,
+        identidadHabilitada: claims.identidadHabilitada,
         tienePermiso: (p: string) => claims.permisos.includes(p),
         iniciarSesion,
         registrar,

@@ -4,6 +4,7 @@ using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Catalog.Domain.Avisos;
 using CaseritoApp.Host.Orders;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Domain.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
@@ -101,7 +102,7 @@ public static class OrdersEndpoints
             var resultado = await sender.Send(new SolicitarOrdenCommand(
                 request.AvisoId,
                 actorId,
-                EstaVerificado(usuario)), ct);
+                TieneIdentidadHabilitada(usuario)), ct);
             return resultado.EsExito
                 ? Results.Created($"/api/orders/{resultado.Valor.Id}", resultado.Valor)
                 : DesdeError(resultado.Error);
@@ -282,9 +283,9 @@ public static class OrdersEndpoints
         return Guid.TryParse(valor, out userId) && userId != Guid.Empty;
     }
 
-    private static bool EstaVerificado(ClaimsPrincipal usuario) =>
+    private static bool TieneIdentidadHabilitada(ClaimsPrincipal usuario) =>
         string.Equals(
-            usuario.FindFirstValue("verificado"),
+            usuario.FindFirstValue(ClaimsApp.IdentidadHabilitada),
             "true",
             StringComparison.OrdinalIgnoreCase);
 

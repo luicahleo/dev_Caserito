@@ -13,6 +13,7 @@ function montar(over: Partial<ReturnType<typeof ctx.useAuth>>) {
     cargando: false,
     permisos: [],
     verificado: false,
+    identidadHabilitada: false,
     tienePermiso: () => false,
     iniciarSesion: vi.fn(),
     registrar: vi.fn(),

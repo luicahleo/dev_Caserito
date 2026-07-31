@@ -7,5 +7,5 @@ public sealed class ConsultaVerificacionParticipanteAdapter(IConsultaVerificacio
     : IConsultaVerificacionParticipante
 {
     public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct) =>
-        consulta.EstaVerificadoAsync(usuarioId, ct);
+        consulta.EstaHabilitadoParaMarketplaceAsync(usuarioId, ct);
 }

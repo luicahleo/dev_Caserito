@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Application.Kyc;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
@@ -124,6 +126,37 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
     {
         using var cliente = factory.CreateClient();
         var token = await RegistrarYLoguearAsync(cliente, Email("aviso-noverif"));
+
+        using var crear = Con(HttpMethod.Post, "/api/avisos/", token);
+        crear.Content = JsonContent.Create(AvisoValido());
+        Assert.Equal(HttpStatusCode.Forbidden, (await cliente.SendAsync(crear)).StatusCode);
+    }
+
+    [Fact]
+    public async Task AdminPlataforma_sin_kyc_puede_crear_sin_generar_verificacion_falsa()
+    {
+        using var cliente = factory.CreateClient();
+        var email = Email("aviso-admin-exento");
+        var token = await RegistrarYLoguearAsync(cliente, email, RolesApp.AdminPlataforma);
+
+        using var crear = Con(HttpMethod.Post, "/api/avisos/", token);
+        crear.Content = JsonContent.Create(AvisoValido());
+        Assert.Equal(HttpStatusCode.Created, (await cliente.SendAsync(crear)).StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var consultaKyc = scope.ServiceProvider.GetRequiredService<IConsultaVerificacionKyc>();
+        var usuario = (await usuarios.FindByEmailAsync(email))!;
+        Assert.False(await consultaKyc.EstaVerificadoAsync(usuario.Id, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(RolesApp.AdminKyc)]
+    [InlineData(RolesApp.Moderador)]
+    public async Task Rol_no_exento_sin_kyc_continua_bloqueado(string rol)
+    {
+        using var cliente = factory.CreateClient();
+        var token = await RegistrarYLoguearAsync(cliente, Email("aviso-rol-no-exento"), rol);
 
         using var crear = Con(HttpMethod.Post, "/api/avisos/", token);
         crear.Content = JsonContent.Create(AvisoValido());

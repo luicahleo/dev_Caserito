@@ -8,9 +8,10 @@ import * as catalogo from '../api/catalogo';
 
 afterEach(() => vi.restoreAllMocks());
 
-function mockAuth(verificado: boolean) {
+function mockAuth(verificado: boolean, identidadHabilitada = verificado) {
   vi.spyOn(authCtx, 'useAuth').mockReturnValue({
     verificado,
+    identidadHabilitada,
     estaAutenticado: true,
     cargando: false,
     usuario: null,
@@ -47,5 +48,11 @@ describe('CrearAvisoPage', () => {
     mockAuth(true);
     montar();
     expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+  });
+
+  it('muestra el formulario al administrador sin KYC', () => {
+    mockAuth(false, true);
+    montar();
+    expect(screen.getByLabelText(/t.tulo/i)).toBeInTheDocument();
   });
 });

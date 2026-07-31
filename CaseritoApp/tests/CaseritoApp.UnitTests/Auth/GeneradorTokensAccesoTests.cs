@@ -49,4 +49,17 @@ public sealed class GeneradorTokensAccesoTests
 
         Assert.Equal("true", Leer(jwt).Claims.Single(c => c.Type == "verificado").Value);
     }
+
+    [Fact]
+    public void Generar_distingue_identidad_habilitada_de_kyc_verificado()
+    {
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+
+        var jwt = CrearGenerador().Generar(
+            usuario, [], verificado: false, identidadHabilitada: true);
+
+        var claims = Leer(jwt).Claims;
+        Assert.Equal("false", claims.Single(c => c.Type == ClaimsApp.Verificado).Value);
+        Assert.Equal("true", claims.Single(c => c.Type == ClaimsApp.IdentidadHabilitada).Value);
+    }
 }

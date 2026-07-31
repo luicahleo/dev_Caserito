@@ -1,4 +1,5 @@
 using CaseritoApp.Identity.Application.Kyc;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Domain.Kyc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,20 @@ public sealed class ConsultaVerificacionKycEfCore(IdentityDbContext db) : IConsu
             .Where(v => v.Id == usuarioId)
             .SelectMany(v => v.Solicitudes)
             .AnyAsync(s => s.Estado == EstadoKyc.Aprobada, ct);
+
+    public async Task<bool> EstaHabilitadoParaMarketplaceAsync(Guid usuarioId, CancellationToken ct)
+    {
+        if (await EstaVerificadoAsync(usuarioId, ct))
+        {
+            return true;
+        }
+
+        return await (
+            from usuarioRol in db.UserRoles
+            join rol in db.Roles on usuarioRol.RoleId equals rol.Id
+            where usuarioRol.UserId == usuarioId && rol.Name == RolesApp.AdminPlataforma
+            select usuarioRol).AnyAsync(ct);
+    }
 
     public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
         db.Users

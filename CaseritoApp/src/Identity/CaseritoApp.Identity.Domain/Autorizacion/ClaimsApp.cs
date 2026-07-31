@@ -9,6 +9,9 @@ public static class ClaimsApp
     /// <summary>Tipo de claim que indica que el usuario tiene una verificación KYC aprobada.</summary>
     public const string Verificado = "verificado";
 
+    /// <summary>Indica que el usuario puede operar en el marketplace por KYC o por su rol.</summary>
+    public const string IdentidadHabilitada = "identidadHabilitada";
+
     /// <summary>Tipo de claim que indica que el usuario confirmó su correo electrónico.</summary>
     public const string EmailConfirmado = "emailConfirmed";
 }

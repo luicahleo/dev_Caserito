@@ -23,7 +23,7 @@ public sealed class OrdersAdaptadoresTests
     }
 
     [Fact]
-    public async Task Identity_solo_entrega_el_booleano_de_verificacion()
+    public async Task Identity_entrega_la_habilitacion_efectiva_del_participante()
     {
         var adapter = new ConsultaVerificacionParticipanteAdapter(
             new ConsultaVerificacionFake(true));
@@ -56,6 +56,9 @@ public sealed class OrdersAdaptadoresTests
     private sealed class ConsultaVerificacionFake(bool verificado) : IConsultaVerificacionKyc
     {
         public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(verificado);
+
+        public Task<bool> EstaHabilitadoParaMarketplaceAsync(Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(verificado);
 
         public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
