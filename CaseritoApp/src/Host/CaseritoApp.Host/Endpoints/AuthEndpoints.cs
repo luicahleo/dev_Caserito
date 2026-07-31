@@ -58,6 +58,7 @@ public static class AuthEndpoints
 
         grupo.MapPost("/resend-confirmation", ReenviarConfirmacionAsync)
             .RequireAuthorization()
+            .RequireRateLimiting("auth-reenvio-confirmacion")
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized);
 

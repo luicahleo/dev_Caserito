@@ -1,6 +1,7 @@
 using CaseritoApp.Identity.Application.Auth;
 using CaseritoApp.Identity.Application.Correo;
 using CaseritoApp.Identity.Domain.Usuarios;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -8,6 +9,27 @@ namespace CaseritoApp.UnitTests.Auth;
 
 public sealed class EnviarConfirmacionEmailHandlerTests
 {
+    private sealed class LoggerCapturador<T> : ILogger<T>
+    {
+        public Exception? Excepcion { get; private set; }
+        public string Mensaje { get; private set; } = string.Empty;
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+        {
+            Excepcion = exception;
+            Mensaje = formatter(state, exception);
+        }
+    }
+
     private sealed class ServicioCorreoFake : IServicioCorreo
     {
         public MensajeCorreo? UltimoMensaje { get; private set; }
@@ -81,12 +103,13 @@ public sealed class EnviarConfirmacionEmailHandlerTests
     [Fact]
     public async Task Handle_no_propaga_excepcion_cuando_falla_el_envio()
     {
+        var logger = new LoggerCapturador<EnviarConfirmacionEmailHandler>();
         var handler = new EnviarConfirmacionEmailHandler(
             new ServicioCorreoQueFalla(),
             new PlantillaFake(),
             new GeneradorTokenFake(),
             new OpcionesApp { UrlPublica = "https://app.ejemplo.test/" },
-            NullLogger<EnviarConfirmacionEmailHandler>.Instance);
+            logger);
 
         var evento = new UsuarioRegistrado(
             Guid.NewGuid(),
@@ -99,5 +122,9 @@ public sealed class EnviarConfirmacionEmailHandlerTests
             () => handler.Handle(evento, CancellationToken.None));
 
         Assert.Null(excepcion);
+        Assert.IsType<InvalidOperationException>(logger.Excepcion);
+        Assert.DoesNotContain("token-fake", logger.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("test@test.com", logger.Mensaje, StringComparison.Ordinal);
+        Assert.DoesNotContain("https://", logger.Mensaje, StringComparison.Ordinal);
     }
 }

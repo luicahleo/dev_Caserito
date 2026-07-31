@@ -754,12 +754,19 @@ SeedSettings__AdminCiudad=REEMPLAZAR
 Argos__Url=http://argos:5000
 Argos__ApiKey=
 
-# Correo vía relay interno del VPS (sin auth):
+# Correo vía relay interno del VPS (sin auth ni TLS en el salto privado CaseritoApp -> Postfix):
 Correo__Host=mail
 Correo__Puerto=587
 Correo__HabilitarSsl=false
 Correo__Remitente=noreply@trajano.online
 Correo__NombreRemitente=Caserito
+
+Email__Host=mail
+Email__Port=587
+Email__Usuario=
+Email__Password=
+Email__Remitente=noreply@trajano.online
+Email__EnableSsl=false
 
 # Rutas de volúmenes (bind mounts del host):
 AlmacenFotos__RutaBase=/data/fotos-avisos

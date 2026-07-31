@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mail;
 using CaseritoApp.Notifications.Application.Notificaciones;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace CaseritoApp.Notifications.Infrastructure.Email;
@@ -17,7 +18,9 @@ public sealed class OpcionesEmail
 }
 
 #pragma warning disable SYSLIB0014 // SmtpClient está obsoleto; se usa para el piloto con servidor configurable.
-public sealed class SmtpEmailSender(IOptions<OpcionesEmail> opciones) : IEmailSender
+public sealed partial class SmtpEmailSender(
+    IOptions<OpcionesEmail> opciones,
+    ILogger<SmtpEmailSender> logger) : IEmailSender
 {
     public async Task EnviarAsync(
         string destinatario,
@@ -41,7 +44,23 @@ public sealed class SmtpEmailSender(IOptions<OpcionesEmail> opciones) : IEmailSe
             IsBodyHtml = !string.IsNullOrEmpty(cuerpoHtml),
             Body = cuerpoHtml ?? cuerpoTexto,
         };
-        await cliente.SendMailAsync(mensaje, ct);
+        try
+        {
+            await cliente.SendMailAsync(mensaje, ct);
+        }
+        catch (Exception ex)
+        {
+            RegistrarError(logger, opc.Host, opc.Port, opc.EnableSsl, ex);
+            throw;
+        }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Fallo en SmtpEmailSender.EnviarAsync: host={Host} puerto={Puerto} ssl={Ssl}")]
+    private static partial void RegistrarError(
+        ILogger logger,
+        string host,
+        int puerto,
+        bool ssl,
+        Exception ex);
 }
 #pragma warning restore SYSLIB0014

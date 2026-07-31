@@ -14,6 +14,6 @@ public sealed class OpcionesCorreoTests
         Assert.Equal(587, opciones.Puerto);
         Assert.Equal("noreply@trajano.online", opciones.Remitente);
         Assert.Equal("Caserito", opciones.NombreRemitente);
-        Assert.True(opciones.HabilitarSsl);
+        Assert.False(opciones.HabilitarSsl);
     }
 }

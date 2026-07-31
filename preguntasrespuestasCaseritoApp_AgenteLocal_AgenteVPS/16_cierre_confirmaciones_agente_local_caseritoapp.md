@@ -16,20 +16,20 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0@sha256:1fa23fc4872d95fd71c2833ebe65d7e
 UID/GID confirmados por el VPS: `1654:1654`. Cualquier actualización del runtime requerirá cambiar
 deliberadamente el digest y volver a ejecutar build, tests y smoke del payload.
 
-## 2. STARTTLS confirmado para ambos adaptadores
+## 2. TLS del salto SMTP interno
 
-Configuración definitiva:
+Configuración corregida tras verificar el certificado presentado por Postfix en producción:
 
 ```dotenv
 Correo__Host=mail
 Correo__Puerto=587
-Correo__HabilitarSsl=true
+Correo__HabilitarSsl=false
 Correo__Remitente=noreply@trajano.online
 Correo__NombreRemitente=Caserito
 
 Email__Host=mail
 Email__Port=587
-Email__EnableSsl=true
+Email__EnableSsl=false
 Email__Usuario=
 Email__Password=
 Email__Remitente=noreply@trajano.online
@@ -37,12 +37,17 @@ Email__Remitente=noreply@trajano.online
 
 Comportamiento verificado en código:
 
-- Identity/KYC usa MailKit con `SecureSocketOptions.StartTls` cuando
-  `Correo__HabilitarSsl=true`.
-- Notifications usa `System.Net.Mail.SmtpClient.EnableSsl=true`, que inicia la sesión SMTP y
-  ejecuta STARTTLS si el servidor lo anuncia.
-- Ambos son compatibles con `smtpd_tls_security_level=may`.
+- Identity/KYC usa MailKit con `SecureSocketOptions.None` cuando
+  `Correo__HabilitarSsl=false`.
+- Notifications deja `System.Net.Mail.SmtpClient.EnableSsl=false`.
+- Estos flags controlan únicamente el salto privado `caseritoapp -> mail` dentro de
+  `trajano-shared-network`; Postfix configura independientemente el TLS del salto `mail -> Brevo`.
+- `smtpd_tls_security_level=may` solo anuncia STARTTLS. No vuelve confiable el certificado
+  autofirmado ni corrige que su SAN sea `localhost` en vez del hostname Docker `mail`.
 - No se usa SMTPS implícito/puerto 465.
+
+No se instala ningún callback que acepte certificados inválidos. STARTTLS podrá reactivarse cuando
+Postfix presente un certificado confiable cuyo SAN incluya el hostname usado por CaseritoApp.
 
 Referencias de los clientes:
 
@@ -140,4 +145,3 @@ Si no se dispone de un generador autorizado de rostros sintéticos, marcar la pr
 No se autoriza aún desplegar ni crear secretos desde este documento. El despliegue continúa
 dependiendo de la entrega segura de credenciales por el humano y de que los cambios locales sean
 integrados en `master`.
-

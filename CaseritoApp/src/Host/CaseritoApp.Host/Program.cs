@@ -126,6 +126,15 @@ builder.Services.AddHealthChecks()
 builder.Services.AddRateLimiter(opciones =>
 {
     opciones.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    opciones.AddPolicy("auth-reenvio-confirmacion", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromHours(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
     opciones.AddPolicy("chat-iniciar", contexto => RateLimitPartition.GetFixedWindowLimiter(
         Particion(contexto),
         _ => new FixedWindowRateLimiterOptions

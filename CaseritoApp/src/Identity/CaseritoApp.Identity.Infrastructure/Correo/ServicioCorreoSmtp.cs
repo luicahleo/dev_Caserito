@@ -39,9 +39,9 @@ public sealed partial class ServicioCorreoSmtp(
             await client.DisconnectAsync(true, ct);
             RegistrarEnvio(logger);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            RegistrarError(logger);
+            RegistrarError(logger, _opciones.Host, _opciones.Puerto, _opciones.HabilitarSsl, ex);
             throw;
         }
     }
@@ -49,6 +49,11 @@ public sealed partial class ServicioCorreoSmtp(
     [LoggerMessage(Level = LogLevel.Information, Message = "Correo enviado correctamente.")]
     private static partial void RegistrarEnvio(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo enviar el correo.")]
-    private static partial void RegistrarError(ILogger logger);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Fallo en ServicioCorreoSmtp.EnviarAsync: host={Host} puerto={Puerto} startTls={StartTls}")]
+    private static partial void RegistrarError(
+        ILogger logger,
+        string host,
+        int puerto,
+        bool startTls,
+        Exception ex);
 }
