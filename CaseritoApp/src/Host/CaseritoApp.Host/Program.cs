@@ -28,6 +28,7 @@ using CaseritoApp.Reputation.Infrastructure;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -286,6 +287,17 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
 
     await app.Services.SembrarRolesAsync();
 
+    using (var scopeSeed = app.Services.CreateScope())
+    {
+        var opcionesSeed = app.Configuration
+            .GetSection(OpcionesSeedAdmin.Seccion)
+            .Get<OpcionesSeedAdmin>() ?? new OpcionesSeedAdmin();
+        var seedAdmin = new SeedAdminPlataforma(
+            scopeSeed.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>(),
+            scopeSeed.ServiceProvider.GetRequiredService<ILogger<SeedAdminPlataforma>>());
+        await seedAdmin.EjecutarAsync(opcionesSeed);
+    }
+
     using (var scopeBootstrap = app.Services.CreateScope())
     {
         var opcionesBootstrap = app.Configuration
@@ -334,9 +346,20 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
     await app.Services.SembrarPuntosEncuentroSegurosAsync();
 }
 
+// nginx termina TLS y llega desde la red bridge de Docker. Se aceptan sus cabeceras porque el
+// puerto de la aplicación solo se publica en loopback en el compose de producción.
+var forwardedHeaders = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+};
+forwardedHeaders.KnownIPNetworks.Clear();
+forwardedHeaders.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeaders);
+
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapAuthEndpoints();
 app.MapPerfilEndpoints();
@@ -366,6 +389,7 @@ app.MapHub<ChatHub>("/hubs/chat", opciones =>
 }).RequireAuthorization(ChatHub.Politica);
 
 app.MapHealthChecks("/health");
+app.MapFallbackToFile("index.html");
 
 static string Particion(HttpContext contexto) =>
     contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub)

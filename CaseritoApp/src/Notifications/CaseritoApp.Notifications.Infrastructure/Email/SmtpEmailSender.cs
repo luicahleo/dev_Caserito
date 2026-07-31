@@ -29,9 +29,13 @@ public sealed class SmtpEmailSender(IOptions<OpcionesEmail> opciones) : IEmailSe
         var opc = opciones.Value;
         using var cliente = new SmtpClient(opc.Host, opc.Port)
         {
-            Credentials = new NetworkCredential(opc.Usuario, opc.Password),
             EnableSsl = opc.EnableSsl,
         };
+        if (!string.IsNullOrWhiteSpace(opc.Usuario))
+        {
+            cliente.Credentials = new NetworkCredential(opc.Usuario, opc.Password);
+        }
+
         using var mensaje = new MailMessage(opc.Remitente, destinatario, asunto, cuerpoTexto)
         {
             IsBodyHtml = !string.IsNullOrEmpty(cuerpoHtml),

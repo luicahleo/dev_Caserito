@@ -1,0 +1,55 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: CaseritoApp/global.json
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Publicar API
+        run: dotnet publish src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -c Release -o ../../payload/web
+        working-directory: CaseritoApp
+      - name: Compilar PWA
+        run: npm ci && npm run build
+        working-directory: web
+      - name: Preparar payload
+        run: |
+          mkdir -p payload/web/wwwroot
+          cp -r web/dist/. payload/web/wwwroot/
+          cp Dockerfile.web docker-compose.yml payload/
+      - name: Configurar agente SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+      - name: Registrar host SSH
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+      - name: Sincronizar payload con la VPS
+        run: |
+          rsync -avz --delete payload/web/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/caseritoapp/web/
+          rsync -avz payload/Dockerfile.web payload/docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/caseritoapp/
+      - name: Construir y desplegar en la VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            set -e
+            cd /var/apps/caseritoapp
+            docker compose up -d --build caseritoapp
+          ENDSSH
+      - name: Comprobar salud
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "curl -fsS http://127.0.0.1:8084/health"

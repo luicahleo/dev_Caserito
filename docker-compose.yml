@@ -1,31 +1,33 @@
-version: '3.9'
-
+# Producción VPS Trajano. Desarrollo local: docker-compose.dev.yml.
 services:
-  api:
-    image: caserito-api:latest
-    container_name: caserito-api
+  caseritoapp:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: caseritoapp:latest
+    container_name: caseritoapp
+    restart: unless-stopped
     env_file: .env
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       ASPNETCORE_HTTP_PORTS: "8080"
       TZ: "America/La_Paz"
-      # Ruta de migración controlada de prod: aplica el esquema pendiente y siembra los roles del MVP
-      # (idempotente) al arrancar. Sin esto, el registro fallaría con 500 (rol Cliente inexistente).
       Migraciones__EjecutarAlArranque: "true"
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8084:8080"
+    volumes:
+      - /var/apps/caseritoapp/fotos-avisos:/data/fotos-avisos
+      - /var/apps/caseritoapp/kyc-blobs:/data/kyc-blobs
+      - /var/apps/caseritoapp/dataprotection-keys:/data/dataprotection-keys
     networks: [trajano-shared-network]
-    restart: always
-
-  web:
-    image: caserito-web:latest
-    container_name: caserito-web
-    environment:
-      TZ: "America/La_Paz"
-    ports:
-      - "127.0.0.1:8090:80"
-    networks: [trajano-shared-network]
-    restart: always
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   trajano-shared-network:

@@ -7,15 +7,25 @@ using Microsoft.Extensions.Hosting;
 
 namespace CaseritoApp.UnitTests.Kyc;
 
-public sealed class FailFastEncryptorTests
+public sealed class EncryptorSegunEntornoTests
 {
     [Fact]
-    public void Fuera_de_dev_o_testing_sin_encryptor_real_falla_al_componer()
+    public void Fuera_de_dev_o_testing_registra_encryptor_real()
     {
-        var config = new ConfigurationBuilder().Build();
+        var rutaTemporal = Path.Combine(Path.GetTempPath(), $"caserito-keys-{Guid.NewGuid():N}");
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DataProtection:RutaClaves"] = rutaTemporal,
+            })
+            .Build();
 
-        Assert.Throws<InvalidOperationException>(() =>
-            new ServiceCollection().AgregarIdentity(config, new EntornoStub("Production")));
+        var provider = new ServiceCollection()
+            .AddLogging()
+            .AgregarIdentity(config, new EntornoStub("Production"))
+            .BuildServiceProvider();
+
+        Assert.IsType<DataProtectionEncryptor>(provider.GetRequiredService<IEncryptor>());
     }
 
     [Theory]

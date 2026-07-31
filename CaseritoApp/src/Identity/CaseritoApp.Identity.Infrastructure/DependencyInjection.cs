@@ -59,6 +59,8 @@ public static class DependencyInjection
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
         servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
+        servicios.AddSingleton(
+            config.GetSection(OpcionesApp.Seccion).Get<OpcionesApp>() ?? new OpcionesApp());
         servicios.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
         servicios.AddScoped<IPlantillaCorreo, PlantillaCorreoTextoPlano>();
         servicios.AddSingleton<IGeneradorTokenEmail>(sp =>
@@ -76,18 +78,22 @@ public static class DependencyInjection
 
         servicios.AddHttpClient<IVerificadorIdentidadArgos, VerificadorIdentidadArgosHttp>();
 
-        // Fail-fast de PII: fuera de Development/Testing no existe un encryptor real cableado
-        // (envelope/KMS diferido), así que se aborta la composición en vez de escribir CI/selfie en
-        // claro. Mismo criterio de entorno que la clave efímera de JWT. Sin escape hatch: prod no
-        // arranca hasta cablear cifrado real.
-        if (!(entorno.IsDevelopment() || entorno.IsEnvironment("Testing")))
+        // Cifrado de PII: en Development/Testing se mantiene el Passthrough (sin cifrado, cómodo
+        // para depurar y tests). Fuera de esos entornos se cablea el encryptor real sobre
+        // ASP.NET Core Data Protection, con el key ring persistido en disco (volumen del host)
+        // para que sobreviva al recreate del contenedor. Mismo criterio de entorno que la clave
+        // efímera de JWT.
+        if (entorno.IsDevelopment() || entorno.IsEnvironment("Testing"))
         {
-            throw new InvalidOperationException(
-                "IEncryptor está configurado como PassthroughEncryptor fuera de Development/Testing: " +
-                "se requiere un encryptor real (envelope/KMS) antes de producción.");
+            servicios.AddSingleton<IEncryptor, PassthroughEncryptor>();
         }
-
-        servicios.AddSingleton<IEncryptor, PassthroughEncryptor>();
+        else
+        {
+            var rutaClaves = config.GetValue<string>("DataProtection:RutaClaves")
+                ?? "/data/dataprotection-keys";
+            servicios.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(rutaClaves));
+            servicios.AddSingleton<IEncryptor, DataProtectionEncryptor>();
+        }
         servicios.AddScoped<IAlmacenBlobsKyc, AlmacenBlobsKycDisco>();
         servicios.AddSingleton<IPublicadorEventosIntegracion, PublicadorEventosIntegracionLog>();
         servicios.AddSingleton<IAuditorAccesoPii, AuditorAccesoPiiLog>();

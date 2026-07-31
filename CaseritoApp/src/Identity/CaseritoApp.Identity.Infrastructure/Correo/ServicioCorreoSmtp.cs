@@ -31,21 +31,24 @@ public sealed partial class ServicioCorreoSmtp(
         try
         {
             using var client = new SmtpClient();
-            await client.ConnectAsync(_opciones.Host, _opciones.Puerto, SecureSocketOptions.StartTls, ct);
+            var seguridad = _opciones.HabilitarSsl
+                ? SecureSocketOptions.StartTls
+                : SecureSocketOptions.None;
+            await client.ConnectAsync(_opciones.Host, _opciones.Puerto, seguridad, ct);
             await client.SendAsync(mime, ct);
             await client.DisconnectAsync(true, ct);
-            RegistrarEnvio(logger, mensaje.Para, mensaje.Asunto);
+            RegistrarEnvio(logger);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            RegistrarError(logger, mensaje.Para, mensaje.Asunto, ex.Message);
+            RegistrarError(logger);
             throw;
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Correo enviado: para={Para} asunto={Asunto}")]
-    private static partial void RegistrarEnvio(ILogger logger, string para, string asunto);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Correo enviado correctamente.")]
+    private static partial void RegistrarEnvio(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Error enviando correo: para={Para} asunto={Asunto} error={Error}")]
-    private static partial void RegistrarError(ILogger logger, string para, string asunto, string error);
+    [LoggerMessage(Level = LogLevel.Error, Message = "No se pudo enviar el correo.")]
+    private static partial void RegistrarError(ILogger logger);
 }

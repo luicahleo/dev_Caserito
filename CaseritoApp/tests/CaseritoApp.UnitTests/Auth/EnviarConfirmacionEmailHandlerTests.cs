@@ -59,6 +59,7 @@ public sealed class EnviarConfirmacionEmailHandlerTests
             servicio,
             new PlantillaFake(),
             new GeneradorTokenFake(),
+            new OpcionesApp { UrlPublica = "https://app.ejemplo.test/" },
             NullLogger<EnviarConfirmacionEmailHandler>.Instance);
 
         var evento = new UsuarioRegistrado(
@@ -71,6 +72,8 @@ public sealed class EnviarConfirmacionEmailHandlerTests
         await handler.Handle(evento, CancellationToken.None);
 
         Assert.NotNull(servicio.UltimoMensaje);
+        Assert.Contains(
+            "https://app.ejemplo.test/confirmar-email?userId=", servicio.UltimoMensaje.CuerpoTexto);
         Assert.Contains("token-fake", servicio.UltimoMensaje.CuerpoTexto);
         Assert.Equal("test@test.com", servicio.UltimoMensaje.Para);
     }
@@ -82,6 +85,7 @@ public sealed class EnviarConfirmacionEmailHandlerTests
             new ServicioCorreoQueFalla(),
             new PlantillaFake(),
             new GeneradorTokenFake(),
+            new OpcionesApp { UrlPublica = "https://app.ejemplo.test/" },
             NullLogger<EnviarConfirmacionEmailHandler>.Instance);
 
         var evento = new UsuarioRegistrado(

@@ -9,13 +9,15 @@ public sealed partial class EnviarConfirmacionEmailHandler(
     IServicioCorreo servicioCorreo,
     IPlantillaCorreo plantilla,
     IGeneradorTokenEmail generadorToken,
+    OpcionesApp opcionesApp,
     ILogger<EnviarConfirmacionEmailHandler> logger)
     : IDomainEventConsumer<UsuarioRegistrado>
 {
     public async Task Handle(UsuarioRegistrado evento, CancellationToken cancellationToken)
     {
         var token = generadorToken.Generar(evento.UsuarioId);
-        var url = $"https://caserito.trajano.online/confirmar-email?userId={evento.UsuarioId}&token={Uri.EscapeDataString(token)}";
+        var urlBase = opcionesApp.UrlPublica.TrimEnd('/');
+        var url = $"{urlBase}/confirmar-email?userId={evento.UsuarioId}&token={Uri.EscapeDataString(token)}";
 
         var mensaje = new MensajeCorreo(
             evento.Email,
