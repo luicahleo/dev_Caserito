@@ -33,8 +33,13 @@ no hará ese push sin autorización explícita.
 
 ## 2. Commit de despliegue
 
-El hash del commit local final se añadirá a este documento después de ejecutar la verificación y
-crear el commit. Ese commit incluirá, como mínimo:
+Commit local verificado:
+
+```text
+29457f1 feat(deploy): prepara CaseritoApp y PWA para VPS Trajano
+```
+
+Ese commit incluye:
 
 - digest fijado del runtime ASP.NET Core 10;
 - correcciones SMTP y anti-PII;
@@ -44,6 +49,8 @@ crear el commit. Ese commit incluirá, como mínimo:
 - `.env.production.example`;
 - cifrado Data Protection y seed de administrador necesarios para Production;
 - pruebas y documentos de coordinación asociados.
+
+El commit todavía no fue enviado a `origin/master`; no se dispararon CI ni deploy.
 
 ## 3. Secretos pendientes del humano
 
@@ -62,4 +69,3 @@ Continúan pendientes y no se inventarán ni guardarán en el repositorio:
 
 El humano debe entregarlos mediante un canal seguro. El agente VPS creará
 `/var/apps/caseritoapp/.env` con permisos `600`; los secrets SSH se configurarán en GitHub.
-
