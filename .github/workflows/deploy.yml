@@ -21,7 +21,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Publicar API
-        run: dotnet publish src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -c Release -o ../../payload/web
+        run: dotnet publish src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -c Release -o ../payload/web
         working-directory: CaseritoApp
       - name: Compilar PWA
         run: npm ci && npm run build
@@ -52,4 +52,15 @@ jobs:
           ENDSSH
       - name: Comprobar salud
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "curl -fsS http://127.0.0.1:8084/health"
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
+            set -e
+            for attempt in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8084/health; then
+                exit 0
+              fi
+              echo "Esperando health check ($attempt/30)..."
+              sleep 5
+            done
+            docker logs --tail 200 caseritoapp
+            exit 1
+          ENDSSH
