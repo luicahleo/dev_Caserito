@@ -50,15 +50,19 @@ describe('api/kyc', () => {
   });
 
   it('obtenerImagenKyc convierte el Blob en objectURL', async () => {
+    const contenido = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(new Blob(['x'], { type: 'image/png' }), {
+      new Response(contenido, {
         status: 200,
         headers: { 'Content-Type': 'image/png' },
       }),
     );
     const crear = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:fake');
     const url = await obtenerImagenKyc('abc', 'selfie');
-    expect(crear).toHaveBeenCalled();
+    expect(crear).toHaveBeenCalledOnce();
+    const blobRecibido = crear.mock.calls[0][0] as Blob;
+    expect(blobRecibido.type).toBe('image/png');
+    expect(blobRecibido.size).toBe(contenido.byteLength);
     expect(url).toBe('blob:fake');
   });
 
