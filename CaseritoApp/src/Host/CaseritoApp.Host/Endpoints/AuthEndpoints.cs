@@ -157,9 +157,7 @@ public static class AuthEndpoints
         LoginRequest request,
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IGeneradorTokensAcceso generadorTokens,
-        IServicioRefreshTokens servicioRefreshTokens,
-        IConsultaVerificacionKyc consultaKyc,
+        IEmisorSesion emisorSesion,
         HttpContext contexto,
         IHostEnvironment entorno,
         CancellationToken ct)
@@ -176,23 +174,17 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        var roles = await userManager.GetRolesAsync(usuario);
-        var permisos = MapaRolesPermisos.PermisosDe(roles);
-        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
-        var identidadHabilitada = verificado || roles.Contains(RolesApp.AdminPlataforma);
-        var accessToken = generadorTokens.Generar(usuario, permisos, verificado, identidadHabilitada);
-        var refreshTokenPlano = await servicioRefreshTokens.EmitirAsync(usuario.Id, ct);
+        var sesion = await emisorSesion.EmitirAsync(usuario, ct);
 
-        EstablecerCookieRefresh(contexto, refreshTokenPlano, entorno);
+        EstablecerCookieRefresh(contexto, sesion.RefreshToken, entorno);
 
-        return Results.Ok(new TokenAccesoResponse(accessToken));
+        return Results.Ok(new TokenAccesoResponse(sesion.AccessToken));
     }
 
     private static async Task<IResult> RefreshAsync(
         UserManager<ApplicationUser> userManager,
-        IGeneradorTokensAcceso generadorTokens,
+        IEmisorSesion emisorSesion,
         IServicioRefreshTokens servicioRefreshTokens,
-        IConsultaVerificacionKyc consultaKyc,
         HttpContext contexto,
         IHostEnvironment entorno,
         CancellationToken ct)
@@ -204,29 +196,24 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        var rotado = await servicioRefreshTokens.RotarAsync(tokenPlano, ct);
-        if (rotado is null)
+        var userId = await servicioRefreshTokens.ConsumirAsync(tokenPlano, ct);
+        if (userId is null)
         {
             BorrarCookieRefresh(contexto, entorno);
             return Results.Unauthorized();
         }
 
-        var (nuevoTokenPlano, userId) = rotado.Value;
-        var usuario = await userManager.FindByIdAsync(userId.ToString());
+        var usuario = await userManager.FindByIdAsync(userId.Value.ToString());
         if (usuario is null)
         {
             BorrarCookieRefresh(contexto, entorno);
             return Results.Unauthorized();
         }
 
-        var roles = await userManager.GetRolesAsync(usuario);
-        var permisos = MapaRolesPermisos.PermisosDe(roles);
-        var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, ct);
-        var identidadHabilitada = verificado || roles.Contains(RolesApp.AdminPlataforma);
-        var accessToken = generadorTokens.Generar(usuario, permisos, verificado, identidadHabilitada);
-        EstablecerCookieRefresh(contexto, nuevoTokenPlano, entorno);
+        var sesion = await emisorSesion.EmitirAsync(usuario, ct);
+        EstablecerCookieRefresh(contexto, sesion.RefreshToken, entorno);
 
-        return Results.Ok(new TokenAccesoResponse(accessToken));
+        return Results.Ok(new TokenAccesoResponse(sesion.AccessToken));
     }
 
     private static async Task<IResult> LogoutAsync(

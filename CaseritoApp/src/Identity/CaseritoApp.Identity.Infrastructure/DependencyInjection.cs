@@ -127,6 +127,7 @@ public static class DependencyInjection
         servicios.AddSingleton(TimeProvider.System);
         servicios.AddSingleton<ProveedorClaveFirma>();
         servicios.AddSingleton<IGeneradorTokensAcceso, GeneradorTokensAcceso>();
+        servicios.AddScoped<IEmisorSesion, EmisorSesion>();
         servicios.AddScoped<ServicioRefreshTokens>();
         servicios.AddScoped<IServicioRefreshTokens>(
             proveedor => proveedor.GetRequiredService<ServicioRefreshTokens>());

@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Application.Correo;
 using CaseritoApp.Identity.Infrastructure;
+using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,14 @@ namespace CaseritoApp.IntegrationTests;
 public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
     private const string NombreCookie = "refreshToken";
+
+    [Fact]
+    public void Emisor_de_sesion_comun_esta_registrado()
+    {
+        using var scope = factory.Services.CreateScope();
+
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<IEmisorSesion>());
+    }
 
     [Fact]
     public async Task Flujo_completo_register_login_refresh_logout()
