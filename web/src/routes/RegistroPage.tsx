@@ -1,35 +1,67 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
-import { Button, Container, Stack, TextField, Typography, Alert, Link } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import {
+  Alert,
+  Button,
+  Container,
+  IconButton,
+  InputAdornment,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useAuth } from '../auth/AuthContext';
 
-const esquema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(8, 'Mínimo 8 caracteres'),
-  nombre: z.string().min(1, 'El nombre es obligatorio'),
-  ciudad: z.string().min(1, 'La ciudad es obligatoria'),
-});
+const esquema = z
+  .object({
+    email: z.string().email('Email inválido'),
+    password: z.string().min(8, 'Mínimo 8 caracteres'),
+    confirmarPassword: z.string(),
+    nombre: z.string().min(1, 'El nombre es obligatorio'),
+    ciudad: z.string().min(1, 'La ciudad es obligatoria'),
+  })
+  .refine((datos) => datos.password === datos.confirmarPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmarPassword'],
+  });
 type Datos = z.infer<typeof esquema>;
 
 export function RegistroPage() {
   const { registrar } = useAuth();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [registrado, setRegistrado] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<Datos>({
     resolver: zodResolver(esquema),
+    mode: 'onChange',
+  });
+  const [password = '', confirmarPassword = ''] = useWatch({
+    control,
+    name: ['password', 'confirmarPassword'],
   });
 
   const onSubmit = async (datos: Datos) => {
     setErrorGeneral(null);
     try {
-      await registrar(datos);
+      const datosRegistro = {
+        email: datos.email,
+        password: datos.password,
+        nombre: datos.nombre,
+        ciudad: datos.ciudad,
+      };
+      await registrar(datosRegistro);
       setRegistrado(true);
     } catch {
       setErrorGeneral('No se pudo registrar');
@@ -72,10 +104,51 @@ export function RegistroPage() {
           />
           <TextField
             label="Contraseña"
-            type="password"
+            type={mostrarPassword ? 'text' : 'password'}
             {...register('password')}
             error={!!errors.password}
             helperText={errors.password?.message}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      edge="end"
+                      onClick={() => setMostrarPassword((visible) => !visible)}
+                    >
+                      {mostrarPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            label="Confirmar contraseña"
+            type={mostrarConfirmacion ? 'text' : 'password'}
+            {...register('confirmarPassword')}
+            error={!!errors.confirmarPassword}
+            helperText={errors.confirmarPassword?.message}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        mostrarConfirmacion
+                          ? 'Ocultar confirmación de contraseña'
+                          : 'Mostrar confirmación de contraseña'
+                      }
+                      edge="end"
+                      onClick={() => setMostrarConfirmacion((visible) => !visible)}
+                    >
+                      {mostrarConfirmacion ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <TextField
             label="Nombre"
@@ -89,7 +162,11 @@ export function RegistroPage() {
             error={!!errors.ciudad}
             helperText={errors.ciudad?.message}
           />
-          <Button type="submit" variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSubmitting || password !== confirmarPassword}
+          >
             Registrarme
           </Button>
           <Link component={RouterLink} to="/login">
