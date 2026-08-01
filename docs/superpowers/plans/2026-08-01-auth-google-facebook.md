@@ -1,7 +1,7 @@
 # Plan: autenticación con Google y Facebook
 
-**Fecha:** 2026-08-01  
-**Spec:** `docs/superpowers/specs/2026-08-01-auth-google-facebook-design.md`  
+**Fecha:** 2026-08-01
+**Spec:** `docs/superpowers/specs/2026-08-01-auth-google-facebook-design.md`
 **Objetivo:** permitir registro, login y vinculación mediante Google y Facebook en la PWA, manteniendo la sesión JWT/refresh y todas las reglas de Identity de Caserito.
 
 ## Reglas de ejecución
@@ -17,7 +17,7 @@
 
 ### Tarea 1. Extraer la emisión común de sesión Caserito
 
-**Entradas:** lógica duplicada de login/refresh en `AuthEndpoints.cs`.  
+**Entradas:** lógica duplicada de login/refresh en `AuthEndpoints.cs`.
 **Salida:** servicio reutilizable para contraseña, refresh y login externo.
 
 Archivos:
@@ -40,19 +40,19 @@ public sealed record SesionEmitida(string AccessToken, string RefreshToken);
 
 `EmisorSesion` obtiene roles, deriva permisos, consulta KYC, calcula `identidadHabilitada`, genera el JWT y emite el refresh. La escritura/borrado de cookie HTTP permanece en Host. Reemplazar la duplicación de `LoginAsync` y `RefreshAsync` sin cambiar sus contratos.
 
-Prueba roja: login y refresh siguen emitiendo claims/refresh correctos mediante el nuevo servicio.  
+Prueba roja: login y refresh siguen emitiendo claims/refresh correctos mediante el nuevo servicio.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter "FullyQualifiedName~AuthFlowTests|FullyQualifiedName~RefreshTokensTests"
 ```
 
-Esperado: verde y sin cambio observable en auth tradicional.  
+Esperado: verde y sin cambio observable en auth tradicional.
 Commit: `refactor(auth): centraliza emisión de sesión`
 
 ### Tarea 2. Registrar esquemas y configuración externa
 
-**Entradas:** JWT es hoy el único esquema; versiones centralizadas en `Directory.Packages.props`.  
+**Entradas:** JWT es hoy el único esquema; versiones centralizadas en `Directory.Packages.props`.
 **Salida:** Google/Facebook configurables, cookie externa temporal y capacidades seguras.
 
 Archivos:
@@ -75,19 +75,19 @@ Mantener `DefaultAuthenticateScheme` y `DefaultChallengeScheme` de API en Bearer
 
 Crear una capacidad pública (`GET /api/auth/external/providers`) que devuelva solo proveedores realmente habilitados, para que la PWA no muestre botones inservibles.
 
-Prueba roja: Bearer sigue protegiendo la API, la cookie externa tiene atributos esperados y la capacidad no anuncia proveedores sin configuración.  
+Prueba roja: Bearer sigue protegiendo la API, la cookie externa tiene atributos esperados y la capacidad no anuncia proveedores sin configuración.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter FullyQualifiedName~AuthExternaConfiguracionTests
 ```
 
-Esperado: verde sin red real.  
+Esperado: verde sin red real.
 Commit: `feat(auth): configura Google y Facebook`
 
 ### Tarea 3. Modelar y proteger el login pendiente
 
-**Entradas:** callback externo puede requerir onboarding o vinculación.  
+**Entradas:** callback externo puede requerir onboarding o vinculación.
 **Salida:** ticket temporal cifrado/autenticado, corto y no legible por React.
 
 Archivos:
@@ -114,21 +114,21 @@ El gestor usa Data Protection con propósito versionado, vigencia máxima de 10 
 
 Validar proveedores mediante lista cerrada (`google`, `facebook`) y retorno mediante `IUrlHelper.IsLocalUrl` o función equivalente probada. Google solo marca confiable el email con `email_verified=true`; Facebook siempre `false`.
 
-Prueba roja: ticket válido round-trip; expirado/manipulado falla; proveedor/retorno inválido se rechaza; proyección no filtra PII.  
+Prueba roja: ticket válido round-trip; expirado/manipulado falla; proveedor/retorno inválido se rechaza; proyección no filtra PII.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj --filter FullyQualifiedName~LoginExterno
 ```
 
-Esperado: todos verdes.  
+Esperado: todos verdes.
 Commit: `feat(auth): protege login externo pendiente`
 
 ## Bloque 2 — Flujos backend
 
 ### Tarea 4. Challenge, callback y login de usuario ya asociado
 
-**Entradas:** esquemas externos y emisor común.  
+**Entradas:** esquemas externos y emisor común.
 **Salida:** navegación proveedor → callback → sesión Caserito.
 
 Archivos:
@@ -147,19 +147,19 @@ Usar `SignInManager.ConfigureExternalAuthenticationProperties` y `GetExternalLog
 
 Errores/cancelación redirigen a `/login?authExterna=cancelado|no_disponible|fallo`. Registrar únicamente código genérico y proveedor normalizado.
 
-Prueba roja: asociado recibe refresh y puede hacer `POST /refresh`; callback cancelado no crea usuario; retorno externo se reemplaza por `/perfil`; repetición no duplica.  
+Prueba roja: asociado recibe refresh y puede hacer `POST /refresh`; callback cancelado no crea usuario; retorno externo se reemplaza por `/perfil`; repetición no duplica.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter FullyQualifiedName~AuthExternaLoginTests
 ```
 
-Esperado: verde sin red.  
+Esperado: verde sin red.
 Commit: `feat(auth): inicia sesión con proveedor externo`
 
 ### Tarea 5. Alta externa y onboarding mínimo
 
-**Entradas:** login pendiente sin usuario asociado.  
+**Entradas:** login pendiente sin usuario asociado.
 **Salida:** nuevo `ApplicationUser` válido con rol, asociación y sesión.
 
 Archivos:
@@ -182,19 +182,19 @@ Reglas:
 - `EmailConfirmed=true` solo para Google con claim verificado. Para Facebook o email aportado, publicar el evento con email no confirmado para reutilizar el envío actual.
 - Consumir y borrar el ticket al éxito; la repetición resuelve idempotentemente por login.
 
-Prueba roja: Google verificado, Facebook con/sin email, campos inválidos, rol/evento una vez, carrera de email y compensación de fallo.  
+Prueba roja: Google verificado, Facebook con/sin email, campos inválidos, rol/evento una vez, carrera de email y compensación de fallo.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter FullyQualifiedName~AuthExternaRegistroTests
 ```
 
-Esperado: verde; `AspNetUserLogins` contiene la asociación y no hay usuario parcial.  
+Esperado: verde; `AspNetUserLogins` contiene la asociación y no hay usuario parcial.
 Commit: `feat(auth): registra usuarios desde Google y Facebook`
 
 ### Tarea 6. Vincular sin apropiación por coincidencia de email
 
-**Entradas:** ticket cuyo email ya pertenece a otra cuenta.  
+**Entradas:** ticket cuyo email ya pertenece a otra cuenta.
 **Salida:** vinculación solo tras sesión válida del propietario.
 
 Archivos:
@@ -206,21 +206,21 @@ Mapear `POST /api/auth/external/link` con `RequireAuthorization`. Verificar que 
 
 La UI podrá hacer login tradicional u otro login externo; después invoca `link`. Si el usuario olvidó contraseña, usa `/olvide-password` existente y vuelve al flujo.
 
-Prueba roja: email coincidente no enlaza ni duplica automáticamente; dueño autenticado vincula; usuario distinto falla; segundo proveedor queda en la misma cuenta; identidad ya vinculada a otra cuenta no se mueve.  
+Prueba roja: email coincidente no enlaza ni duplica automáticamente; dueño autenticado vincula; usuario distinto falla; segundo proveedor queda en la misma cuenta; identidad ya vinculada a otra cuenta no se mueve.
 Verificación:
 
 ```powershell
 dotnet test tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj --filter FullyQualifiedName~AuthExternaVinculacionTests
 ```
 
-Esperado: verde.  
+Esperado: verde.
 Commit: `feat(auth): vincula cuentas externas de forma segura`
 
 ## Bloque 3 — PWA y contrato
 
 ### Tarea 7. UI de login, retorno y onboarding
 
-**Entradas:** endpoints backend operativos.  
+**Entradas:** endpoints backend operativos.
 **Salida:** experiencia completa en navegador y PWA instalada.
 
 Archivos:
@@ -241,7 +241,7 @@ Comportamiento:
 - Si requiere vinculación, explicar de forma genérica y ofrecer login/recuperación; tras autenticar al dueño ejecutar `link` y restaurar sesión.
 - Mostrar mensajes españoles genéricos para códigos opacos; accesibilidad por nombre, foco y teclado.
 
-Prueba roja: orden de botones, proveedor deshabilitado oculto, navegación correcta, retorno malicioso descartado, bootstrap, onboarding dinámico, error sin PII y login tradicional intacto.  
+Prueba roja: orden de botones, proveedor deshabilitado oculto, navegación correcta, retorno malicioso descartado, bootstrap, onboarding dinámico, error sin PII y login tradicional intacto.
 Verificación:
 
 ```powershell
@@ -249,12 +249,12 @@ npm run test -- --run src/routes/LoginPage.test.tsx src/routes/AuthExternaCallba
 npm run typecheck
 ```
 
-Esperado: verde.  
+Esperado: verde.
 Commit: `feat(web): añade acceso con Facebook y Google`
 
 ### Tarea 8. OpenAPI, cliente generado y configuración operativa
 
-**Entradas:** contrato final.  
+**Entradas:** contrato final.
 **Salida:** tipos sincronizados y despliegue documentado sin secretos.
 
 Archivos:
@@ -274,7 +274,7 @@ npm run typecheck
 git diff --check
 ```
 
-Esperado: generación reproducible y ningún secreto.  
+Esperado: generación reproducible y ningún secreto.
 Commit: `docs(auth): documenta configuración de proveedores`
 
 ## Bloque 4 — Integración y cierre
@@ -311,7 +311,7 @@ npm run build
 
 Requiere Docker para integración. Añadir una prueba manual con aplicaciones sandbox de Google/Meta cuando el usuario proporcione credenciales y callbacks; no afirmar esa parte verde hasta ejecutarla.
 
-Esperado: todas las suites verdes, `git diff --check` limpio y sin cambios ajenos.  
+Esperado: todas las suites verdes, `git diff --check` limpio y sin cambios ajenos.
 Commit previsto si aparecen ajustes exclusivos de integración: `test(auth): cubre flujo externo integral`
 
 ## Reparto recomendado entre sesiones
