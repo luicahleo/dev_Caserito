@@ -45,14 +45,19 @@ public static class DependencyInjection
             {
                 opciones.Password.RequiredLength = 8;
                 opciones.User.RequireUniqueEmail = true;
+                opciones.Tokens.PasswordResetTokenProvider =
+                    ProveedorTokenRestablecimientoPassword.Nombre;
             })
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<IdentityDbContext>()
             .AddSignInManager<SignInManager<ApplicationUser>>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddTokenProvider<ProveedorTokenRestablecimientoPassword>(
+                ProveedorTokenRestablecimientoPassword.Nombre);
 
         servicios.AddScoped<IRepositorioPerfil, RepositorioPerfilUserManager>();
         servicios.AddScoped<IRepositorioConfirmacionEmail, RepositorioConfirmacionEmail>();
+        servicios.AddScoped<IRepositorioRestablecimientoPassword, RepositorioRestablecimientoPassword>();
         servicios.AddScoped<IRepositorioRolesUsuario, RepositorioRolesUsuarioUserManager>();
         servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
