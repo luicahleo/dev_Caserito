@@ -36,17 +36,17 @@ Registrar un callback significa copiar la URL HTTPS completa en la configuració
 
 Registrar exactamente estas URL, sustituyendo los orígenes por los de cada entorno:
 
-- Google, desarrollo: `https://localhost:<puerto>/signin-google`.
-- Facebook, desarrollo: `https://localhost:<puerto>/signin-facebook`.
-- Google, producción: `https://<dominio-produccion>/signin-google`.
-- Facebook, producción: `https://<dominio-produccion>/signin-facebook`.
+- Google, desarrollo: `https://localhost:<puerto>/api/auth/external/google/callback`.
+- Facebook, desarrollo: `https://localhost:<puerto>/api/auth/external/facebook/callback`.
+- Google, producción: `https://<dominio-produccion>/api/auth/external/google/callback`.
+- Facebook, producción: `https://<dominio-produccion>/api/auth/external/facebook/callback`.
 
 El navegador y la PWA deben usar el mismo origen que la API. Producción requiere HTTPS.
 
 Si el despliegue de prueba usa, por ejemplo, `https://pre.caserito.example`, registrar:
 
-- `https://pre.caserito.example/signin-google` en el cliente web de Google.
-- `https://pre.caserito.example/signin-facebook` en Facebook Login de Meta.
+- `https://pre.caserito.example/api/auth/external/google/callback` en el cliente web de Google.
+- `https://pre.caserito.example/api/auth/external/facebook/callback` en Facebook Login de Meta.
 
 No registrar `/api/auth/external/callback`: esa es una ruta interna posterior de Caserito, no el callback de protocolo que invoca el proveedor.
 
