@@ -196,24 +196,25 @@ public static class AuthEndpoints
             return Results.Unauthorized();
         }
 
-        var userId = await servicioRefreshTokens.ConsumirAsync(tokenPlano, ct);
-        if (userId is null)
+        var rotado = await servicioRefreshTokens.RotarAsync(tokenPlano, ct);
+        if (rotado is null)
         {
             BorrarCookieRefresh(contexto, entorno);
             return Results.Unauthorized();
         }
 
-        var usuario = await userManager.FindByIdAsync(userId.Value.ToString());
+        var (nuevoRefreshToken, userId) = rotado.Value;
+        var usuario = await userManager.FindByIdAsync(userId.ToString());
         if (usuario is null)
         {
             BorrarCookieRefresh(contexto, entorno);
             return Results.Unauthorized();
         }
 
-        var sesion = await emisorSesion.EmitirAsync(usuario, ct);
-        EstablecerCookieRefresh(contexto, sesion.RefreshToken, entorno);
+        var accessToken = await emisorSesion.EmitirTokenAccesoAsync(usuario, ct);
+        EstablecerCookieRefresh(contexto, nuevoRefreshToken, entorno);
 
-        return Results.Ok(new TokenAccesoResponse(sesion.AccessToken));
+        return Results.Ok(new TokenAccesoResponse(accessToken));
     }
 
     private static async Task<IResult> LogoutAsync(

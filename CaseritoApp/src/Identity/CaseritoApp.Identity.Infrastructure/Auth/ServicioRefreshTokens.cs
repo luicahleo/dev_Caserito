@@ -19,9 +19,6 @@ public interface IServicioRefreshTokens
     /// </summary>
     public Task<(string tokenPlano, Guid userId)?> RotarAsync(string tokenPlano, CancellationToken ct);
 
-    /// <summary>Consume un refresh válido y devuelve su usuario sin emitir el reemplazo.</summary>
-    public Task<Guid?> ConsumirAsync(string tokenPlano, CancellationToken ct);
-
     /// <summary>Revoca (invalida) el refresh token indicado, si existe y está activo.</summary>
     public Task RevocarAsync(string tokenPlano, CancellationToken ct);
 }
@@ -83,31 +80,6 @@ public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tie
         });
         await db.SaveChangesAsync(ct);
         return (nuevoPlano, actual.UserId);
-    }
-
-    /// <inheritdoc/>
-    public async Task<Guid?> ConsumirAsync(string tokenPlano, CancellationToken ct)
-    {
-        var hash = Hash(tokenPlano);
-        var actual = await db.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == hash, ct);
-        var ahora = tiempo.GetUtcNow();
-
-        if (actual is null)
-        {
-            return null;
-        }
-
-        if (!actual.EsActivo(ahora))
-        {
-            await db.RefreshTokens
-                .Where(t => t.UserId == actual.UserId && t.RevocadoEn == null)
-                .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevocadoEn, ahora), ct);
-            return null;
-        }
-
-        actual.RevocadoEn = ahora;
-        await db.SaveChangesAsync(ct);
-        return actual.UserId;
     }
 
     /// <inheritdoc/>

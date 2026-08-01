@@ -7,6 +7,7 @@ using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -74,6 +75,21 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         var cookieTrasRefresh = ExtraerCookie(refreshRespuesta, NombreCookie);
         Assert.False(string.IsNullOrWhiteSpace(cookieTrasRefresh));
         Assert.NotEqual(cookieTrasLogin, cookieTrasRefresh);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            var usuario = await usuarios.FindByEmailAsync(email);
+            Assert.NotNull(usuario);
+
+            var tokens = await db.RefreshTokens
+                .AsNoTracking()
+                .Where(t => t.UserId == usuario!.Id)
+                .ToListAsync();
+            var reemplazado = Assert.Single(tokens, t => t.RevocadoEn is not null);
+            Assert.NotNull(reemplazado.ReemplazadoPorHash);
+        }
 
         // 4. Logout usando la cookie rotada.
         using var solicitudLogout = new HttpRequestMessage(HttpMethod.Post, "/api/auth/logout");
