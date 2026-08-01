@@ -21,6 +21,12 @@ public sealed record LoginRequest(string Email, string Password);
 /// <summary>Contrato de confirmación de email.</summary>
 public sealed record ConfirmarEmailRequest(Guid UsuarioId, string Token);
 
+/// <summary>Contrato de solicitud de restablecimiento de contraseña.</summary>
+public sealed record OlvidePasswordRequest(string Email);
+
+/// <summary>Contrato de consumo de un enlace de restablecimiento.</summary>
+public sealed record RestablecerPasswordRequest(Guid UsuarioId, string Token, string Password);
+
 /// <summary>Respuesta con el access token JWT emitido.</summary>
 public sealed record TokenAccesoResponse(string AccessToken);
 
@@ -62,7 +68,46 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized);
 
+        grupo.MapPost("/forgot-password", SolicitarRestablecimientoPasswordAsync)
+            .Accepts<OlvidePasswordRequest>("application/json")
+            .RequireRateLimiting("auth-forgot-password")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
+        grupo.MapPost("/reset-password", RestablecerPasswordAsync)
+            .Accepts<RestablecerPasswordRequest>("application/json")
+            .RequireRateLimiting("auth-reset-password")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
         return app;
+    }
+
+    private static async Task<IResult> SolicitarRestablecimientoPasswordAsync(
+        OlvidePasswordRequest request,
+        ISender sender,
+        CancellationToken ct)
+    {
+        await sender.Send(new SolicitarRestablecimientoPasswordCommand(request.Email), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> RestablecerPasswordAsync(
+        RestablecerPasswordRequest request,
+        ISender sender,
+        CancellationToken ct)
+    {
+        var resultado = await sender.Send(
+            new RestablecerPasswordCommand(request.UsuarioId, request.Token, request.Password),
+            ct);
+
+        return resultado.EsExito
+            ? Results.NoContent()
+            : Results.Problem(
+                title: resultado.Error.Code,
+                detail: resultado.Error.Message,
+                statusCode: StatusCodes.Status400BadRequest);
     }
 
     private static async Task<IResult> RegistrarAsync(
