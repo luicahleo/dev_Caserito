@@ -20,4 +20,16 @@ public sealed class PlantillaCorreoTextoPlanoTests
         var cuerpo = _plantilla.CuerpoKycRechazado("Luis", "El rostro no coincide");
         Assert.Contains("El rostro no coincide", cuerpo);
     }
+
+    [Fact]
+    public void Restablecimiento_incluye_url_y_vigencia_sin_password()
+    {
+        const string url = "https://caserito.test/restablecer-password#token=abc";
+
+        var cuerpo = _plantilla.CuerpoRestablecimientoPassword("Luis", url);
+
+        Assert.Contains(url, cuerpo);
+        Assert.Contains("30 minutos", cuerpo);
+        Assert.DoesNotContain("contraseña nueva:", cuerpo, StringComparison.OrdinalIgnoreCase);
+    }
 }

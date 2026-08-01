@@ -23,4 +23,12 @@ public sealed class PlantillaCorreoTextoPlano : IPlantillaCorreo
     public string CuerpoKycRechazado(string nombre, string motivo) =>
         $"Hola {nombre},\n\nTu verificación de identidad no pudo ser aprobada.\n\nMotivo: {motivo}\n\n" +
         "Puedes volver a intentarlo desde tu perfil.\n\nEquipo Caserito";
+
+    public string AsuntoRestablecimientoPassword(string nombre) =>
+        "Restablece tu contraseña de Caserito";
+
+    public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento) =>
+        $"Hola {nombre},\n\nRecibimos una solicitud para restablecer tu contraseña. " +
+        $"Este enlace será válido durante 30 minutos:\n{urlRestablecimiento}\n\n" +
+        "Si no solicitaste este cambio, ignora este correo.\n\nEquipo Caserito";
 }

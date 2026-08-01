@@ -8,4 +8,6 @@ public interface IPlantillaCorreo
     public string CuerpoKycAprobado(string nombre);
     public string AsuntoKycRechazado(string nombre);
     public string CuerpoKycRechazado(string nombre, string motivo);
+    public string AsuntoRestablecimientoPassword(string nombre);
+    public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento);
 }

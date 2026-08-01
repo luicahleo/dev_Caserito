@@ -54,6 +54,10 @@ public sealed class EnviarConfirmacionEmailHandlerTests
         public string AsuntoKycRechazado(string nombre) => "";
 
         public string CuerpoKycRechazado(string nombre, string motivo) => "";
+
+        public string AsuntoRestablecimientoPassword(string nombre) => "";
+
+        public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento) => "";
     }
 
     private sealed class GeneradorTokenFake : IGeneradorTokenEmail
