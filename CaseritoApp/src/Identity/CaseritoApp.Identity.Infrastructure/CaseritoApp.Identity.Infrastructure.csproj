@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <ProjectReference Include="..\CaseritoApp.Identity.Application\CaseritoApp.Identity.Application.csproj" />
     <ProjectReference Include="..\..\BuildingBlocks\CaseritoApp.BuildingBlocks.Infrastructure\CaseritoApp.BuildingBlocks.Infrastructure.csproj" />
   </ItemGroup>

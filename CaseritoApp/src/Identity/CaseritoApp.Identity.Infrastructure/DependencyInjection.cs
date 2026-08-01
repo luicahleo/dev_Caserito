@@ -12,6 +12,9 @@ using CaseritoApp.Identity.Infrastructure.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Correo;
 using CaseritoApp.Identity.Infrastructure.Kyc;
 using CaseritoApp.Identity.Infrastructure.Perfil;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -148,7 +151,59 @@ public static class DependencyInjection
                 "Jwt:Key es obligatorio y debe tener al menos 32 bytes fuera de Development/Testing")
             .ValidateOnStart();
 
-        servicios.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+        var opcionesExternas = config
+            .GetSection(OpcionesAutenticacionExterna.Seccion)
+            .Get<OpcionesAutenticacionExterna>() ?? new OpcionesAutenticacionExterna();
+        servicios.AddSingleton(opcionesExternas);
+
+        var permiteProveedoresDeshabilitados = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
+        servicios.AddOptions<OpcionesAutenticacionExterna>()
+            .Bind(config.GetSection(OpcionesAutenticacionExterna.Seccion))
+            .Validate(
+                o => permiteProveedoresDeshabilitados || (o.Google.Habilitado && o.Facebook.Habilitado),
+                "Las credenciales de Google y Facebook son obligatorias fuera de Development/Testing")
+            .ValidateOnStart();
+
+        var autenticacion = servicios
+            .AddAuthentication(opciones =>
+            {
+                opciones.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opciones.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer()
+            .AddCookie(IdentityConstants.ExternalScheme, opciones =>
+            {
+                opciones.Cookie.HttpOnly = true;
+                opciones.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Lax;
+                opciones.Cookie.SecurePolicy = permiteProveedoresDeshabilitados
+                    ? Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest
+                    : Microsoft.AspNetCore.Http.CookieSecurePolicy.Always;
+                opciones.Cookie.Path = "/api/auth/external";
+                opciones.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                opciones.SlidingExpiration = false;
+            });
+
+        if (opcionesExternas.Google.Habilitado)
+        {
+            autenticacion.AddGoogle(GoogleDefaults.AuthenticationScheme, opciones =>
+            {
+                opciones.ClientId = opcionesExternas.Google.ClientId;
+                opciones.ClientSecret = opcionesExternas.Google.ClientSecret;
+                opciones.SignInScheme = IdentityConstants.ExternalScheme;
+                opciones.CallbackPath = "/api/auth/external/google/callback";
+            });
+        }
+
+        if (opcionesExternas.Facebook.Habilitado)
+        {
+            autenticacion.AddFacebook(FacebookDefaults.AuthenticationScheme, opciones =>
+            {
+                opciones.AppId = opcionesExternas.Facebook.AppId;
+                opciones.AppSecret = opcionesExternas.Facebook.AppSecret;
+                opciones.SignInScheme = IdentityConstants.ExternalScheme;
+                opciones.CallbackPath = "/api/auth/external/facebook/callback";
+            });
+        }
 
         // La configuración de JwtBearerOptions se hace vía IConfigureNamedOptions para inyectar el
         // OpcionesJwt bindeado y la clave compartida (ProveedorClaveFirma), en vez de releer la

@@ -35,6 +35,10 @@ public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncL
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting($"{OpcionesJwt.Seccion}:Key", JwtKeyDePrueba);
+        builder.UseSetting("Authentication:Google:ClientId", "google-id-de-prueba");
+        builder.UseSetting("Authentication:Google:ClientSecret", "google-secreto-de-prueba");
+        builder.UseSetting("Authentication:Facebook:AppId", "facebook-id-de-prueba");
+        builder.UseSetting("Authentication:Facebook:AppSecret", "facebook-secreto-de-prueba");
         builder.UseSetting("AlmacenFotos:RutaBase", Path.Combine(Path.GetTempPath(), $"fotos-test-{Guid.NewGuid():N}"));
         builder.ConfigureServices(servicios =>
         {

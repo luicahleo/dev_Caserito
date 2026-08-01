@@ -57,6 +57,9 @@ public static class AuthEndpoints
         grupo.MapPost("/logout", LogoutAsync)
             .Produces(StatusCodes.Status204NoContent);
 
+        grupo.MapGet("/external/providers", ObtenerProveedoresExternos)
+            .Produces<string[]>(StatusCodes.Status200OK);
+
         grupo.MapPost("/confirm-email", ConfirmarEmailAsync)
             .Accepts<ConfirmarEmailRequest>("application/json")
             .Produces(StatusCodes.Status204NoContent)
@@ -82,6 +85,22 @@ public static class AuthEndpoints
             .Produces(StatusCodes.Status429TooManyRequests);
 
         return app;
+    }
+
+    private static IResult ObtenerProveedoresExternos(OpcionesAutenticacionExterna opciones)
+    {
+        var proveedores = new List<string>(2);
+        if (opciones.Facebook.Habilitado)
+        {
+            proveedores.Add("facebook");
+        }
+
+        if (opciones.Google.Habilitado)
+        {
+            proveedores.Add("google");
+        }
+
+        return Results.Ok(proveedores);
     }
 
     private static async Task<IResult> SolicitarRestablecimientoPasswordAsync(
