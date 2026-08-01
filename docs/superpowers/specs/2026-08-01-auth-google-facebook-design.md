@@ -31,7 +31,7 @@ Caserito es una PWA React servida en el mismo origen que una API .NET. El contex
 | Login externo temporal | Cookie `IdentityConstants.ExternalScheme`, `httpOnly`, `Secure` fuera de Development/Testing, `SameSite=Lax`, vida corta y limitada a rutas de auth |
 | Retorno a la PWA | Redirección al mismo origen; nunca access token, refresh token ni PII en query string |
 | Registro nuevo | Se crea el usuario solo cuando están disponibles email, nombre y ciudad; antes se conserva un ticket externo temporal protegido |
-| Cuenta existente por email | No se vincula automáticamente; requiere autenticarse con un método ya asociado o confirmar un enlace enviado al email existente |
+| Cuenta existente por email | No se vincula automáticamente; requiere autenticarse con un método ya asociado; si perdió el acceso usa la recuperación local existente |
 | Email Google | Se marca confirmado solo cuando el proveedor entrega `email_verified=true`; si falta o no está verificado, se usa el flujo local de confirmación |
 | Email Facebook | Se considera pendiente de confirmación local; si Facebook no lo entrega, se solicita durante el onboarding |
 | Datos sociales | Solo identificador estable, nombre y email mínimo; no se guarda avatar ni tokens del proveedor |
@@ -86,9 +86,9 @@ Caserito es una PWA React servida en el mismo origen que una API .NET. El contex
 
 1. No se crea otra cuenta y no se llama a `AddLoginAsync` automáticamente.
 2. La PWA muestra un mensaje genérico indicando que debe verificarse la cuenta existente, sin exponer datos adicionales.
-3. El usuario puede autenticarse con contraseña u otro proveedor ya vinculado; con una sesión válida se confirma la vinculación pendiente.
-4. Como alternativa, puede solicitar un enlace de vinculación de un solo uso al correo existente, con respuesta no enumerable y rate limit.
-5. Tras verificar propiedad, se añade el login externo y se emite/continúa la sesión.
+3. El usuario se autentica con contraseña u otro proveedor ya vinculado; con una sesión válida se confirma la vinculación pendiente.
+4. Si perdió ese acceso, usa la recuperación de contraseña local ya existente antes de vincular.
+5. Tras verificar la sesión, se añade el login externo y se emite/continúa la sesión.
 
 ### Facebook sin email
 
@@ -107,8 +107,7 @@ El callback borra la cookie externa y redirige a `/login` con un código opaco y
 - `GET /api/auth/external/callback`: destino interno posterior al middleware; no es una API consumida con `fetch`.
 - `GET /api/auth/external/pending`: devuelve únicamente los campos de onboarding necesarios, nunca `ProviderKey` ni tokens.
 - `POST /api/auth/external/complete`: recibe nombre/ciudad/email solo cuando correspondan y completa el alta.
-- `POST /api/auth/external/link-email`: solicita el enlace de vinculación con respuesta genérica y rate limit.
-- `POST /api/auth/external/link-confirm`: consume el token protegido y vincula la identidad pendiente.
+- `POST /api/auth/external/link`: exige una sesión Caserito válida y vincula la identidad pendiente a ese usuario.
 
 Los nombres exactos pueden ajustarse al generar OpenAPI, pero deben conservar la separación entre challenge por navegación, ticket temporal y sesión final. Los endpoints mutadores usan antiforgery o una defensa equivalente basada en cookie same-site y token; no se desactiva globalmente.
 
