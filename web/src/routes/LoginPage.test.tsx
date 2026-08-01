@@ -4,12 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage';
 import * as ctx from '../auth/AuthContext';
+import * as authApi from '../api/auth';
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function montar(iniciarSesion = vi.fn()) {
+function montar(iniciarSesion = vi.fn(), proveedores: Promise<authApi.ProveedorExterno[]> = Promise.resolve(['facebook', 'google'])) {
+  vi.spyOn(authApi, 'obtenerProveedores').mockReturnValue(proveedores);
   vi.spyOn(ctx, 'useAuth').mockReturnValue({
     usuario: null,
     estaAutenticado: false,
@@ -21,6 +23,7 @@ function montar(iniciarSesion = vi.fn()) {
     iniciarSesion,
     registrar: vi.fn(),
     cerrarSesion: vi.fn(),
+    restaurarSesion: vi.fn(),
   } as ReturnType<typeof ctx.useAuth>);
   render(
     <MemoryRouter>
@@ -31,6 +34,36 @@ function montar(iniciarSesion = vi.fn()) {
 }
 
 describe('LoginPage', () => {
+  it('muestra Facebook y Google, en ese orden, antes del formulario tradicional', async () => {
+    montar();
+
+    const facebook = await screen.findByRole('link', { name: 'Continuar con Facebook' });
+    const google = screen.getByRole('link', { name: 'Continuar con Google' });
+    const entrar = screen.getByRole('button', { name: 'Entrar' });
+    expect(facebook.compareDocumentPosition(google) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(google.compareDocumentPosition(entrar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('oculta proveedores deshabilitados y conserva el login si falla la consulta', async () => {
+    montar(vi.fn(), Promise.reject(new Error('fallo privado')));
+
+    expect(await screen.findByRole('button', { name: 'Entrar' })).toBeInTheDocument();
+    expect(screen.queryByText(/Continuar con/)).not.toBeInTheDocument();
+  });
+
+  it('incluye únicamente un retorno local validado en el enlace externo', async () => {
+    vi.spyOn(authApi, 'obtenerProveedores').mockResolvedValue(['facebook']);
+    vi.spyOn(ctx, 'useAuth').mockReturnValue({
+      usuario: null, estaAutenticado: false, cargando: false, permisos: [], verificado: false,
+      identidadHabilitada: false, tienePermiso: () => false, iniciarSesion: vi.fn(),
+      registrar: vi.fn(), cerrarSesion: vi.fn(), restaurarSesion: vi.fn(),
+    });
+    render(<MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '//malicioso.test' } }]}><LoginPage /></MemoryRouter>);
+
+    expect(await screen.findByRole('link', { name: 'Continuar con Facebook' })).toHaveAttribute(
+      'href', '/api/auth/external/facebook/start?returnUrl=%2Fperfil',
+    );
+  });
   it('enlaza a la recuperación de contraseña', () => {
     montar();
 

@@ -18,6 +18,7 @@ function montarCon(permisos: string[]) {
     iniciarSesion: vi.fn(),
     registrar: vi.fn(),
     cerrarSesion: vi.fn(),
+    restaurarSesion: vi.fn(),
   } as ReturnType<typeof ctx.useAuth>);
   render(
     <MemoryRouter initialEntries={['/admin/kyc']}>

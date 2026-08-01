@@ -15,6 +15,7 @@ interface EstadoAuth {
   iniciarSesion: (cred: auth.Credenciales) => Promise<void>;
   registrar: (datos: auth.RegistroDatos) => Promise<void>;
   cerrarSesion: () => Promise<void>;
+  restaurarSesion: () => Promise<void>;
 }
 
 const AuthContext = createContext<EstadoAuth | undefined>(undefined);
@@ -55,6 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [sincronizarClaims],
   );
 
+  const restaurarSesion = useCallback(async () => {
+    if (!(await auth.refrescar())) throw new Error('No se pudo restaurar la sesión.');
+    setUsuario(await obtenerPerfil());
+    sincronizarClaims();
+  }, [sincronizarClaims]);
+
   const registrar = useCallback(
     async (datos: auth.RegistroDatos) => {
       await auth.registrar(datos);
@@ -84,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         iniciarSesion,
         registrar,
         cerrarSesion,
+        restaurarSesion,
       }}
     >
       {children}

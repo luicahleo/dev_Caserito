@@ -112,7 +112,8 @@ public static class AuthExternaEndpoints
                 tiempo.GetUtcNow().AddMinutes(10)),
             segura: !(entorno.IsDevelopment() || entorno.IsEnvironment("Testing")));
         await contexto.SignOutAsync(IdentityConstants.ExternalScheme);
-        return Results.Redirect("/auth/external/onboarding");
+        var retornoOnboarding = Uri.EscapeDataString(NormalizarRetorno(returnUrl));
+        return Results.Redirect($"/auth/external/onboarding?returnUrl={retornoOnboarding}");
     }
 
     private static async Task<IResult> ObtenerPendienteAsync(

@@ -21,6 +21,7 @@ function montar(registrar = vi.fn()) {
     iniciarSesion: vi.fn(),
     registrar,
     cerrarSesion: vi.fn(),
+    restaurarSesion: vi.fn(),
   } as ReturnType<typeof ctx.useAuth>);
   render(
     <MemoryRouter>
