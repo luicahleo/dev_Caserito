@@ -24,6 +24,7 @@ import { PerfilPublicoPage } from '../routes/PerfilPublicoPage';
 import { NotificacionesPage } from '../routes/NotificacionesPage';
 import { BusquedasGuardadasPage } from '../routes/BusquedasGuardadasPage';
 import { OlvidePasswordPage } from '../routes/OlvidePasswordPage';
+import { RestablecerPasswordPage } from '../routes/RestablecerPasswordPage';
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: '/login', element: <LoginPage /> },
       { path: '/registro', element: <RegistroPage /> },
       { path: '/olvide-password', element: <OlvidePasswordPage /> },
+      { path: '/restablecer-password', element: <RestablecerPasswordPage /> },
       { path: '/confirmar-email', element: <ConfirmarEmailPage /> },
       {
         path: '/mensajes',
