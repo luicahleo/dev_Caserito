@@ -44,3 +44,17 @@ export async function confirmarEmail(usuarioId: string, token: string): Promise<
 export async function reenviarConfirmacionEmail(): Promise<void> {
   desempaquetar(await api.POST('/api/auth/resend-confirmation'));
 }
+
+export async function solicitarRestablecimientoPassword(email: string): Promise<void> {
+  desempaquetar(await api.POST('/api/auth/forgot-password', { body: { email } }));
+}
+
+export async function restablecerPassword(
+  usuarioId: string,
+  token: string,
+  password: string,
+): Promise<void> {
+  desempaquetar(
+    await api.POST('/api/auth/reset-password', { body: { usuarioId, token, password } }),
+  );
+}
