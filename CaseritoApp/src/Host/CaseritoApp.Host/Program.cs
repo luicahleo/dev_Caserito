@@ -389,6 +389,7 @@ app.UseAuthorization();
 app.UseStaticFiles();
 
 app.MapAuthEndpoints();
+app.MapAuthExternaEndpoints();
 app.MapPerfilEndpoints();
 app.MapAdminEndpoints();
 app.MapKycEndpoints();
