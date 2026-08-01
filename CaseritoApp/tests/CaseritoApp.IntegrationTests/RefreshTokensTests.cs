@@ -1,3 +1,4 @@
+using CaseritoApp.Identity.Application.Auth;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.IntegrationTests.Infrastructure;
@@ -127,6 +128,25 @@ public sealed class RefreshTokensTests(CaseritoApiFactory factory) : IClassFixtu
         // Rotar con un token ya revocado por RevocarAsync también debe fallar (null).
         var rotacion = await servicio.RotarAsync(tokenPlano, CancellationToken.None);
         Assert.Null(rotacion);
+    }
+
+    [Fact]
+    public async Task Revocar_todas_invalida_solo_los_tokens_del_usuario_indicado()
+    {
+        using var scope = factory.Services.CreateScope();
+        var servicio = scope.ServiceProvider.GetRequiredService<IServicioRefreshTokens>();
+        var revocador = scope.ServiceProvider.GetRequiredService<IRevocadorSesionesUsuario>();
+        var usuarioA = await CrearUsuarioAsync(scope.ServiceProvider);
+        var usuarioB = await CrearUsuarioAsync(scope.ServiceProvider);
+        var tokenA1 = await servicio.EmitirAsync(usuarioA, CancellationToken.None);
+        var tokenA2 = await servicio.EmitirAsync(usuarioA, CancellationToken.None);
+        var tokenB = await servicio.EmitirAsync(usuarioB, CancellationToken.None);
+
+        await revocador.RevocarTodasAsync(usuarioA, CancellationToken.None);
+
+        Assert.Null(await servicio.RotarAsync(tokenA1, CancellationToken.None));
+        Assert.Null(await servicio.RotarAsync(tokenA2, CancellationToken.None));
+        Assert.NotNull(await servicio.RotarAsync(tokenB, CancellationToken.None));
     }
 
     private static string HashDePrueba(string plano) =>

@@ -126,7 +126,11 @@ public static class DependencyInjection
         servicios.AddSingleton(TimeProvider.System);
         servicios.AddSingleton<ProveedorClaveFirma>();
         servicios.AddSingleton<IGeneradorTokensAcceso, GeneradorTokensAcceso>();
-        servicios.AddScoped<IServicioRefreshTokens, ServicioRefreshTokens>();
+        servicios.AddScoped<ServicioRefreshTokens>();
+        servicios.AddScoped<IServicioRefreshTokens>(
+            proveedor => proveedor.GetRequiredService<ServicioRefreshTokens>());
+        servicios.AddScoped<IRevocadorSesionesUsuario>(
+            proveedor => proveedor.GetRequiredService<ServicioRefreshTokens>());
 
         // Solo en Development/Testing se admite una clave efímera de repuesto; fuera de esos
         // entornos la ausencia de "Jwt:Key" es un error de configuración crítico y debe fallar

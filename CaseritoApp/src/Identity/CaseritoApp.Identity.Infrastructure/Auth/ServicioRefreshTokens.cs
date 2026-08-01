@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using CaseritoApp.Identity.Application.Auth;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseritoApp.Identity.Infrastructure.Auth;
@@ -23,7 +24,8 @@ public interface IServicioRefreshTokens
 }
 
 /// <inheritdoc cref="IServicioRefreshTokens"/>
-public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tiempo) : IServicioRefreshTokens
+public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tiempo)
+    : IServicioRefreshTokens, IRevocadorSesionesUsuario
 {
     private const int DiasVida = 7;
 
@@ -89,6 +91,26 @@ public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tie
         {
             actual.RevocadoEn = tiempo.GetUtcNow();
             await db.SaveChangesAsync(ct);
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task RevocarTodasAsync(Guid usuarioId, CancellationToken cancellationToken)
+    {
+        var ahora = tiempo.GetUtcNow();
+        await db.RefreshTokens
+            .Where(t => t.UserId == usuarioId && t.RevocadoEn == null)
+            .ExecuteUpdateAsync(
+                actualizacion => actualizacion.SetProperty(t => t.RevocadoEn, ahora),
+                cancellationToken);
+
+        var rastreadosDelUsuario = db.ChangeTracker
+            .Entries<RefreshToken>()
+            .Where(entrada => entrada.Entity.UserId == usuarioId)
+            .ToArray();
+        foreach (var entrada in rastreadosDelUsuario)
+        {
+            entrada.State = EntityState.Detached;
         }
     }
 
