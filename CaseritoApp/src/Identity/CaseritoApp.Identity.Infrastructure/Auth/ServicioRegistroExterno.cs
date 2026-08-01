@@ -20,6 +20,41 @@ public sealed class ServicioRegistroExterno(
     IPublisher publisher,
     TimeProvider tiempo)
 {
+    public async Task<bool> VincularAsync(LoginExternoPendiente pendiente, Guid usuarioId)
+    {
+        var asociado = await usuarios.FindByLoginAsync(pendiente.Proveedor, pendiente.ClaveProveedor);
+        if (asociado is not null)
+        {
+            return asociado.Id == usuarioId;
+        }
+
+        if (string.IsNullOrWhiteSpace(pendiente.Email))
+        {
+            return false;
+        }
+
+        var usuario = await usuarios.FindByIdAsync(usuarioId.ToString());
+        if (usuario?.Email is null ||
+            !string.Equals(
+                usuarios.NormalizeEmail(usuario.Email),
+                usuarios.NormalizeEmail(pendiente.Email),
+                StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var resultado = await usuarios.AddLoginAsync(
+            usuario,
+            new UserLoginInfo(pendiente.Proveedor, pendiente.ClaveProveedor, pendiente.Proveedor));
+        if (resultado.Succeeded)
+        {
+            return true;
+        }
+
+        asociado = await usuarios.FindByLoginAsync(pendiente.Proveedor, pendiente.ClaveProveedor);
+        return asociado?.Id == usuarioId;
+    }
+
     public async Task<ResultadoRegistroExterno> RegistrarAsync(
         LoginExternoPendiente pendiente,
         string email,

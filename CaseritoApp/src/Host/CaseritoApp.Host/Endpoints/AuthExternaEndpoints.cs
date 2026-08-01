@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace CaseritoApp.Host.Endpoints;
 
@@ -21,6 +22,7 @@ public static class AuthExternaEndpoints
         grupo.MapGet("/callback", CallbackAsync);
         grupo.MapGet("/pending", ObtenerPendienteAsync);
         grupo.MapPost("/complete", CompletarAsync);
+        grupo.MapPost("/link", VincularAsync).RequireAuthorization();
         return app;
     }
 
@@ -187,6 +189,26 @@ public static class AuthExternaEndpoints
         }
 
         return errores;
+    }
+
+    private static async Task<IResult> VincularAsync(
+        ClaimsPrincipal principal,
+        HttpContext contexto,
+        IGestorLoginExternoPendiente gestor,
+        ServicioRegistroExterno servicio,
+        IHostEnvironment entorno)
+    {
+        var sub = principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+        if (!Guid.TryParse(sub, out var usuarioId) ||
+            !gestor.TryLeerCookie(contexto.Request, out var pendiente) || pendiente is null)
+        {
+            gestor.BorrarCookie(contexto.Response, EsCookieSegura(entorno));
+            return Results.Unauthorized();
+        }
+
+        var vinculado = await servicio.VincularAsync(pendiente, usuarioId);
+        gestor.BorrarCookie(contexto.Response, EsCookieSegura(entorno));
+        return vinculado ? Results.NoContent() : Results.BadRequest();
     }
 
     private static bool EsCookieSegura(IHostEnvironment entorno) =>
