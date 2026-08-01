@@ -1,5 +1,6 @@
 import { clearAccessToken, setAccessToken } from '../auth/session';
 import { api, desempaquetar } from './http';
+import type { components } from './schema';
 
 export interface RegistroDatos {
   email: string;
@@ -14,19 +15,8 @@ export interface Credenciales {
 }
 
 export type ProveedorExterno = 'facebook' | 'google';
-export interface LoginExternoPendiente {
-  requiereEmail: boolean;
-  requiereNombre: boolean;
-  requiereCiudad: boolean;
-  requiereVinculacion: boolean;
-  nombreVisible: string | null;
-}
-
-export interface CompletarLoginExterno {
-  email?: string;
-  nombre?: string;
-  ciudad?: string;
-}
+export type LoginExternoPendiente = components['schemas']['LoginExternoPendienteProyeccion'];
+export type CompletarLoginExterno = components['schemas']['CompletarRegistroExternoRequest'];
 
 export function normalizarRetorno(retorno: unknown): string {
   return typeof retorno === 'string' && retorno.startsWith('/') &&
@@ -34,30 +24,21 @@ export function normalizarRetorno(retorno: unknown): string {
 }
 
 export async function obtenerProveedores(): Promise<ProveedorExterno[]> {
-  const respuesta = await fetch('/api/auth/external/providers', { credentials: 'include' });
-  if (!respuesta.ok) throw new Error('No se pudieron consultar los proveedores.');
-  return (await respuesta.json()) as ProveedorExterno[];
+  const proveedores = desempaquetar(await api.GET('/api/auth/external/providers'));
+  return proveedores.filter((p): p is ProveedorExterno => p === 'facebook' || p === 'google');
 }
 
 export async function obtenerLoginExternoPendiente(): Promise<LoginExternoPendiente> {
-  const respuesta = await fetch('/api/auth/external/pending', { credentials: 'include' });
-  if (!respuesta.ok) throw new Error('No se pudo consultar el acceso pendiente.');
-  return (await respuesta.json()) as LoginExternoPendiente;
+  return desempaquetar(await api.GET('/api/auth/external/pending'));
 }
 
 export async function completarLoginExterno(datos: CompletarLoginExterno): Promise<void> {
-  const respuesta = await fetch('/api/auth/external/complete', {
-    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(datos),
-  });
-  if (!respuesta.ok) throw new Error('No se pudo completar el acceso externo.');
-  const data = (await respuesta.json()) as { accessToken: string };
+  const data = desempaquetar(await api.POST('/api/auth/external/complete', { body: datos }));
   setAccessToken(data.accessToken);
 }
 
 export async function vincularLoginExterno(): Promise<void> {
-  const respuesta = await fetch('/api/auth/external/link', { method: 'POST', credentials: 'include' });
-  if (!respuesta.ok) throw new Error('No se pudo vincular el acceso externo.');
+  desempaquetar(await api.POST('/api/auth/external/link'));
 }
 
 export async function registrar(datos: RegistroDatos): Promise<void> {

@@ -19,9 +19,9 @@ export function CompletarRegistroExternoPage() {
     const datos = new FormData(evento.currentTarget);
     try {
       await auth.completarLoginExterno({
-        email: pendiente?.requiereEmail ? String(datos.get('email') ?? '') : undefined,
-        nombre: pendiente?.requiereNombre ? String(datos.get('nombre') ?? '') : undefined,
-        ciudad: pendiente?.requiereCiudad ? String(datos.get('ciudad') ?? '') : undefined,
+        email: pendiente?.requiereEmail ? String(datos.get('email') ?? '') : null,
+        nombre: pendiente?.requiereNombre ? String(datos.get('nombre') ?? '') : null,
+        ciudad: pendiente?.requiereCiudad ? String(datos.get('ciudad') ?? '') : null,
       });
       await restaurarSesion(); navigate(retorno, { replace: true });
     } catch { setError(true); } finally { setEnviando(false); }

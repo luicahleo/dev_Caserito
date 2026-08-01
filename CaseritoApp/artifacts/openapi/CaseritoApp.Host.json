@@ -280,6 +280,124 @@
         }
       }
     },
+    "/api/auth/external/providers": {
+      "get": {
+        "tags": [
+          "AuthExternaEndpoints"
+        ],
+        "operationId": "ObtenerProveedoresExternos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/external/pending": {
+      "get": {
+        "tags": [
+          "AuthExternaEndpoints"
+        ],
+        "operationId": "ObtenerLoginExternoPendiente",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginExternoPendienteProyeccion"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/auth/external/complete": {
+      "post": {
+        "tags": [
+          "AuthExternaEndpoints"
+        ],
+        "operationId": "CompletarLoginExterno",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletarRegistroExternoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenAccesoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/auth/external/link": {
+      "post": {
+        "tags": [
+          "AuthExternaEndpoints"
+        ],
+        "operationId": "VincularLoginExterno",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/api/perfil": {
       "get": {
         "tags": [
@@ -4305,6 +4423,34 @@
           }
         }
       },
+      "CompletarRegistroExternoRequest": {
+        "required": [
+          "email",
+          "ciudad",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ciudad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "ConfirmarEmailRequest": {
         "required": [
           "usuarioId",
@@ -4817,6 +4963,36 @@
           "avisoId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "LoginExternoPendienteProyeccion": {
+        "required": [
+          "requiereEmail",
+          "requiereNombre",
+          "requiereCiudad",
+          "requiereVinculacion",
+          "nombreVisible"
+        ],
+        "type": "object",
+        "properties": {
+          "requiereEmail": {
+            "type": "boolean"
+          },
+          "requiereNombre": {
+            "type": "boolean"
+          },
+          "requiereCiudad": {
+            "type": "boolean"
+          },
+          "requiereVinculacion": {
+            "type": "boolean"
+          },
+          "nombreVisible": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -6052,6 +6228,9 @@
     },
     {
       "name": "AuthEndpoints"
+    },
+    {
+      "name": "AuthExternaEndpoints"
     },
     {
       "name": "PerfilEndpoints"

@@ -31,6 +31,10 @@ services:
       ASPNETCORE_HTTP_PORTS: "8080"
       # Cadena de conexión apuntando al servicio sqlserver dentro de la red de compose.
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CaseritoDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;MultipleActiveResultSets=true"
+      Authentication__Google__ClientId: "${Authentication__Google__ClientId:-}"
+      Authentication__Google__ClientSecret: "${Authentication__Google__ClientSecret:-}"
+      Authentication__Facebook__AppId: "${Authentication__Facebook__AppId:-}"
+      Authentication__Facebook__AppSecret: "${Authentication__Facebook__AppSecret:-}"
       # Bootstrap local opt-in para las pruebas manuales de fases 1–3.
       BootstrapPruebas__Habilitado: "${CASERITO_BOOTSTRAP_ENABLED:-false}"
       BootstrapPruebas__Administrador__Email: "${CASERITO_BOOTSTRAP_ADMIN_EMAIL:-}"

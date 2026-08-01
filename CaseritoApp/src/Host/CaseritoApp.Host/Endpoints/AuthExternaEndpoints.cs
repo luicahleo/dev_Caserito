@@ -17,12 +17,31 @@ public static class AuthExternaEndpoints
     public static IEndpointRouteBuilder MapAuthExternaEndpoints(this IEndpointRouteBuilder app)
     {
         var grupo = app.MapGroup("/api/auth/external");
-        grupo.MapGet("/providers", ObtenerProveedores);
-        grupo.MapGet("/{provider}/start", IniciarAsync);
-        grupo.MapGet("/callback", CallbackAsync);
-        grupo.MapGet("/pending", ObtenerPendienteAsync);
-        grupo.MapPost("/complete", CompletarAsync);
-        grupo.MapPost("/link", VincularAsync).RequireAuthorization();
+        grupo.MapGet("/providers", ObtenerProveedores)
+            .WithName("ObtenerProveedoresExternos")
+            .Produces<IReadOnlyList<string>>(StatusCodes.Status200OK);
+        grupo.MapGet("/{provider}/start", IniciarAsync)
+            .ExcludeFromDescription();
+        grupo.MapGet("/callback", CallbackAsync)
+            .ExcludeFromDescription();
+        grupo.MapGet("/pending", ObtenerPendienteAsync)
+            .WithName("ObtenerLoginExternoPendiente")
+            .Produces<LoginExternoPendienteProyeccion>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized);
+        grupo.MapPost("/complete", CompletarAsync)
+            .WithName("CompletarLoginExterno")
+            .Accepts<CompletarRegistroExternoRequest>("application/json")
+            .Produces<TokenAccesoResponse>(StatusCodes.Status200OK)
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .Produces(StatusCodes.Status401Unauthorized);
+        grupo.MapPost("/link", VincularAsync)
+            .WithName("VincularLoginExterno")
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized);
         return app;
     }
 
