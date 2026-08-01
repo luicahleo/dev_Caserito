@@ -19,6 +19,8 @@ public static class AuthExternaEndpoints
         grupo.MapGet("/providers", ObtenerProveedores);
         grupo.MapGet("/{provider}/start", IniciarAsync);
         grupo.MapGet("/callback", CallbackAsync);
+        grupo.MapGet("/pending", ObtenerPendienteAsync);
+        grupo.MapPost("/complete", CompletarAsync);
         return app;
     }
 
@@ -82,7 +84,7 @@ public static class AuthExternaEndpoints
             return Results.Redirect("/login?authExterna=fallo");
         }
 
-        var usuario = await usuarios.FindByLoginAsync(proveedorEsquema!, clave);
+        var usuario = await usuarios.FindByLoginAsync(proveedor, clave);
         if (usuario is not null)
         {
             var sesion = await emisorSesion.EmitirAsync(usuario, ct);
@@ -111,6 +113,85 @@ public static class AuthExternaEndpoints
         return Results.Redirect("/auth/external/onboarding");
     }
 
+    private static async Task<IResult> ObtenerPendienteAsync(
+        HttpContext contexto,
+        IGestorLoginExternoPendiente gestor,
+        UserManager<ApplicationUser> usuarios)
+    {
+        if (!gestor.TryLeerCookie(contexto.Request, out var pendiente) || pendiente is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var requiereVinculacion = !string.IsNullOrWhiteSpace(pendiente.Email) &&
+            await usuarios.FindByEmailAsync(pendiente.Email) is not null;
+        return Results.Ok(gestor.Proyectar(pendiente, requiereVinculacion));
+    }
+
+    private static async Task<IResult> CompletarAsync(
+        CompletarRegistroExternoRequest request,
+        HttpContext contexto,
+        IGestorLoginExternoPendiente gestor,
+        ServicioRegistroExterno servicio,
+        IEmisorSesion emisorSesion,
+        IHostEnvironment entorno,
+        CancellationToken ct)
+    {
+        if (!gestor.TryLeerCookie(contexto.Request, out var pendiente) || pendiente is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var email = pendiente.Email ?? request.Email;
+        var nombre = pendiente.Nombre ?? request.Nombre;
+        var errores = ValidarDatos(email, nombre, request.Ciudad);
+        if (errores.Count > 0)
+        {
+            return Results.ValidationProblem(errores);
+        }
+
+        var resultado = await servicio.RegistrarAsync(pendiente, email!, nombre!, request.Ciudad!, ct);
+        if (resultado.Estado == EstadoRegistroExterno.RequiereVinculacion)
+        {
+            return Results.Conflict(new { mensaje = "Se requiere verificar la cuenta existente." });
+        }
+
+        if (resultado.Usuario is null)
+        {
+            gestor.BorrarCookie(contexto.Response, EsCookieSegura(entorno));
+            return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "No se pudo completar el acceso externo.");
+        }
+
+        var sesion = await emisorSesion.EmitirAsync(resultado.Usuario, ct);
+        AuthEndpoints.EstablecerCookieRefresh(contexto, sesion.RefreshToken, entorno);
+        gestor.BorrarCookie(contexto.Response, EsCookieSegura(entorno));
+        return Results.Ok(new TokenAccesoResponse(sesion.AccessToken));
+    }
+
+    private static Dictionary<string, string[]> ValidarDatos(string? email, string? nombre, string? ciudad)
+    {
+        var errores = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+        {
+            errores["email"] = ["El email no es válido."];
+        }
+
+        if (string.IsNullOrWhiteSpace(nombre) || nombre.Length > 100)
+        {
+            errores["nombre"] = ["El nombre es obligatorio y admite hasta 100 caracteres."];
+        }
+
+        if (string.IsNullOrWhiteSpace(ciudad) || ciudad.Length > 100)
+        {
+            errores["ciudad"] = ["La ciudad es obligatoria y admite hasta 100 caracteres."];
+        }
+
+        return errores;
+    }
+
+    private static bool EsCookieSegura(IHostEnvironment entorno) =>
+        !(entorno.IsDevelopment() || entorno.IsEnvironment("Testing"));
+
     private static string? ObtenerEsquema(string provider, OpcionesAutenticacionExterna opciones) =>
         provider.Trim().ToLowerInvariant() switch
         {
@@ -125,3 +206,6 @@ public static class AuthExternaEndpoints
             ? retorno
             : RetornoPredeterminado;
 }
+
+/// <summary>Datos que faltan para completar un alta desde un proveedor externo.</summary>
+public sealed record CompletarRegistroExternoRequest(string? Email, string? Ciudad, string? Nombre);

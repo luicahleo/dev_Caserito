@@ -85,7 +85,7 @@ public sealed class AuthExternaLoginTests(CaseritoApiFactory factory) : IClassFi
         Assert.Equal(1, db.UserLogins.Count(login => login.LoginProvider == "Facebook" && login.ProviderKey == clave));
     }
 
-    private async Task CrearUsuarioAsociadoAsync(string clave, string proveedor = "Google")
+    private async Task CrearUsuarioAsociadoAsync(string clave, string proveedor = "google")
     {
         using var scope = factory.Services.CreateScope();
         var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -93,7 +93,7 @@ public sealed class AuthExternaLoginTests(CaseritoApiFactory factory) : IClassFi
         var usuario = new ApplicationUser { UserName = email, Email = email, Nombre = "Usuario", Ciudad = "Lima" };
         Assert.True((await usuarios.CreateAsync(usuario)).Succeeded);
         Assert.True((await usuarios.AddToRoleAsync(usuario, "Cliente")).Succeeded);
-        Assert.True((await usuarios.AddLoginAsync(usuario, new UserLoginInfo(proveedor, clave, proveedor))).Succeeded);
+        Assert.True((await usuarios.AddLoginAsync(usuario, new UserLoginInfo(proveedor.ToLowerInvariant(), clave, proveedor))).Succeeded);
     }
 
     private string CrearCookieExterna(string proveedor, string clave, string email, bool emailVerificado)
