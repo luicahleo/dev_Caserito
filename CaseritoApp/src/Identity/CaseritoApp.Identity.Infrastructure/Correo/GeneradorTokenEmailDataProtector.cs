@@ -9,17 +9,22 @@ namespace CaseritoApp.Identity.Infrastructure.Correo;
 public sealed class GeneradorTokenEmailDataProtector : IGeneradorTokenEmail
 {
     private readonly IDataProtector _protector;
+    private readonly TimeProvider _reloj;
     private readonly TimeSpan _vigencia;
 
-    public GeneradorTokenEmailDataProtector(IDataProtectionProvider dataProtection, TimeSpan? vigencia = null)
+    public GeneradorTokenEmailDataProtector(
+        IDataProtectionProvider dataProtection,
+        TimeProvider reloj,
+        TimeSpan? vigencia = null)
     {
         _protector = dataProtection.CreateProtector("CaseritoApp.EmailConfirmation");
+        _reloj = reloj;
         _vigencia = vigencia ?? TimeSpan.FromHours(24);
     }
 
     public string Generar(Guid usuarioId)
     {
-        var payload = $"{usuarioId:N}|{DateTimeOffset.UtcNow:O}";
+        var payload = $"{usuarioId:N}|{_reloj.GetUtcNow():O}";
         var protegido = _protector.Protect(payload);
         return Base64UrlEncode(protegido);
     }
@@ -42,7 +47,8 @@ public sealed class GeneradorTokenEmailDataProtector : IGeneradorTokenEmail
                 return false;
             }
 
-            if (DateTimeOffset.UtcNow - emitido > _vigencia)
+            var ahora = _reloj.GetUtcNow();
+            if (emitido > ahora || ahora - emitido > _vigencia)
             {
                 return false;
             }

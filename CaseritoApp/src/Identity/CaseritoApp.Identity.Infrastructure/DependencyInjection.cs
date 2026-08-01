@@ -71,7 +71,8 @@ public static class DependencyInjection
         servicios.AddSingleton<IGeneradorTokenEmail>(sp =>
         {
             var dataProtection = sp.GetRequiredService<IDataProtectionProvider>();
-            return new GeneradorTokenEmailDataProtector(dataProtection);
+            var reloj = sp.GetRequiredService<TimeProvider>();
+            return new GeneradorTokenEmailDataProtector(dataProtection, reloj);
         });
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
