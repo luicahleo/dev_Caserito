@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { rutasExcluidasFallbackPwa } from './src/pwa/navigation.js';
 
 // Target del proxy configurable por entorno (Docker/compose apunta al servicio "api");
 // fallback al puerto de dev en host.
@@ -13,6 +14,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: rutasExcluidasFallbackPwa,
+      },
       manifest: {
         name: 'CaseritoApp',
         short_name: 'Caserito',

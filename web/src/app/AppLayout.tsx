@@ -77,11 +77,13 @@ export function AppLayout() {
           )}
         </Toolbar>
       </AppBar>
-      <NotificacionesDropdown
-        open={Boolean(anchorNotificaciones)}
-        anchorEl={anchorNotificaciones}
-        onClose={() => setAnchorNotificaciones(null)}
-      />
+      {estaAutenticado && (
+        <NotificacionesDropdown
+          open={Boolean(anchorNotificaciones)}
+          anchorEl={anchorNotificaciones}
+          onClose={() => setAnchorNotificaciones(null)}
+        />
+      )}
       <Container component="main" maxWidth={false} disableGutters sx={{ flexGrow: 1 }}>
         <Outlet />
       </Container>

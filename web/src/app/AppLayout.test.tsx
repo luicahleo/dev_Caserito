@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import * as authCtx from '../auth/AuthContext';
@@ -42,6 +42,16 @@ describe('AppLayout', () => {
     expect(screen.getByRole('link', { name: /explorar/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /entrar/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /mis avisos/i })).not.toBeInTheDocument();
+  });
+
+  it('no consulta notificaciones cuando no hay sesión', async () => {
+    mockAuth(false);
+    const listar = vi.spyOn(notificaciones, 'listarNotificaciones');
+
+    montar();
+
+    await act(async () => Promise.resolve());
+    expect(listar).not.toHaveBeenCalled();
   });
 
   it('muestra enlaces del dueño cuando hay sesión', () => {
