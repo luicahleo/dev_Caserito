@@ -115,7 +115,7 @@ Sin incluir credenciales en la petición o en capturas:
 1. `GET <origen-publico>/health` debe responder correctamente.
 2. `GET <origen-publico>/api/auth/external/providers` debe devolver `facebook` y `google`.
 3. Al pulsar cada botón, la URL de autorización generada debe usar como callback el origen HTTPS público, nunca `http`, `localhost` ni el nombre del contenedor.
-4. Ejecutar la guía completa de [AUTH_PROVEEDORES.md](./AUTH_PROVEEDORES.md).
+4. Ejecutar la guía completa de [AUTH_PROVEEDORES.md](../docs/ai/AUTH_PROVEEDORES.md).
 5. Informar cada caso como `Correcto`, `Falló` o `No ejecutado`. No afirmar que Google/Meta están verdes hasta completar los flujos reales.
 
 ## Qué debe devolver agenteVPS a agenteLocal
