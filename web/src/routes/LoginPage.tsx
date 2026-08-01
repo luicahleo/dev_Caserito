@@ -61,6 +61,9 @@ export function LoginPage() {
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Entrar
           </Button>
+          <Link component={RouterLink} to="/olvide-password">
+            ¿Olvidaste tu contraseña?
+          </Link>
           <Link component={RouterLink} to="/registro">
             ¿No tienes cuenta? Regístrate
           </Link>

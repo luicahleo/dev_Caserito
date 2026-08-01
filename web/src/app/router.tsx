@@ -23,6 +23,7 @@ import { DetalleAcuerdoPage } from '../routes/DetalleAcuerdoPage';
 import { PerfilPublicoPage } from '../routes/PerfilPublicoPage';
 import { NotificacionesPage } from '../routes/NotificacionesPage';
 import { BusquedasGuardadasPage } from '../routes/BusquedasGuardadasPage';
+import { OlvidePasswordPage } from '../routes/OlvidePasswordPage';
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: '/usuarios/:id', element: <PerfilPublicoPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/registro', element: <RegistroPage /> },
+      { path: '/olvide-password', element: <OlvidePasswordPage /> },
       { path: '/confirmar-email', element: <ConfirmarEmailPage /> },
       {
         path: '/mensajes',

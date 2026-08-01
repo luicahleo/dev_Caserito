@@ -31,6 +31,15 @@ function montar(iniciarSesion = vi.fn()) {
 }
 
 describe('LoginPage', () => {
+  it('enlaza a la recuperación de contraseña', () => {
+    montar();
+
+    expect(screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toHaveAttribute(
+      'href',
+      '/olvide-password',
+    );
+  });
+
   it('llama a iniciarSesion con credenciales válidas', async () => {
     const usuarioEvento = userEvent.setup();
     const { iniciarSesion } = montar(vi.fn().mockResolvedValue(undefined));
