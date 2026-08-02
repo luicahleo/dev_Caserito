@@ -98,9 +98,13 @@ public sealed class ServicioRegistroExterno(
             return await ResolverCarreraAsync(pendiente, email);
         }
 
-        await publisher.Publish(
-            new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombre),
-            ct);
+        if (!usuario.EmailConfirmed)
+        {
+            await publisher.Publish(
+                new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombre),
+                ct);
+        }
+
         return new(EstadoRegistroExterno.Completado, usuario);
     }
 

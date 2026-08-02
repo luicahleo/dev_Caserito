@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Infrastructure.Security;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -193,6 +195,10 @@ public static class DependencyInjection
                 opciones.ClientSecret = opcionesExternas.Google.ClientSecret;
                 opciones.SignInScheme = IdentityConstants.ExternalScheme;
                 opciones.CallbackPath = "/api/auth/external/google/callback";
+                opciones.ClaimActions.Add(new JsonKeyClaimAction(
+                    "email_verified",
+                    ClaimValueTypes.Boolean,
+                    "email_verified"));
             });
         }
 

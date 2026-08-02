@@ -1,6 +1,8 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Application.Correo;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using CaseritoApp.IntegrationTests.Infrastructure;
@@ -14,25 +16,32 @@ public sealed class AuthExternaRegistroTests(CaseritoApiFactory factory) : IClas
     [Fact]
     public async Task Google_verificado_crea_usuario_cliente_asociado_y_sesion()
     {
+        var correos = new ServicioCorreoCapturador();
+        using var factoryConCorreo = factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(servicios => servicios.AddSingleton<IServicioCorreo>(correos)));
         var email = $"google-{Guid.NewGuid():N}@caserito.test";
         var clave = $"clave-{Guid.NewGuid():N}";
-        using var cliente = factory.CreateClient();
+        using var cliente = factoryConCorreo.CreateClient();
         using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/auth/external/complete")
         {
             Content = JsonContent.Create(new CompletarRegistroExternoRequest(null, "Lima", null)),
         };
-        solicitud.Headers.Add("Cookie", CrearCookiePendiente("google", clave, email, true, "Nombre Google"));
+        solicitud.Headers.Add(
+            "Cookie",
+            CrearCookiePendiente(
+                "google", clave, email, true, "Nombre Google", factoryConCorreo.Services));
 
         var respuesta = await cliente.SendAsync(solicitud);
 
         Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
-        using var scope = factory.Services.CreateScope();
+        using var scope = factoryConCorreo.Services.CreateScope();
         var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var usuario = await usuarios.FindByEmailAsync(email);
         Assert.NotNull(usuario);
         Assert.True(usuario!.EmailConfirmed);
         Assert.True(await usuarios.IsInRoleAsync(usuario, "Cliente"));
         Assert.NotNull(await usuarios.FindByLoginAsync("google", clave));
+        Assert.Empty(correos.Enviados);
     }
 
     [Theory]
@@ -40,20 +49,29 @@ public sealed class AuthExternaRegistroTests(CaseritoApiFactory factory) : IClas
     [InlineData(false)]
     public async Task Facebook_con_o_sin_email_crea_usuario_no_confirmado(bool proveedorIncluyeEmail)
     {
+        var correos = new ServicioCorreoCapturador();
+        using var factoryConCorreo = factory.WithWebHostBuilder(builder =>
+            builder.ConfigureServices(servicios => servicios.AddSingleton<IServicioCorreo>(correos)));
         var email = $"facebook-{Guid.NewGuid():N}@caserito.test";
         var clave = $"clave-{Guid.NewGuid():N}";
         var cookie = CrearCookiePendiente(
-            "facebook", clave, proveedorIncluyeEmail ? email : null, false, "Nombre Facebook");
-        using var cliente = factory.CreateClient();
+            "facebook",
+            clave,
+            proveedorIncluyeEmail ? email : null,
+            false,
+            "Nombre Facebook",
+            factoryConCorreo.Services);
+        using var cliente = factoryConCorreo.CreateClient();
         using var solicitud = CrearSolicitud(
             new CompletarRegistroExternoRequest(proveedorIncluyeEmail ? null : email, "Lima", null), cookie);
 
         Assert.Equal(HttpStatusCode.OK, (await cliente.SendAsync(solicitud)).StatusCode);
 
-        using var scope = factory.Services.CreateScope();
+        using var scope = factoryConCorreo.Services.CreateScope();
         var usuario = await scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>().FindByEmailAsync(email);
         Assert.NotNull(usuario);
         Assert.False(usuario!.EmailConfirmed);
+        Assert.Single(correos.Enviados);
     }
 
     [Fact]
@@ -107,12 +125,24 @@ public sealed class AuthExternaRegistroTests(CaseritoApiFactory factory) : IClas
         string clave,
         string? email,
         bool confiable,
-        string? nombre)
+        string? nombre,
+        IServiceProvider? servicios = null)
     {
-        using var scope = factory.Services.CreateScope();
+        using var scope = (servicios ?? factory.Services).CreateScope();
         var gestor = scope.ServiceProvider.GetRequiredService<IGestorLoginExternoPendiente>();
         var ticket = gestor.Proteger(new LoginExternoPendiente(
             proveedor, clave, email, confiable, nombre, "/perfil", DateTimeOffset.UtcNow.AddMinutes(5)));
         return $"{GestorLoginExternoPendienteDataProtector.NombreCookie}={ticket}";
+    }
+
+    private sealed class ServicioCorreoCapturador : IServicioCorreo
+    {
+        public ConcurrentQueue<MensajeCorreo> Enviados { get; } = new();
+
+        public Task EnviarAsync(MensajeCorreo mensaje, CancellationToken ct)
+        {
+            Enviados.Enqueue(mensaje);
+            return Task.CompletedTask;
+        }
     }
 }

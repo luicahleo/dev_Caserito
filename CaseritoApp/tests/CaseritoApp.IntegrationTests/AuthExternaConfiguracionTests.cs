@@ -1,8 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Text.Json;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -60,5 +63,23 @@ public sealed class AuthExternaConfiguracionTests(CaseritoApiFactory factory)
         var proveedores = await cliente.GetFromJsonAsync<string[]>("/api/auth/external/providers");
 
         Assert.Empty(proveedores!);
+    }
+
+    [Fact]
+    public void Google_mapea_la_evidencia_de_email_verificado()
+    {
+        using var scope = factory.Services.CreateScope();
+        var opciones = scope.ServiceProvider
+            .GetRequiredService<IOptionsMonitor<GoogleOptions>>()
+            .Get(GoogleDefaults.AuthenticationScheme);
+        using var datos = JsonDocument.Parse("""{"email_verified":true}""");
+        var identidad = new ClaimsIdentity();
+
+        foreach (var accion in opciones.ClaimActions)
+        {
+            accion.Run(datos.RootElement, identidad, GoogleDefaults.AuthenticationScheme);
+        }
+
+        Assert.True(bool.Parse(identidad.FindFirst("email_verified")!.Value));
     }
 }
