@@ -377,7 +377,9 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
 // puerto de la aplicación solo se publica en loopback en el compose de producción.
 var forwardedHeaders = new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedProto
+        | ForwardedHeaders.XForwardedHost,
 };
 forwardedHeaders.KnownIPNetworks.Clear();
 forwardedHeaders.KnownProxies.Clear();

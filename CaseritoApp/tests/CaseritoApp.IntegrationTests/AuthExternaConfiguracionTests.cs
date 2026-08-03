@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,18 @@ namespace CaseritoApp.IntegrationTests;
 public sealed class AuthExternaConfiguracionTests(CaseritoApiFactory factory)
     : IClassFixture<CaseritoApiFactory>
 {
+    [Fact]
+    public void Produccion_usa_solo_el_host_publico_nuevo()
+    {
+        var configuracion = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.Production.json")
+            .Build();
+
+        Assert.Equal("https://caserito.app", configuracion["App:UrlPublica"]);
+        Assert.Equal("caserito.app", configuracion["AllowedHosts"]);
+    }
+
     [Fact]
     public void Mantiene_bearer_y_configura_cookie_externa_segura()
     {
@@ -33,6 +46,26 @@ public sealed class AuthExternaConfiguracionTests(CaseritoApiFactory factory)
         Assert.Equal("/api/auth/external", cookies.Cookie.Path);
         Assert.Equal(TimeSpan.FromMinutes(10), cookies.ExpireTimeSpan);
         Assert.Equal(CookieSecurePolicy.SameAsRequest, cookies.Cookie.SecurePolicy);
+        Assert.Null(cookies.Cookie.Domain);
+    }
+
+    [Fact]
+    public async Task Callback_google_respeta_host_y_esquema_reenviados()
+    {
+        using var cliente = factory.CreateClient(new() { AllowAutoRedirect = false });
+        using var solicitud = new HttpRequestMessage(
+            HttpMethod.Get,
+            "/api/auth/external/google/start?returnUrl=/perfil");
+        solicitud.Headers.Add("X-Forwarded-Host", "caserito.app");
+        solicitud.Headers.Add("X-Forwarded-Proto", "https");
+
+        var respuesta = await cliente.SendAsync(solicitud);
+
+        Assert.Equal(HttpStatusCode.Redirect, respuesta.StatusCode);
+        Assert.Contains(
+            Uri.EscapeDataString("https://caserito.app/api/auth/external/google/callback"),
+            respuesta.Headers.Location?.OriginalString,
+            StringComparison.Ordinal);
     }
 
     [Fact]
