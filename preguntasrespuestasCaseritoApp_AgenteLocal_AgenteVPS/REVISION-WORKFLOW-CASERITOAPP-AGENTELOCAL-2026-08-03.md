@@ -119,4 +119,3 @@ El agenteLocal debe devolver:
 - estrategia exacta de health check, timeout y rollback;
 - política de rama/environment y concurrency;
 - lista de actions externas con versiones/SHA.
-
