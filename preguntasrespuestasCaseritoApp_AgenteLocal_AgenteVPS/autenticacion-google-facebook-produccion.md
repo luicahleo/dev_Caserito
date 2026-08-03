@@ -96,6 +96,8 @@ Google no entrega un servidor sandbox independiente: el proyecto en modo `Testin
 
 ## Configuración que debe hacerse en Meta
 
+> **TODO — prueba manual diferida:** completar la identificación y los flujos reales de Meta cuando exista un número de teléfono dedicado para el usuario de prueba. Hasta entonces, mantener la aplicación de Meta en modo desarrollo y registrar sus casos como `No ejecutado`; no afirmar que Facebook Login está verde. No guardar el número, el nombre de la cuenta ni capturas con PII en Git, logs o este documento.
+
 1. Crear o seleccionar una aplicación en Meta for Developers.
 2. Añadir Facebook Login para web y mantener la aplicación en modo desarrollo.
 3. Usar roles de la aplicación o usuarios de prueba administrados por Meta; no cuentas personales.
