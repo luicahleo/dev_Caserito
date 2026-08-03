@@ -1,10 +1,8 @@
-# Producción VPS Trajano. Desarrollo local: docker-compose.dev.yml.
+# Producción VPS Trajano. La imagen se construye y valida por SHA desde el workflow.
+# Desarrollo local: docker-compose.dev.yml.
 services:
   caseritoapp:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
-    image: caseritoapp:latest
+    image: caseritoapp:${CASERITOAPP_IMAGE_TAG:-latest}
     container_name: caseritoapp
     restart: unless-stopped
     env_file: .env

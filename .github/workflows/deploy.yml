@@ -5,62 +5,155 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: caseritoapp-production
+  cancel-in-progress: false
+
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar código
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
       - name: Configurar .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           global-json-file: CaseritoApp/global.json
+
       - name: Configurar Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
+
       - name: Publicar API
         run: dotnet publish src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj -c Release -o ../payload/web
         working-directory: CaseritoApp
+
       - name: Compilar PWA
         run: npm ci && npm run build
         working-directory: web
-      - name: Preparar payload
+
+      - name: Preparar y validar payload
+        shell: bash
         run: |
+          set -Eeuo pipefail
           mkdir -p payload/web/wwwroot
           cp -r web/dist/. payload/web/wwwroot/
           cp Dockerfile.web docker-compose.yml payload/
+          cp deploy/.dockerignore payload/.dockerignore
+          test -s payload/web/CaseritoApp.Host.dll
+          test -s payload/web/wwwroot/index.html
+          test -s payload/Dockerfile.web
+          test -s payload/docker-compose.yml
+          test -s payload/.dockerignore
+
       - name: Configurar agente SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-      - name: Registrar host SSH
+
+      - name: Instalar clave pública conocida del VPS
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-      - name: Sincronizar payload con la VPS
+          set -Eeuo pipefail
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 0600 ~/.ssh/known_hosts
+          ssh-keygen -F "$VPS_HOST" -f ~/.ssh/known_hosts >/dev/null
+
+      - name: Sincronizar release aislado
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
         run: |
-          rsync -avz --delete payload/web/ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/caseritoapp/web/
-          rsync -avz payload/Dockerfile.web payload/docker-compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/var/apps/caseritoapp/
-      - name: Construir y desplegar en la VPS
+          set -Eeuo pipefail
+          destino="$VPS_USER@$VPS_HOST"
+          release="/var/apps/caseritoapp/releases/${GITHUB_SHA}"
+          timeout 60s ssh -o BatchMode=yes -o ConnectTimeout=15 "$destino" "mkdir -p '$release'"
+          rsync -az --delete --timeout=60 -e 'ssh -o BatchMode=yes -o ConnectTimeout=15' payload/ "$destino:$release/"
+
+      - name: Desplegar con health check y rollback
+        shell: bash
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-            set -e
-            cd /var/apps/caseritoapp
-            docker compose up -d --build caseritoapp
-          ENDSSH
-      - name: Comprobar salud
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
-            set -e
-            for attempt in $(seq 1 30); do
-              if curl -fsS http://127.0.0.1:8084/health; then
-                exit 0
+          set -Eeuo pipefail
+          destino="$VPS_USER@$VPS_HOST"
+          timeout 15m ssh -o BatchMode=yes -o ConnectTimeout=15 "$destino" \
+            "bash -s -- '${GITHUB_SHA}'" <<'ENDSSH'
+          set -Eeuo pipefail
+
+          sha="$1"
+          raiz='/var/apps/caseritoapp'
+          release="$raiz/releases/$sha"
+
+          test -s "$release/web/CaseritoApp.Host.dll"
+          test -s "$release/web/wwwroot/index.html"
+          test -s "$release/Dockerfile.web"
+          test -s "$release/docker-compose.yml"
+          test -s "$release/.dockerignore"
+
+          if docker container inspect caseritoapp >/dev/null 2>&1; then
+            imagen_anterior="$(docker inspect --format '{{.Config.Image}}' caseritoapp)"
+          else
+            imagen_anterior=''
+          fi
+
+          esperar_salud() {
+            for intento in $(seq 1 30); do
+              estado="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' caseritoapp 2>/dev/null || printf 'ausente')"
+              if [ "$estado" = 'healthy' ] \
+                && curl --fail --silent --show-error --max-time 5 http://127.0.0.1:8084/health >/dev/null \
+                && curl --fail --silent --show-error --max-time 10 https://caserito.app/health >/dev/null; then
+                return 0
               fi
-              echo "Esperando health check ($attempt/30)..."
+              echo "Esperando validación de salud ($intento/30)..."
               sleep 5
             done
-            docker logs --tail 200 caseritoapp
+            return 1
+          }
+
+          rollback() {
+            echo 'El despliegue falló; iniciando rollback.'
+            case "$imagen_anterior" in
+              caseritoapp:*) etiqueta_anterior="${imagen_anterior#caseritoapp:}" ;;
+              *) echo 'No existe una imagen anterior válida para restaurar.'; return 1 ;;
+            esac
+            CASERITOAPP_IMAGE_TAG="$etiqueta_anterior" docker compose --file "$raiz/docker-compose.yml" --project-directory "$raiz" up -d --no-build --force-recreate caseritoapp
+            esperar_salud
+          }
+
+          install -m 0644 "$release/.dockerignore" "$raiz/.dockerignore"
+          CASERITOAPP_IMAGE_TAG="$sha" docker compose --file "$release/docker-compose.yml" --project-directory "$raiz" config --quiet
+          docker build --file "$release/Dockerfile.web" --tag "caseritoapp:$sha" "$release"
+          install -m 0644 "$release/Dockerfile.web" "$raiz/Dockerfile.web"
+          install -m 0644 "$release/docker-compose.yml" "$raiz/docker-compose.yml"
+
+          if ! CASERITOAPP_IMAGE_TAG="$sha" docker compose --file "$raiz/docker-compose.yml" --project-directory "$raiz" up -d --no-build --force-recreate caseritoapp; then
+            rollback
             exit 1
+          fi
+
+          if ! esperar_salud; then
+            rollback
+            exit 1
+          fi
+
+          docker image tag "caseritoapp:$sha" caseritoapp:latest
+          printf '%s\n' "$sha" > "$raiz/current-release"
+          echo 'Despliegue validado correctamente.'
           ENDSSH
