@@ -127,15 +127,21 @@ símbolo) → `LogError` ruidoso, sin tumbar la app (decisión análoga a decora
     (`docker-compose.dev.yml`) no se toca.
 - **`.env.production.example`** (raíz): plantilla de producción con todas las variables (ver §5),
   sin secretos. El `.env.example` actual (dev) se conserva tal cual.
-- **`.github/workflows/deploy.yml`**:
-  - Trigger: `push` a **`master`** (rama por defecto del repo) + `workflow_dispatch`.
+- **`.github/workflows/deploy.yml`** (endurecido el 2026-08-03; el diseño inicial
+  de rsync al directorio vivo queda sustituido por releases aislados):
+  - Trigger: `push` a **`master`** + `workflow_dispatch` restringido por condición
+    a `master`; environment protegido `production`, permisos de solo lectura y
+    concurrency sin cancelación.
   - Job `deploy`: checkout → setup-dotnet (global.json) → `dotnet publish` Release del Host →
     setup-node 22 + `npm ci` + `npm run build` (web) → copiar `web/dist` a `publish/wwwroot` →
-    ssh-agent (`VPS_SSH_KEY`) + keyscan → rsync `publish/` →
-    `/var/apps/caseritoapp/web/` + rsync de `Dockerfile.web` y `docker-compose.yml` → SSH:
-    `docker build --no-cache -f Dockerfile.web -t caseritoapp:latest .` +
-    `docker compose up -d caseritoapp` → smoke check `curl -fsS http://127.0.0.1:8084/health`.
-  - Secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` (los crea el humano en GitHub).
+    ssh-agent (`VPS_SSH_KEY`) + `known_hosts` prevalidado → rsync del payload a
+    `/var/apps/caseritoapp/releases/<GITHUB_SHA>` → imagen
+    `caseritoapp:<GITHUB_SHA>` → recreación sin build → estado Docker healthy +
+    health de loopback + health HTTPS público.
+  - Ante fallo posterior a la recreación restaura la imagen anterior y vuelve a
+    comprobar salud. `latest` se actualiza únicamente tras el éxito.
+  - Secrets: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY` y
+    `VPS_SSH_KNOWN_HOSTS` (preverificado; nunca obtenido con keyscan durante el job).
   - El `ci.yml` existente no se toca.
 
 ### 4.5 Nginx del host (lado agenteVPS, documentado)
@@ -163,10 +169,10 @@ WebSocket** (`proxy_http_version 1.1` + headers `Upgrade`/`Connection`) para `/h
 ## 6. Flujo de despliegue (end-to-end)
 
 1. Push a `master` → CI (`ci.yml`) ya verde.
-2. `deploy.yml`: publish API + build web + merge en `publish/wwwroot` → rsync → VPS.
-3. VPS: build imagen + `up -d` → contenedor arranca → migraciones EF (5 contextos) → seed roles →
+2. `deploy.yml`: publish API + build web + merge en `publish/wwwroot` → release por SHA → VPS.
+3. VPS: build de imagen por SHA + `up -d --no-build` → contenedor arranca → migraciones EF (5 contextos) → seed roles →
    seed admin → app sirve SPA + API + SignalR.
-4. Smoke check del workflow: `curl http://127.0.0.1:8084/health`.
+4. El workflow exige estado healthy y comprueba loopback y `https://caserito.app/health`.
 5. agenteVPS: vhost + certbot + registry + backups (BD + `fotos-avisos` + `kyc-blobs` +
    `dataprotection-keys`).
 
@@ -181,9 +187,9 @@ WebSocket** (`proxy_http_version 1.1` + headers `Upgrade`/`Connection`) para `/h
   rsync solo toca `web/`.
 - **WebSocket:** si el vhost nginx no lleva headers Upgrade, el chat no conecta — verificación
   manual post-despliegue (abrir chat).
-- **Rollback:** la imagen anterior queda como `caseritoapp:latest` del build previo solo hasta el
-  siguiente build; rollback formal (tags por commit) queda fuera de alcance — se redeploya el
-  commit anterior con `workflow_dispatch` desde esa rama/ref si hiciera falta.
+- **Rollback:** la imagen anterior se captura antes de recrear. Un fallo de salud
+  la restaura automáticamente; cada entrega conserva su tag por SHA y `latest`
+  solo cambia después de validar la nueva imagen.
 
 ## 8. Testing
 

@@ -651,6 +651,11 @@ git commit -m "feat(host): SPA estática con fallback y ForwardedHeaders para pr
 
 ### Task 5: Archivos de despliegue (Dockerfile, compose, env, workflow) + limpieza
 
+> Actualización 2026-08-03: la implementación literal de esta tarea quedó
+> sustituida por `2026-08-03-endurecimiento-deploy.md`: releases por SHA,
+> `.dockerignore` de denegación, actions fijadas y rollback automático. Los
+> fragmentos siguientes se conservan únicamente como registro del plan inicial.
+
 **Files:**
 - Create: `Dockerfile.web` (raíz del repo)
 - Modify: `docker-compose.yml` (raíz — reescritura a servicio único)
