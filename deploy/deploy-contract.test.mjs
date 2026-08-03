@@ -21,6 +21,10 @@ test('Compose despliega una imagen etiquetada sin construir en producción', asy
 
   assert.match(contenido, /image:\s*caseritoapp:\$\{CASERITOAPP_IMAGE_TAG:-latest\}/);
   assert.doesNotMatch(contenido, /^\s+build:/m);
+  assert.match(
+    contenido,
+    /curl -fsS -H 'Host: caserito\.app' http:\/\/localhost:8080\/health/,
+  );
 });
 
 test('el workflow serializa y restringe el despliegue de producción', async () => {
@@ -52,6 +56,10 @@ test('el workflow usa releases aislados y rollback verificable', async () => {
   assert.match(contenido, /rollback/);
   assert.match(contenido, /docker image tag[^\n]+caseritoapp:latest/);
   assert.match(contenido, /http:\/\/127\.0\.0\.1:8084\/health/);
+  assert.match(
+    contenido,
+    /-H 'Host: caserito\.app'[^\n]*http:\/\/127\.0\.0\.1:8084\/health/,
+  );
   assert.match(contenido, /https:\/\/caserito\.app\/health/);
   assert.match(contenido, /set -Eeuo pipefail/);
   assert.doesNotMatch(contenido, /\|\|\s*true/);
