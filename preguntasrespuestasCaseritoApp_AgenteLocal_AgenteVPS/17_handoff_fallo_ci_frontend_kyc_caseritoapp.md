@@ -13,7 +13,7 @@ El workflow de despliegue ya fue corregido y terminó correctamente:
 
 - Ejecución Deploy: `30616277171`
 - Commit desplegado: `f696b34689c569eaf1497da7c8f0925891dab130`
-- URL: `https://caseritoapp.trajano.online`
+- URL: `https://caserito.app`
 - `GET /health`: HTTP 200, cuerpo `Healthy`
 - Contenedor: saludable
 

@@ -11,7 +11,7 @@
 
 | Recurso | Valor |
 |---|---|
-| Subdominio | **`caseritoapp.trajano.online`** — DNS ya creado en IONOS, resuelve a `194.164.171.217` ✅ |
+| Subdominio | **`caserito.app`** — DNS ya creado en IONOS, resuelve a `194.164.171.217` ✅ |
 | Puerto del host | **`8084`** → contenedor `8080`, bind **`127.0.0.1`** (solo alcanzable por nginx) |
 | Contenedor / imagen / carpeta | **`caseritoapp`** / `/var/apps/caseritoapp/` |
 | Base de datos | **`CaseritoAppDB`** (convención PascalCase + `DB`) en `trajano-sqlserver` |
@@ -98,7 +98,7 @@ Copiar el patrón de `decoraciones`/`trajano-registry`: push a `master` + `workf
 3. Crear `.env` (chmod 600) con: `ConnectionStrings__DefaultConnection`
    (`Server=trajano-sqlserver,1433;Database=CaseritoAppDB;User Id=caseritoapp_app;...`),
    `SeedSettings__*` (credenciales admin que me pase el humano).
-4. Crear el vhost nginx `caseritoapp.trajano.online` (`proxy_pass http://127.0.0.1:8084`,
+4. Crear el vhost nginx `caserito.app` (`proxy_pass http://127.0.0.1:8084`,
    `client_max_body_size 12M` o lo que indique la app) + `certbot --nginx` (Let's Encrypt).
 5. Registrar en **trajano-registry**: aplicación, puerto 8084, subdominio, BD, conexiones
    (caseritoapp → sqlserver, y → mail si aplica).
@@ -112,7 +112,7 @@ Copiar el patrón de `decoraciones`/`trajano-registry`: push a `master` + `workf
    de producción.
 3. **Agente VPS (yo):** ejecuto §3 pasos 1–4.
 4. **Humano:** dispara el workflow (primer deploy).
-5. **Agente VPS (yo):** verifico (logs, migraciones, seed admin, `curl https://caseritoapp.trajano.online`)
+5. **Agente VPS (yo):** verifico (logs, migraciones, seed admin, `curl https://caserito.app`)
    y cierro registro/backups (§3 pasos 5–7).
 
 ## 5. Pendientes de confirmar (humano / agente local)

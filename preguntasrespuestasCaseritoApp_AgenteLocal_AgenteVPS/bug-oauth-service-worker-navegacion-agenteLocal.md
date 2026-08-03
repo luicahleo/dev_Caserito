@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-08-01  
 **Aplicación:** CaseritoApp  
-**Producción:** `https://caseritoapp.trajano.online`  
+**Producción:** `https://caserito.app`  
 **Estado:** causa raíz confirmada en el artefacto desplegado; requiere cambio en el código fuente local y nuevo deploy.
 
 ## Resumen
@@ -11,7 +11,7 @@ Google y Facebook Login están configurados y funcionan en producción, pero el 
 de los botones OAuth deja al usuario en una pantalla SPA «Página no encontrada», con una URL similar a:
 
 ```text
-https://caseritoapp.trajano.online/api/auth/external/facebook/start?returnUrl=%2Fperfil
+https://caserito.app/api/auth/external/facebook/start?returnUrl=%2Fperfil
 ```
 
 Al presionar `Ctrl+F5`, el navegador vuelve a solicitar esa misma URL al servidor, CaseritoApp responde

@@ -265,7 +265,7 @@ public sealed class OpcionesApp
 
     /// <summary>
     /// URL pública base de la SPA, usada para construir enlaces en correos. En producción:
-    /// https://caseritoapp.trajano.online. Default: dev server de Vite.
+    /// https://caserito.app. Default: dev server de Vite.
     /// </summary>
     public string UrlPublica { get; set; } = "http://localhost:5173";
 }
@@ -774,7 +774,7 @@ Kyc__RutaBase=/data/kyc-blobs
 DataProtection__RutaClaves=/data/dataprotection-keys
 
 # URL pública de la SPA (enlaces en correos):
-App__UrlPublica=https://caseritoapp.trajano.online
+App__UrlPublica=https://caserito.app
 ```
 
 - [ ] **Step 5: Crear `.github/workflows/deploy.yml`**:

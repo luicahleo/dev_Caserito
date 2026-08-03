@@ -136,7 +136,7 @@ Kyc__RutaBase=/data/kyc-blobs
 DataProtection__RutaClaves=/data/dataprotection-keys
 
 # URL pública (para enlaces en correos de confirmación):
-App__UrlPublica=https://caseritoapp.trajano.online
+App__UrlPublica=https://caserito.app
 ```
 
 **Notas:**

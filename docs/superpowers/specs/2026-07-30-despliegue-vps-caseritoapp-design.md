@@ -12,7 +12,7 @@ siguiendo el patrón probado de decoraciones/icarus: un contenedor en `trajano-s
 nginx del host terminando TLS, SQL Server compartido, deploy por GitHub Actions (publish → rsync →
 build en VPS, sin registry).
 
-El agenteVPS ya reservó: subdominio `caseritoapp.trajano.online` (DNS activo), puerto host
+El agenteVPS ya reservó: subdominio `caserito.app` (DNS activo), puerto host
 **8084** (bind `127.0.0.1`), carpeta `/var/apps/caseritoapp/`, BD **`CaseritoAppDB`** + login
 **`caseritoapp_app`**, clave SSH `github-actions-caseritoapp` (autorizada).
 
@@ -142,7 +142,7 @@ símbolo) → `LogError` ruidoso, sin tumbar la app (decisión análoga a decora
 
 Server block con `proxy_pass http://127.0.0.1:8084`, `client_max_body_size 12M` y **soporte
 WebSocket** (`proxy_http_version 1.1` + headers `Upgrade`/`Connection`) para `/hubs`. Certbot para
-`caseritoapp.trajano.online`. No requiere cambios en el repo; ya comunicado en `11_respuestas`.
+`caserito.app`. No requiere cambios en el repo; ya comunicado en `11_respuestas`.
 
 ## 5. Variables de entorno de producción (`.env` del host, lo crea el agenteVPS)
 
@@ -158,7 +158,7 @@ WebSocket** (`proxy_http_version 1.1` + headers `Upgrade`/`Connection`) para `/h
 | `AlmacenFotos__RutaBase` | `/data/fotos-avisos` | |
 | `Kyc__RutaBase` | `/data/kyc-blobs` | PII cifrada |
 | `DataProtection__RutaClaves` | `/data/dataprotection-keys` | key ring persistido |
-| `App__UrlPublica` | `https://caseritoapp.trajano.online` | enlaces de correo |
+| `App__UrlPublica` | `https://caserito.app` | enlaces de correo |
 
 ## 6. Flujo de despliegue (end-to-end)
 

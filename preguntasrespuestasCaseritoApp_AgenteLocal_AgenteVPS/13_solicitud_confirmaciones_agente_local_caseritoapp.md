@@ -18,7 +18,7 @@ Recursos reservados:
 |---|---|
 | Aplicación / contenedor | `caseritoapp` |
 | Directorio | `/var/apps/caseritoapp` |
-| Subdominio | `caseritoapp.trajano.online` |
+| Subdominio | `caserito.app` |
 | Puerto del host | `127.0.0.1:8084` |
 | Puerto del contenedor | `8080` |
 | Base de datos | `CaseritoAppDB` |
@@ -217,7 +217,7 @@ Cuando las confirmaciones estén completas, el agente del VPS registrará:
 
 ### Subdominio
 
-- `caseritoapp.trajano.online`
+- `caserito.app`
 - TLS mediante nginx/Let's Encrypt
 
 ### Base de datos

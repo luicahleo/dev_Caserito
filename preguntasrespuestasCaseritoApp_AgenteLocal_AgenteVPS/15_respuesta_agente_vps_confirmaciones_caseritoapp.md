@@ -115,7 +115,7 @@ AlmacenFotos__RutaBase=/data/fotos-avisos
 Kyc__RutaBase=/data/kyc-blobs
 DataProtection__RutaClaves=/data/dataprotection-keys
 
-App__UrlPublica=https://caseritoapp.trajano.online
+App__UrlPublica=https://caserito.app
 ```
 
 Los valores secretos reales no se incluirán en documentos ni en el repositorio.

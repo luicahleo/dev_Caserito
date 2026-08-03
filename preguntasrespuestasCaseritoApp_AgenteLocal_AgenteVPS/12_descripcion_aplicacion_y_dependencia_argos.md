@@ -200,7 +200,7 @@ Los valores secretos reales van exclusivamente en `/var/apps/caseritoapp/.env`, 
 
 ## 7. nginx
 
-Dominio público: `caseritoapp.trajano.online`.
+Dominio público: `caserito.app`.
 
 nginx termina TLS y reenvía al puerto local `8084`. Debe conservar las cabeceras de proxy y
 permitir WebSocket para SignalR:
@@ -212,7 +212,7 @@ map $http_upgrade $connection_upgrade {
     ''      close;
 }
 
-# En el server de caseritoapp.trajano.online:
+# En el server de caserito.app:
 location / {
     proxy_pass http://127.0.0.1:8084;
     proxy_http_version 1.1;
