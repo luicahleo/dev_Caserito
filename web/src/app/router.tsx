@@ -1,39 +1,39 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
-import { ExplorarPage } from '../routes/ExplorarPage';
-import { DetalleAvisoPage } from '../routes/DetalleAvisoPage';
-import { CrearAvisoPage } from '../routes/CrearAvisoPage';
-import { EditarAvisoPage } from '../routes/EditarAvisoPage';
-import { MisAvisosPage } from '../routes/MisAvisosPage';
-import { LoginPage } from '../routes/LoginPage';
-import { RegistroPage } from '../routes/RegistroPage';
-import { ConfirmarEmailPage } from '../routes/ConfirmarEmailPage';
-import { PerfilPage } from '../routes/PerfilPage';
-import { NotFoundPage } from '../routes/NotFoundPage';
-import { KycPage } from '../routes/KycPage';
-import { AdminKycPage } from '../routes/AdminKycPage';
-import { AdminModeracionPage } from '../routes/AdminModeracionPage';
-import { AdminModeracionChatPage } from '../routes/AdminModeracionChatPage';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
-import { ConversacionesPage } from '../routes/ConversacionesPage';
-import { ConversacionPage } from '../routes/ConversacionPage';
-import { MisAcuerdosPage } from '../routes/MisAcuerdosPage';
-import { DetalleAcuerdoPage } from '../routes/DetalleAcuerdoPage';
-import { PerfilPublicoPage } from '../routes/PerfilPublicoPage';
-import { NotificacionesPage } from '../routes/NotificacionesPage';
-import { BusquedasGuardadasPage } from '../routes/BusquedasGuardadasPage';
-import { OlvidePasswordPage } from '../routes/OlvidePasswordPage';
-import { RestablecerPasswordPage } from '../routes/RestablecerPasswordPage';
-import { AuthExternaCallbackPage } from '../routes/AuthExternaCallbackPage';
-import { CompletarRegistroExternoPage } from '../routes/CompletarRegistroExternoPage';
 import {
+  AdminKycPage,
+  AdminModeracionChatPage,
+  AdminModeracionPage,
+  AuthExternaCallbackPage,
+  BusquedasGuardadasPage,
+  CompletarRegistroExternoPage,
+  ConfirmarEmailPage,
   ContactoPage,
+  ConversacionPage,
+  ConversacionesPage,
   CookiesPage,
+  CrearAvisoPage,
+  DetalleAcuerdoPage,
+  DetalleAvisoPage,
+  EditarAvisoPage,
   EliminacionDatosPage,
+  ExplorarPage,
+  KycPage,
+  LoginPage,
+  MisAcuerdosPage,
+  MisAvisosPage,
+  NotFoundPage,
+  NotificacionesPage,
+  OlvidePasswordPage,
+  PerfilPage,
+  PerfilPublicoPage,
   PrivacidadPage,
+  RegistroPage,
+  RestablecerPasswordPage,
   TerminosPage,
-} from '../routes/LegalPages';
+} from './paginasDiferidas';
 
 export const router = createBrowserRouter([
   {

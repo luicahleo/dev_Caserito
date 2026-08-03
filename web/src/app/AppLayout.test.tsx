@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { AppLayout } from './AppLayout';
+import { AppLayout, CargandoRuta } from './AppLayout';
 import * as authCtx from '../auth/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as chat from '../api/chat';
@@ -36,6 +37,12 @@ function montar() {
 }
 
 describe('AppLayout', () => {
+  it('muestra un estado accesible mientras carga una ruta', () => {
+    render(<CargandoRuta />);
+
+    expect(screen.getByRole('status', { name: 'Cargando página' })).toBeInTheDocument();
+  });
+
   it('muestra enlaces legales públicos en el pie de página', () => {
     mockAuth(false);
     montar();
@@ -68,26 +75,33 @@ describe('AppLayout', () => {
     expect(listar).not.toHaveBeenCalled();
   });
 
-  it('muestra enlaces del dueño cuando hay sesión', () => {
+  it('muestra enlaces del dueño en el menú de cuenta cuando hay sesión', async () => {
     mockAuth(true);
     montar();
     expect(screen.getByRole('link', { name: /publicar/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /mis avisos/i })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
+    expect(screen.getByRole('menuitem', { name: /mis avisos/i })).toHaveAttribute(
+      'href',
+      '/mis-avisos',
+    );
   });
 
-  it('muestra Moderación de chat únicamente con chat.moderar', () => {
+  it('muestra Moderación de chat únicamente con chat.moderar', async () => {
     mockAuth(true, ['chat.moderar']);
     montar();
-    expect(
-      screen.getByRole('link', { name: /^moderación de chat$/i }),
-    ).toHaveAttribute('href', '/admin/moderacion-chat');
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
+    expect(screen.getByRole('menuitem', { name: /^moderación de chat$/i })).toHaveAttribute(
+      'href',
+      '/admin/moderacion-chat',
+    );
 
     cleanup();
     vi.restoreAllMocks();
     mockAuth(true);
     montar();
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
     expect(
-      screen.queryByRole('link', { name: /^moderación de chat$/i }),
+      screen.queryByRole('menuitem', { name: /^moderación de chat$/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -97,9 +111,17 @@ describe('AppLayout', () => {
       siguienteCursor: null,
       items: [
         {
-          id: 'c1', avisoId: 'a1', contraparteId: 'u2', rol: 'Comprador',
-          creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 3, noLeidos: 3,
-          estado: 0, origenCierre: null, puedeEnviar: true,
+          id: 'c1',
+          avisoId: 'a1',
+          contraparteId: 'u2',
+          rol: 'Comprador',
+          creadaEn: '',
+          ultimaActividadEn: '',
+          ultimaSecuencia: 3,
+          noLeidos: 3,
+          estado: 0,
+          origenCierre: null,
+          puedeEnviar: true,
         },
       ],
     });
@@ -112,7 +134,7 @@ describe('AppLayout', () => {
     vi.spyOn(notificaciones, 'contarNoLeidas').mockResolvedValue(5);
     montar();
 
-    expect(await screen.findByLabelText('Notificaciones')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Notificaciones' })).toBeInTheDocument();
     expect(await screen.findByText('5')).toBeInTheDocument();
   });
 });
