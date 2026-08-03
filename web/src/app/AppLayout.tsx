@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Button, Container, Link, Stack, Toolbar, Typography } from '@mui/material';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
@@ -87,6 +87,35 @@ export function AppLayout() {
       <Container component="main" maxWidth={false} disableGutters sx={{ flexGrow: 1 }}>
         <Outlet />
       </Container>
+      <Box
+        component="footer"
+        sx={{ bgcolor: 'grey.100', borderTop: 1, borderColor: 'divider', py: 3 }}
+      >
+        <Container maxWidth="lg">
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: 'wrap', justifyContent: 'center' }}
+          >
+            <Link component={RouterLink} to="/privacidad">
+              Privacidad
+            </Link>
+            <Link component={RouterLink} to="/terminos">
+              Términos
+            </Link>
+            <Link component={RouterLink} to="/cookies">
+              Cookies
+            </Link>
+            <Link component={RouterLink} to="/contacto">
+              Contacto
+            </Link>
+            <Link component={RouterLink} to="/eliminacion-de-datos">
+              Eliminar mis datos
+            </Link>
+          </Stack>
+        </Container>
+      </Box>
     </Box>
   );
 }

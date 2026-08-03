@@ -36,6 +36,20 @@ function montar() {
 }
 
 describe('AppLayout', () => {
+  it('muestra enlaces legales públicos en el pie de página', () => {
+    mockAuth(false);
+    montar();
+
+    expect(screen.getByRole('link', { name: 'Privacidad' })).toHaveAttribute('href', '/privacidad');
+    expect(screen.getByRole('link', { name: 'Términos' })).toHaveAttribute('href', '/terminos');
+    expect(screen.getByRole('link', { name: 'Cookies' })).toHaveAttribute('href', '/cookies');
+    expect(screen.getByRole('link', { name: 'Contacto' })).toHaveAttribute('href', '/contacto');
+    expect(screen.getByRole('link', { name: 'Eliminar mis datos' })).toHaveAttribute(
+      'href',
+      '/eliminacion-de-datos',
+    );
+  });
+
   it('muestra "Entrar" cuando no hay sesión', () => {
     mockAuth(false);
     montar();

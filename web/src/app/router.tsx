@@ -27,6 +27,13 @@ import { OlvidePasswordPage } from '../routes/OlvidePasswordPage';
 import { RestablecerPasswordPage } from '../routes/RestablecerPasswordPage';
 import { AuthExternaCallbackPage } from '../routes/AuthExternaCallbackPage';
 import { CompletarRegistroExternoPage } from '../routes/CompletarRegistroExternoPage';
+import {
+  ContactoPage,
+  CookiesPage,
+  EliminacionDatosPage,
+  PrivacidadPage,
+  TerminosPage,
+} from '../routes/LegalPages';
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +49,11 @@ export const router = createBrowserRouter([
       { path: '/olvide-password', element: <OlvidePasswordPage /> },
       { path: '/restablecer-password', element: <RestablecerPasswordPage /> },
       { path: '/confirmar-email', element: <ConfirmarEmailPage /> },
+      { path: '/privacidad', element: <PrivacidadPage /> },
+      { path: '/terminos', element: <TerminosPage /> },
+      { path: '/cookies', element: <CookiesPage /> },
+      { path: '/contacto', element: <ContactoPage /> },
+      { path: '/eliminacion-de-datos', element: <EliminacionDatosPage /> },
       {
         path: '/mensajes',
         element: (

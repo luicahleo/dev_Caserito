@@ -5,6 +5,18 @@ import { RequierePermiso } from '../auth/RequierePermiso';
 import { router } from './router';
 
 describe('router', () => {
+  it.each(['/privacidad', '/terminos', '/cookies', '/contacto', '/eliminacion-de-datos'])(
+    'expone la página pública %s sin guard de sesión',
+    (path) => {
+      const ruta = router.routes[0].children?.find((candidata) => candidata.path === path);
+      expect(ruta).toBeDefined();
+      expect(isValidElement(ruta?.element)).toBe(true);
+      expect(ruta?.element && isValidElement(ruta.element) ? ruta.element.type : null).not.toBe(
+        ProtectedRoute,
+      );
+    },
+  );
+
   it('expone el perfil público sin guard de sesión', () => {
     const ruta = router.routes[0].children?.find((candidata) => candidata.path === '/usuarios/:id');
     expect(ruta).toBeDefined();

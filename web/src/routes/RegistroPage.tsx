@@ -169,6 +169,17 @@ export function RegistroPage() {
           >
             Registrarme
           </Button>
+          <Typography variant="caption" color="text.secondary">
+            Al registrarte, aceptas los{' '}
+            <Link component={RouterLink} to="/terminos">
+              Términos
+            </Link>{' '}
+            y reconoces la{' '}
+            <Link component={RouterLink} to="/privacidad">
+              Política de privacidad
+            </Link>
+            .
+          </Typography>
           <Link component={RouterLink} to="/login">
             ¿Ya tienes cuenta? Inicia sesión
           </Link>

@@ -87,6 +87,17 @@ export function LoginPage() {
           <Link component={RouterLink} to="/registro">
             ¿No tienes cuenta? Regístrate
           </Link>
+          <Typography variant="caption" color="text.secondary">
+            Al continuar, aceptas los{' '}
+            <Link component={RouterLink} to="/terminos">
+              Términos
+            </Link>{' '}
+            y reconoces la{' '}
+            <Link component={RouterLink} to="/privacidad">
+              Política de privacidad
+            </Link>
+            .
+          </Typography>
         </Stack>
       </form>
     </Container>
