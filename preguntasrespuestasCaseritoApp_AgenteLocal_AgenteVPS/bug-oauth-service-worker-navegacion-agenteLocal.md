@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-08-01  
 **Aplicación:** CaseritoApp  
-**Producción:** `https://caserito.app`  
+**Producción:** `https://caserito.app`
 **Estado:** causa raíz confirmada en el artefacto desplegado; requiere cambio en el código fuente local y nuevo deploy.
 
 ## Resumen
@@ -170,4 +170,3 @@ Como el service worker actual usa `skipWaiting()` y `clientsClaim()`, el nuevo w
 rápidamente, pero hay que probar explícitamente la actualización desde la versión defectuosa. Si una
 pestaña antigua conserva el comportamiento, cerrar/reabrir la aplicación o recargar una vez; después de
 que el worker corregido controle la página, OAuth debe funcionar siempre al primer clic.
-
