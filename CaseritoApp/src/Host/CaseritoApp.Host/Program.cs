@@ -7,6 +7,7 @@ using CaseritoApp.BuildingBlocks.Infrastructure.Messaging;
 using CaseritoApp.Catalog.Infrastructure;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
+using CaseritoApp.Host;
 using CaseritoApp.Host.Auth;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
@@ -388,6 +389,26 @@ app.UseForwardedHeaders(forwardedHeaders);
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
+
+// El HTML y los archivos que descubren una nueva versión de la PWA deben revalidarse siempre.
+// Los assets de Vite conservan la caché normal: sus nombres incluyen un hash de contenido.
+app.Use(async (contexto, siguiente) =>
+{
+    contexto.Response.OnStarting(() =>
+    {
+        if (PwaCachePolicy.RequiereRevalidacion(
+            contexto.Request.Path,
+            contexto.Response.ContentType))
+        {
+            PwaCachePolicy.Aplicar(contexto.Response);
+        }
+
+        return Task.CompletedTask;
+    });
+
+    await siguiente();
+});
+
 app.UseStaticFiles();
 
 app.MapAuthEndpoints();
