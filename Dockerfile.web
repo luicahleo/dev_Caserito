@@ -14,6 +14,9 @@ COPY web/ .
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 
+HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=12 \
+  CMD curl -fsS -H 'Host: caserito.app' http://localhost:8080/health || exit 1
+
 USER app
 
 ENTRYPOINT ["dotnet", "CaseritoApp.Host.dll"]

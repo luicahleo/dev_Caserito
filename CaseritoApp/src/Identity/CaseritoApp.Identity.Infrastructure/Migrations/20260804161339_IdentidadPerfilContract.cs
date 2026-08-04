@@ -10,35 +10,29 @@ namespace CaseritoApp.Identity.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            migrationBuilder.AlterColumn<string>(
                 name: "Ciudad",
                 schema: "identity",
-                table: "AspNetUsers");
+                table: "AspNetUsers",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
 
-            migrationBuilder.DropColumn(
+            migrationBuilder.AlterColumn<string>(
                 name: "Nombre",
                 schema: "identity",
-                table: "AspNetUsers");
+                table: "AspNetUsers",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Ciudad",
-                schema: "identity",
-                table: "AspNetUsers",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Nombre",
-                schema: "identity",
-                table: "AspNetUsers",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            // Se preserva la nulabilidad para que el modelo actual pueda seguir insertando usuarios.
         }
     }
 }

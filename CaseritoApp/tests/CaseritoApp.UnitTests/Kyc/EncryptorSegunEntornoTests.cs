@@ -17,6 +17,7 @@ public sealed class EncryptorSegunEntornoTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["DataProtection:RutaClaves"] = rutaTemporal,
+                ["Kyc:ClaveHuellaCi"] = "clave-de-prueba-sin-datos-reales",
             })
             .Build();
 
