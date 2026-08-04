@@ -67,9 +67,10 @@ dotnet test tests/CaseritoApp.ArchitectureTests/CaseritoApp.ArchitectureTests.cs
 
 **Comportamiento:**
 
-- Reemplazar por `Nombres`, `Apellidos`, `CiudadId` obligatorios.
+- Añadir `Nombres`, `Apellidos`, `CiudadId` como fase de expansión del esquema.
+- Mantener temporalmente `Nombre` y `Ciudad` para que los consumidores todavía no migrados sigan
+  compilando; no escribir código nuevo contra esos campos.
 - Longitudes y nulabilidad coherentes con validadores.
-- No conservar columnas libres `Nombre`/`Ciudad` ni migrar usuarios de prueba.
 - El seed administrativo debe exigir datos nuevos y un GUID válido.
 
 **Prueba roja:** el modelo EF exige los tres campos, elimina las columnas anteriores y crea un
@@ -78,7 +79,7 @@ usuario válido con ciudad canónica.
 **Verificación:** test dirigido de Identity + generación reproducible de la migración +
 `dotnet build src/Host/CaseritoApp.Host/CaseritoApp.Host.csproj`.
 
-**Salida:** esquema limpio de identidad.
+**Salida:** esquema expandido, listo para migrar consumidores sin romper la rama.
 **Commit:** `feat(identity): separa nombres y referencia ciudad`
 
 ## Tarea 3 — Actualizar perfil privado y política de edición
@@ -357,6 +358,9 @@ detalle carga PII; aprobación/rechazo solo aparecen en pendiente y manejan erro
 **Archivos:**
 
 - Completar tests end-to-end en `CaseritoApp.IntegrationTests`.
+- Retirar `ApplicationUser.Nombre`/`Ciudad`, sus opciones antiguas y cualquier consumidor residual;
+  generar la migración contract que elimina las columnas libres después de comprobar con `rg` que
+  no queda código funcional dependiente.
 - Actualizar configuración de ejemplo/documentación operacional sin secretos.
 - Crear documento breve de despliegue o handoff solo si la limpieza de usuarios requiere agente VPS.
 - No incluir comandos destructivos automáticos en workflow, migración o arranque.
@@ -370,6 +374,9 @@ detalle carga PII; aprobación/rechazo solo aparecen en pendiente y manejan erro
 5. mismo CI en otra cuenta → conflicto;
 6. rechazo → corrección de nombre → reenvío del propietario;
 7. logs capturados sin número, complemento, nombres completos, blobs ni huella.
+
+La verificación final del modelo confirma que solo existen `Nombres`, `Apellidos` y `CiudadId`; las
+columnas temporales de la fase expand ya no forman parte del snapshot final.
 
 **Verificación backend:**
 
