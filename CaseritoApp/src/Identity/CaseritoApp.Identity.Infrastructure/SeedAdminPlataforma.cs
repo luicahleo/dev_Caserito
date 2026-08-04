@@ -11,14 +11,16 @@ public sealed record OpcionesSeedAdmin
 
     public string AdminEmail { get; set; } = string.Empty;
     public string AdminPassword { get; set; } = string.Empty;
-    public string AdminNombre { get; set; } = string.Empty;
-    public string AdminCiudad { get; set; } = string.Empty;
+    public string AdminNombres { get; set; } = string.Empty;
+    public string AdminApellidos { get; set; } = string.Empty;
+    public Guid AdminCiudadId { get; set; }
 
     internal bool EstaCompleta =>
         !string.IsNullOrWhiteSpace(AdminEmail)
         && !string.IsNullOrWhiteSpace(AdminPassword)
-        && !string.IsNullOrWhiteSpace(AdminNombre)
-        && !string.IsNullOrWhiteSpace(AdminCiudad);
+        && !string.IsNullOrWhiteSpace(AdminNombres)
+        && !string.IsNullOrWhiteSpace(AdminApellidos)
+        && AdminCiudadId != Guid.Empty;
 }
 
 /// <summary>
@@ -63,8 +65,9 @@ public sealed partial class SeedAdminPlataforma(
         {
             UserName = opciones.AdminEmail,
             Email = opciones.AdminEmail,
-            Nombre = opciones.AdminNombre,
-            Ciudad = opciones.AdminCiudad,
+            Nombres = opciones.AdminNombres,
+            Apellidos = opciones.AdminApellidos,
+            CiudadId = opciones.AdminCiudadId,
             EmailConfirmed = true,
         };
 

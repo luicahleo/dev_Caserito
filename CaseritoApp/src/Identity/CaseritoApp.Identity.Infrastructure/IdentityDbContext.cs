@@ -22,6 +22,13 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
         base.OnModelCreating(builder);
         builder.HasDefaultSchema(Schema);
 
+        builder.Entity<ApplicationUser>(e =>
+        {
+            e.Property(x => x.Nombres).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Apellidos).HasMaxLength(100).IsRequired();
+            e.Property(x => x.CiudadId).IsRequired();
+        });
+
         builder.Entity<RefreshToken>(e =>
         {
             e.HasKey(x => x.Id);

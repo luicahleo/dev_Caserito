@@ -8,6 +8,8 @@ namespace CaseritoApp.UnitTests.Autorizacion;
 
 public sealed class SeedAdminPlataformaTests
 {
+    private static readonly Guid _ciudadId = new("22222222-2222-2222-2222-000000000001");
+
     private static UserManager<ApplicationUser> CrearUserManagerSustituto()
     {
         var store = Substitute.For<IUserStore<ApplicationUser>>();
@@ -19,8 +21,9 @@ public sealed class SeedAdminPlataformaTests
     {
         AdminEmail = "admin@caserito.test",
         AdminPassword = "Clave$ecreta1",
-        AdminNombre = "Admin",
-        AdminCiudad = "Cochabamba",
+        AdminNombres = "Ana María",
+        AdminApellidos = "Administradora",
+        AdminCiudadId = _ciudadId,
     };
 
     private static SeedAdminPlataforma CrearSeed(UserManager<ApplicationUser> usuarios)
@@ -84,7 +87,11 @@ public sealed class SeedAdminPlataformaTests
 
         await usuarios.Received(1).CreateAsync(
             Arg.Is<ApplicationUser>(usuario =>
-                usuario.Email == "admin@caserito.test" && usuario.EmailConfirmed),
+                usuario.Email == "admin@caserito.test"
+                && usuario.Nombres == "Ana María"
+                && usuario.Apellidos == "Administradora"
+                && usuario.CiudadId == _ciudadId
+                && usuario.EmailConfirmed),
             "Clave$ecreta1");
         await usuarios.Received(1).AddToRoleAsync(
             Arg.Any<ApplicationUser>(), RolesApp.AdminPlataforma);
