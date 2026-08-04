@@ -23,12 +23,12 @@ import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
-import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ContadorChat } from '../chat/ContadorChat';
 import { NotificacionesBadge } from '../notificaciones/NotificacionesBadge';
 import { NotificacionesDropdown } from '../notificaciones/NotificacionesDropdown';
+import { MarcaCaserito } from './MarcaCaserito';
 
 export function CargandoRuta() {
   return (
@@ -83,7 +83,7 @@ export function AppLayout() {
               to="/"
               direction="row"
               spacing={1}
-              aria-label="CaseritoApp, inicio"
+              aria-label="Caserito, inicio"
               sx={{
                 alignItems: 'center',
                 color: 'text.primary',
@@ -91,26 +91,13 @@ export function AppLayout() {
                 textDecoration: 'none',
               }}
             >
-              <Box
-                sx={{
-                  alignItems: 'center',
-                  bgcolor: 'primary.main',
-                  borderRadius: '12px',
-                  color: 'primary.contrastText',
-                  display: 'flex',
-                  height: 38,
-                  justifyContent: 'center',
-                  width: 38,
-                }}
-              >
-                <StorefrontRoundedIcon sx={{ color: 'inherit', fontSize: 23 }} />
-              </Box>
+              <MarcaCaserito mostrarNombre={false} tamano={40} />
               <Typography
                 variant="h6"
                 component="span"
                 sx={{ display: { xs: 'none', sm: 'block' }, lineHeight: 1 }}
               >
-                CaseritoApp
+                Caserito
               </Typography>
             </Stack>
 
@@ -305,10 +292,7 @@ export function AppLayout() {
             }}
           >
             <Stack spacing={0.75} sx={{ maxWidth: 420 }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                <StorefrontRoundedIcon sx={{ color: 'secondary.main', fontSize: 28 }} />
-                <Typography variant="h6">CaseritoApp</Typography>
-              </Stack>
+              <MarcaCaserito invertida tamano={42} />
               <Typography variant="body2" sx={{ color: 'primary.light' }}>
                 Compra y vende cerca de ti, con información clara y acuerdos entre personas.
               </Typography>

@@ -37,6 +37,14 @@ function montar() {
 }
 
 describe('AppLayout', () => {
+  it('muestra la identidad propia de Caserito en cabecera y pie', () => {
+    mockAuth(false);
+    montar();
+
+    expect(screen.getByRole('link', { name: 'Caserito, inicio' })).toBeInTheDocument();
+    expect(screen.getAllByText('Caserito')).toHaveLength(2);
+  });
+
   it('muestra un estado accesible mientras carga una ruta', () => {
     render(<CargandoRuta />);
 
