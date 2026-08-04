@@ -8,7 +8,7 @@ using MediatR;
 namespace CaseritoApp.Host.Endpoints;
 
 /// <summary>Cuerpo de la solicitud de actualización de perfil.</summary>
-public sealed record ActualizarPerfilRequest(string Nombre, string Ciudad);
+public sealed record ActualizarPerfilRequest(string Nombres, string Apellidos, Guid CiudadId);
 
 /// <summary>Registro y mapeo del grupo minimal API <c>/api/perfil</c>: ver y editar el perfil del usuario autenticado.</summary>
 public static class PerfilEndpoints
@@ -65,7 +65,11 @@ public static class PerfilEndpoints
         try
         {
             var resultado = await sender.Send(
-                new ActualizarPerfilCommand(userId, request.Nombre, request.Ciudad), ct);
+                new ActualizarPerfilCommand(
+                    userId,
+                    request.Nombres,
+                    request.Apellidos,
+                    request.CiudadId), ct);
 
             return resultado.EsExito
                 ? Results.Ok()

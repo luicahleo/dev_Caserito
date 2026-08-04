@@ -46,8 +46,9 @@ public sealed class PerfilPublicoTests
 
         public Task<Result> ActualizarAsync(
             Guid userId,
-            string nombre,
-            string ciudad,
+            string nombres,
+            string apellidos,
+            Guid ciudadId,
             CancellationToken cancellationToken) =>
             Task.FromResult(Result.Exito());
     }

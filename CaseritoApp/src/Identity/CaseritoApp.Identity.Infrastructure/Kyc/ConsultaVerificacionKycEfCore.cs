@@ -14,6 +14,12 @@ public sealed class ConsultaVerificacionKycEfCore(IdentityDbContext db) : IConsu
             .SelectMany(v => v.Solicitudes)
             .AnyAsync(s => s.Estado == EstadoKyc.Aprobada, ct);
 
+    public async Task<bool> PuedeEditarIdentidadAsync(Guid usuarioId, CancellationToken ct) =>
+        !await db.VerificacionesKyc
+            .Where(v => v.Id == usuarioId)
+            .SelectMany(v => v.Solicitudes)
+            .AnyAsync(s => s.Estado == EstadoKyc.Pendiente || s.Estado == EstadoKyc.Aprobada, ct);
+
     public async Task<bool> EstaHabilitadoParaMarketplaceAsync(Guid usuarioId, CancellationToken ct)
     {
         if (await EstaVerificadoAsync(usuarioId, ct))

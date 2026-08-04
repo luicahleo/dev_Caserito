@@ -9,4 +9,7 @@ public sealed class ConsultaCiudadesPerfilAdapter(IConsultaCatalogo catalogo)
 {
     public Task<bool> ExisteActivaAsync(Guid ciudadId, CancellationToken ct) =>
         catalogo.ExisteCiudadActivaAsync(ciudadId, ct);
+
+    public async Task<string?> ObtenerNombreActivaAsync(Guid ciudadId, CancellationToken ct) =>
+        (await catalogo.ListarCiudadesAsync(ct)).FirstOrDefault(c => c.Id == ciudadId)?.Nombre;
 }

@@ -10,7 +10,9 @@ namespace CaseritoApp.Identity.Infrastructure.Perfil;
 /// <see cref="UserManager{TUser}"/> de ASP.NET Core Identity.
 /// </summary>
 public sealed class RepositorioPerfilUserManager(
-    UserManager<ApplicationUser> userManager, IConsultaVerificacionKyc consultaKyc)
+    UserManager<ApplicationUser> userManager,
+    IConsultaVerificacionKyc consultaKyc,
+    IConsultaCiudadesPerfil consultaCiudades)
     : IRepositorioPerfil
 {
     public async Task<PerfilDto?> ObtenerAsync(Guid userId, CancellationToken cancellationToken)
@@ -22,7 +24,17 @@ public sealed class RepositorioPerfilUserManager(
         }
 
         var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, cancellationToken);
-        return new PerfilDto(usuario.Id, usuario.Email ?? string.Empty, usuario.Nombre, usuario.Ciudad, verificado);
+        var nombreCiudad = await consultaCiudades.ObtenerNombreActivaAsync(
+            usuario.CiudadId,
+            cancellationToken) ?? string.Empty;
+        return new PerfilDto(
+            usuario.Id,
+            usuario.Email ?? string.Empty,
+            usuario.Nombres,
+            usuario.Apellidos,
+            usuario.CiudadId,
+            nombreCiudad,
+            verificado);
     }
 
     public async Task<PerfilPublicoDto?> ObtenerPublicoAsync(
@@ -40,7 +52,11 @@ public sealed class RepositorioPerfilUserManager(
     }
 
     public async Task<Result> ActualizarAsync(
-        Guid userId, string nombre, string ciudad, CancellationToken cancellationToken)
+        Guid userId,
+        string nombres,
+        string apellidos,
+        Guid ciudadId,
+        CancellationToken cancellationToken)
     {
         var usuario = await userManager.FindByIdAsync(userId.ToString());
         if (usuario is null)
@@ -48,14 +64,30 @@ public sealed class RepositorioPerfilUserManager(
             return Result.Fallo(new Error("Perfil.NoEncontrado", "El usuario no existe."));
         }
 
-        usuario.Nombre = nombre;
-        usuario.Ciudad = ciudad;
+        if (!await consultaCiudades.ExisteActivaAsync(ciudadId, cancellationToken))
+        {
+            return Result.Fallo(new Error("Perfil.CiudadInvalida", "La ciudad seleccionada no es válida."));
+        }
+
+        var cambiaIdentidad = !string.Equals(usuario.Nombres, nombres, StringComparison.Ordinal)
+            || !string.Equals(usuario.Apellidos, apellidos, StringComparison.Ordinal);
+        if (cambiaIdentidad && !await consultaKyc.PuedeEditarIdentidadAsync(usuario.Id, cancellationToken))
+        {
+            return Result.Fallo(new Error(
+                "Perfil.IdentidadBloqueada",
+                "Los datos de identidad no pueden modificarse en el estado actual."));
+        }
+
+        usuario.Nombres = nombres.Trim();
+        usuario.Apellidos = apellidos.Trim();
+        usuario.CiudadId = ciudadId;
 
         var resultado = await userManager.UpdateAsync(usuario);
         if (!resultado.Succeeded)
         {
-            var mensaje = string.Join("; ", resultado.Errors.Select(e => e.Description));
-            return Result.Fallo(new Error("Perfil.ActualizacionFallida", mensaje));
+            return Result.Fallo(new Error(
+                "Perfil.ActualizacionFallida",
+                "No se pudo actualizar el perfil."));
         }
 
         return Result.Exito();

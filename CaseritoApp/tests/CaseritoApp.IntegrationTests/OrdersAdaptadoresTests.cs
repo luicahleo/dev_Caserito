@@ -58,6 +58,9 @@ public sealed class OrdersAdaptadoresTests
         public Task<bool> EstaVerificadoAsync(Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(verificado);
 
+        public Task<bool> PuedeEditarIdentidadAsync(Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(!verificado);
+
         public Task<bool> EstaHabilitadoParaMarketplaceAsync(Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(verificado);
 
