@@ -16,6 +16,7 @@ public sealed class IdentityDbContext(DbContextOptions<IdentityDbContext> option
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<VerificacionKyc> VerificacionesKyc => Set<VerificacionKyc>();
+    public DbSet<DocumentoKycRegistrado> DocumentosKycRegistrados => Set<DocumentoKycRegistrado>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

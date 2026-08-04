@@ -27,11 +27,11 @@ describe('KycPage', () => {
     expect(await screen.findByText(/identidad verificada/i)).toBeInTheDocument();
   });
 
-  it('estado Pendiente muestra "verificación automática" y no muestra formulario', async () => {
+  it('estado Pendiente muestra revisión humana y no muestra formulario', async () => {
     vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'Pendiente', motivoRechazo: null });
     montar();
     expect(
-      await screen.findByText(/está siendo verificada automáticamente/i),
+      await screen.findByText(/pendiente de revisión humana/i),
     ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument();
   });
@@ -51,13 +51,12 @@ describe('KycPage', () => {
     const enviar = vi.spyOn(api, 'enviarKyc').mockResolvedValue(undefined);
     montar();
     await screen.findByRole('button', { name: /enviar/i });
-    const u = userEvent.setup();
     const pdf = new File(['x'], 'doc.pdf', { type: 'application/pdf' });
     // fireEvent.change evita el filtro de `accept` del input (defensa-en-profundidad de UX
     // en producción), permitiendo verificar la validación JS independiente ante un tipo inválido.
     fireEvent.change(screen.getByLabelText(/documento/i), { target: { files: [pdf] } });
     expect(await screen.findByText(/formato no permitido/i)).toBeInTheDocument();
-    await u.click(screen.getByRole('button', { name: /enviar/i }));
+    expect(screen.getByRole('button', { name: /enviar/i })).toBeDisabled();
     expect(enviar).not.toHaveBeenCalled();
   });
 
@@ -69,10 +68,15 @@ describe('KycPage', () => {
     const u = userEvent.setup();
     const doc = new File(['x'], 'doc.png', { type: 'image/png' });
     const selfie = new File(['y'], 'selfie.jpg', { type: 'image/jpeg' });
+    await u.type(screen.getByLabelText(/número de ci/i), '1234567');
+    await u.click(screen.getByRole('combobox', { name: /departamento de expedición/i }));
+    await u.click(await screen.findByRole('option', { name: 'La Paz' }));
     await u.upload(screen.getByLabelText(/documento/i), doc);
     await u.upload(screen.getByLabelText(/selfie/i), selfie);
     await u.click(screen.getByRole('button', { name: /enviar/i }));
-    await waitFor(() => expect(enviar).toHaveBeenCalledWith(doc, selfie));
+    await waitFor(() => expect(enviar).toHaveBeenCalledWith(expect.objectContaining({
+      numeroCi: '1234567', departamentoExpedicion: 'LaPaz', documento: doc, selfie,
+    })));
   });
 
   it('ante un 409 en el envío, muestra un mensaje amable y refresca el estado', async () => {
@@ -87,6 +91,9 @@ describe('KycPage', () => {
     const u = userEvent.setup();
     const doc = new File(['x'], 'doc.png', { type: 'image/png' });
     const selfie = new File(['y'], 'selfie.jpg', { type: 'image/jpeg' });
+    await u.type(screen.getByLabelText(/número de ci/i), '1234567');
+    await u.click(screen.getByRole('combobox', { name: /departamento de expedición/i }));
+    await u.click(await screen.findByRole('option', { name: 'La Paz' }));
     await u.upload(screen.getByLabelText(/documento/i), doc);
     await u.upload(screen.getByLabelText(/selfie/i), selfie);
     const llamadasPrevias = obtenerEstado.mock.calls.length;

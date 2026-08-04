@@ -37,6 +37,6 @@ public sealed class ConsultaVerificacionKycEfCore(IdentityDbContext db) : IConsu
     public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
         db.Users
             .Where(u => u.Id == usuarioId)
-            .Select(u => new UsuarioKycDto(u.Email!, u.Nombre))
+            .Select(u => new UsuarioKycDto(u.Email!, u.Nombres))
             .FirstOrDefaultAsync(ct);
 }

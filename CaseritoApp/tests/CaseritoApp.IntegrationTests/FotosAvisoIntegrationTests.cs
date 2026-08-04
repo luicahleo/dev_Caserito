@@ -51,7 +51,7 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
 
         // Subir KYC; el verificador mockeado aprueba automáticamente.
         var formKyc = FormularioKyc();
-        using var subKyc = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var subKyc = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token);
         subKyc.Content = formKyc;
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subKyc)).StatusCode);
 

@@ -48,5 +48,18 @@ public static class ConfiguracionKyc
             e.Property(s => s.ScoreSimilitud); // Score de similitud devuelto por ARGOS; nullable.
             e.HasIndex("VerificacionKycId");
         });
+
+        builder.Entity<DocumentoKycRegistrado>(e =>
+        {
+            e.ToTable("DocumentosKycRegistrados");
+            e.HasKey(d => d.Id);
+            e.Property(d => d.Id).ValueGeneratedNever();
+            e.Property(d => d.HuellaCi).HasMaxLength(64).IsRequired();
+            e.Property(d => d.NumeroCiCifrado).HasMaxLength(1000).IsRequired();
+            e.Property(d => d.ComplementoCiCifrado).HasMaxLength(1000);
+            e.Property(d => d.DepartamentoExpedicion).HasConversion<string>().HasMaxLength(20).IsRequired();
+            e.HasIndex(d => d.HuellaCi).IsUnique();
+            e.HasIndex(d => d.UsuarioId).IsUnique();
+        });
     }
 }

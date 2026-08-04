@@ -23,8 +23,8 @@ public sealed class ReputationPerfilPublicoTests(CaseritoApiFactory factory)
                 Id = id,
                 UserName = $"publico-{id:N}@caserito.test",
                 Email = $"publico-{id:N}@caserito.test",
-                Nombre = "María",
-                Ciudad = "Sucre",
+                Nombres = "María",
+                CiudadId = new Guid("22222222-2222-2222-2222-000000000001"),
             }, "Password123!");
             Assert.True(resultado.Succeeded);
         }

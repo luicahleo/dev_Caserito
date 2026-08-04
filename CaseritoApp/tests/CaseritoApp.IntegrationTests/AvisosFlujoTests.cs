@@ -71,7 +71,7 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
         var email = Email("aviso-user");
         var token = await RegistrarYLoguearAsync(cliente, email);
 
-        using var subir = Con(HttpMethod.Post, "/api/kyc/", token);
+        using var subir = Con(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token);
         subir.Content = FormularioKyc();
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
 

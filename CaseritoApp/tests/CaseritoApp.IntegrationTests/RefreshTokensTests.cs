@@ -22,8 +22,8 @@ public sealed class RefreshTokensTests(CaseritoApiFactory factory) : IClassFixtu
         {
             UserName = $"refresh-{Guid.NewGuid():N}@caserito.test",
             Email = $"refresh-{Guid.NewGuid():N}@caserito.test",
-            Nombre = "Usuario de prueba",
-            Ciudad = "Lima",
+            Nombres = "Usuario de prueba",
+            CiudadId = new Guid("22222222-2222-2222-2222-000000000001"),
         };
 
         var resultado = await userManager.CreateAsync(usuario, "Password123!");

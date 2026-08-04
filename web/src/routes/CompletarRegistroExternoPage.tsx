@@ -3,11 +3,13 @@ import { Alert, Button, CircularProgress, Container, Link, Stack, TextField, Typ
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import * as auth from '../api/auth';
 import { useAuth } from '../auth/AuthContext';
+import { SelectorCiudad } from '../perfil/SelectorCiudad';
 
 export function CompletarRegistroExternoPage() {
   const [pendiente, setPendiente] = useState<auth.LoginExternoPendiente | null>(null);
   const [error, setError] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  const [ciudadId, setCiudadId] = useState('');
   const { restaurarSesion } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -20,8 +22,9 @@ export function CompletarRegistroExternoPage() {
     try {
       await auth.completarLoginExterno({
         email: pendiente?.requiereEmail ? String(datos.get('email') ?? '') : null,
-        nombre: pendiente?.requiereNombre ? String(datos.get('nombre') ?? '') : null,
-        ciudad: pendiente?.requiereCiudad ? String(datos.get('ciudad') ?? '') : null,
+        nombres: String(datos.get('nombres') ?? ''),
+        apellidos: String(datos.get('apellidos') ?? ''),
+        ciudadId,
       });
       await restaurarSesion(); navigate(retorno, { replace: true });
     } catch { setError(true); } finally { setEnviando(false); }
@@ -38,9 +41,11 @@ export function CompletarRegistroExternoPage() {
   return <Container maxWidth="sm" sx={{ py: 4 }}><Typography variant="h4" component="h1" gutterBottom>Completa tu registro</Typography>
     <form onSubmit={completar}><Stack spacing={2}>
       {pendiente.requiereEmail && <TextField required name="email" label="Email" type="email" />}
-      {pendiente.requiereNombre && <TextField required name="nombre" label="Nombre" defaultValue={pendiente.nombreVisible ?? ''} />}
-      {pendiente.requiereCiudad && <TextField required name="ciudad" label="Ciudad" />}
-      <Button type="submit" variant="contained" disabled={enviando}>Continuar</Button>
+      <Alert severity="info">Revisa y confirma tus datos personales antes de continuar.</Alert>
+      <TextField required name="nombres" label="Nombres" defaultValue={pendiente.nombreVisible ?? ''} />
+      <TextField required name="apellidos" label="Apellidos" />
+      <SelectorCiudad value={ciudadId} onChange={setCiudadId} />
+      <Button type="submit" variant="contained" disabled={enviando || !ciudadId}>Continuar</Button>
     </Stack></form>
   </Container>;
 }

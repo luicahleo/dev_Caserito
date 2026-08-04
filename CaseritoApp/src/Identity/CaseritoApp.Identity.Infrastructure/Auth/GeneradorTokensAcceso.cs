@@ -41,7 +41,7 @@ public sealed class GeneradorTokensAcceso(
         {
             new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, usuario.Email ?? string.Empty),
-            new(JwtRegisteredClaimNames.Name, usuario.Nombre),
+            new(JwtRegisteredClaimNames.Name, usuario.Nombres),
         };
 
         claims.AddRange(permisos.Select(p => new Claim(ClaimsApp.Permiso, p)));

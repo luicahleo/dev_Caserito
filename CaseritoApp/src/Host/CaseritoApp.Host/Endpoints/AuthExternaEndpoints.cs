@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
@@ -271,6 +272,7 @@ public static class AuthExternaEndpoints
 }
 
 /// <summary>Datos que faltan para completar un alta desde un proveedor externo.</summary>
+[method: JsonConstructor]
 public sealed record CompletarRegistroExternoRequest(
     string? Email,
     string? Nombres,

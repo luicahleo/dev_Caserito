@@ -22,7 +22,8 @@ public sealed class RepositorioRolesUsuarioUserManager(UserManager<ApplicationUs
         {
             var patron = query.Trim();
             consulta = consulta.Where(u =>
-                (u.Email != null && u.Email.Contains(patron)) || u.Nombre.Contains(patron));
+                (u.Email != null && u.Email.Contains(patron)) ||
+                u.Nombres.Contains(patron) || u.Apellidos.Contains(patron));
         }
 
         var total = await consulta.CountAsync(cancellationToken);
@@ -38,7 +39,9 @@ public sealed class RepositorioRolesUsuarioUserManager(UserManager<ApplicationUs
         {
             var roles = await userManager.GetRolesAsync(usuario);
             items.Add(new UsuarioConRolesDto(
-                usuario.Id, usuario.Email ?? string.Empty, usuario.Nombre, usuario.Ciudad, roles.ToArray()));
+                usuario.Id, usuario.Email ?? string.Empty,
+                $"{usuario.Nombres} {usuario.Apellidos}".Trim(),
+                usuario.CiudadId.ToString(), roles.ToArray()));
         }
 
         return new ResultadoPaginado<UsuarioConRolesDto>(items, pagina, tamano, total);

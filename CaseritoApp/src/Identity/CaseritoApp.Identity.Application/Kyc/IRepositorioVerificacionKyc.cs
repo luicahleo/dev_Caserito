@@ -15,6 +15,16 @@ public interface IRepositorioVerificacionKyc
     /// <summary>Marca un agregado nuevo para inserción (persistido por el UnitOfWork behavior).</summary>
     public void Agregar(VerificacionKyc verificacion);
 
+    /// <summary>Reserva un CI para su propietario o informa conflicto con otra cuenta.</summary>
+    public Task<bool> ReservarDocumentoAsync(DocumentoKycRegistrado documento, CancellationToken ct) =>
+        Task.FromResult(true);
+
+    public Task<DocumentoKycRegistrado?> ObtenerDocumentoPorSolicitudAsync(Guid solicitudId, CancellationToken ct) =>
+        Task.FromResult<DocumentoKycRegistrado?>(null);
+
+    public Task<DetalleSolicitudKycDto?> ObtenerDetalleAsync(Guid solicitudId, CancellationToken ct) =>
+        Task.FromResult<DetalleSolicitudKycDto?>(null);
+
     /// <summary>Lista paginada de solicitudes (metadatos), filtrable por estado, más recientes primero.</summary>
     public Task<ResultadoPaginado<SolicitudKycResumenDto>> ListarAsync(
         EstadoKyc? estado, int pagina, int tamano, CancellationToken ct);

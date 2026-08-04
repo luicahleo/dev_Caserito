@@ -10,6 +10,4 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public Guid CiudadId { get; set; }
 
     // Compatibilidad temporal durante la migración expand/contract de los consumidores.
-    public string Nombre { get; set; } = string.Empty;
-    public string Ciudad { get; set; } = string.Empty;
 }

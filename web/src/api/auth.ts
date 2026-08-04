@@ -5,8 +5,9 @@ import type { components } from './schema';
 export interface RegistroDatos {
   email: string;
   password: string;
-  nombre: string;
-  ciudad: string;
+  nombres: string;
+  apellidos: string;
+  ciudadId: string;
 }
 
 export interface Credenciales {

@@ -38,6 +38,9 @@ public static class KycEndpoints
         admin.MapGet("/", ListarAsync)
             .Produces<ResultadoPaginado<SolicitudKycResumenDto>>(StatusCodes.Status200OK)
             .ProducesValidationProblem();
+        admin.MapGet("/{solicitudId:guid}", DetalleAsync)
+            .Produces<DetalleSolicitudKycDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
         admin.MapGet("/{solicitudId:guid}/documento", (Guid solicitudId, ClaimsPrincipal u, ISender s, CancellationToken ct)
             => BlobAsync(solicitudId, TipoBlobKyc.Documento, u, s, ct))
             .Produces(StatusCodes.Status200OK, contentType: "application/octet-stream")
@@ -61,7 +64,14 @@ public static class KycEndpoints
     }
 
     private static async Task<IResult> EnviarAsync(
-        IFormFile documento, IFormFile selfie, ClaimsPrincipal usuario, ISender sender, CancellationToken ct)
+        string numeroCi,
+        string? complementoCi,
+        string departamentoExpedicion,
+        IFormFile documento,
+        IFormFile selfie,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
     {
         if (!TryObtenerUserId(usuario, out var userId))
         {
@@ -71,11 +81,26 @@ public static class KycEndpoints
         var docBytes = await LeerAsync(documento, ct);
         var selfieBytes = await LeerAsync(selfie, ct);
 
+        if (!Enum.TryParse<DepartamentoBolivia>(departamentoExpedicion, true, out var departamento))
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["departamentoExpedicion"] = ["Selecciona un departamento válido."],
+            });
+        }
+
         try
         {
             var resultado = await sender.Send(
                 new EnviarSolicitudKycCommand(
-                    userId, docBytes, documento.ContentType, selfieBytes, selfie.ContentType), ct);
+                    userId,
+                    numeroCi,
+                    complementoCi,
+                    departamento,
+                    docBytes,
+                    documento.ContentType,
+                    selfieBytes,
+                    selfie.ContentType), ct);
             return DesdeResult(resultado);
         }
         catch (ConflictoConcurrenciaException)
@@ -125,6 +150,22 @@ public static class KycEndpoints
         return resultado.EsExito
             ? Results.File(resultado.Valor.Contenido, resultado.Valor.ContentType)
             : DesdeResult(resultado);
+    }
+
+    private static async Task<IResult> DetalleAsync(
+        Guid solicitudId,
+        ClaimsPrincipal admin,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryObtenerUserId(admin, out var adminId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await sender.Send(
+            new ObtenerDetalleSolicitudKycQuery(solicitudId, adminId), ct);
+        return resultado.EsExito ? Results.Ok(resultado.Valor) : DesdeResult(resultado);
     }
 
     private static async Task<IResult> AprobarAsync(
@@ -207,7 +248,7 @@ public static class KycEndpoints
         {
             ErroresKyc.SolicitudNoEncontrada =>
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status404NotFound),
-            ErroresKyc.YaVerificado or ErroresKyc.SolicitudPendienteExiste or ErroresKyc.TransicionInvalida =>
+            ErroresKyc.YaVerificado or ErroresKyc.SolicitudPendienteExiste or ErroresKyc.TransicionInvalida or "Kyc.DocumentoEnUso" =>
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status409Conflict),
             ErroresKyc.ServicioVerificacionNoDisponible =>
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status503ServiceUnavailable),

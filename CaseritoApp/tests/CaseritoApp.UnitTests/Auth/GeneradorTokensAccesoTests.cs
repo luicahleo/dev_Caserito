@@ -20,7 +20,7 @@ public sealed class GeneradorTokensAccesoTests
     [Fact]
     public void Emite_un_claim_perm_por_permiso()
     {
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombres = "N" };
 
         var jwt = CrearGenerador().Generar(usuario, [Permisos.KycRevisar, Permisos.UsuariosGestionar], verificado: false);
 
@@ -33,7 +33,7 @@ public sealed class GeneradorTokensAccesoTests
     [Fact]
     public void Sin_permisos_no_emite_claims_perm()
     {
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombres = "N" };
 
         var jwt = CrearGenerador().Generar(usuario, [], verificado: false);
 
@@ -43,7 +43,7 @@ public sealed class GeneradorTokensAccesoTests
     [Fact]
     public void Generar_incluye_claim_verificado_true_cuando_esta_verificado()
     {
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombres = "N" };
 
         var jwt = CrearGenerador().Generar(usuario, [], verificado: true);
 
@@ -53,7 +53,7 @@ public sealed class GeneradorTokensAccesoTests
     [Fact]
     public void Generar_distingue_identidad_habilitada_de_kyc_verificado()
     {
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombre = "N" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.test", Nombres = "N" };
 
         var jwt = CrearGenerador().Generar(
             usuario, [], verificado: false, identidadHabilitada: true);

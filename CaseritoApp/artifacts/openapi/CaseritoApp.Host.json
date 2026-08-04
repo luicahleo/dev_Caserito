@@ -690,6 +690,31 @@
         "tags": [
           "KycEndpoints"
         ],
+        "parameters": [
+          {
+            "name": "numeroCi",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "complementoCi",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "departamentoExpedicion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -841,6 +866,46 @@
               "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/kyc/{solicitudId}": {
+      "get": {
+        "tags": [
+          "KycEndpoints"
+        ],
+        "parameters": [
+          {
+            "name": "solicitudId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetalleSolicitudKycDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -3934,16 +3999,21 @@
     "schemas": {
       "ActualizarPerfilRequest": {
         "required": [
-          "nombre",
-          "ciudad"
+          "nombres",
+          "apellidos",
+          "ciudadId"
         ],
         "type": "object",
         "properties": {
-          "nombre": {
+          "nombres": {
             "type": "string"
           },
-          "ciudad": {
+          "apellidos": {
             "type": "string"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },
@@ -4426,8 +4496,9 @@
       "CompletarRegistroExternoRequest": {
         "required": [
           "email",
-          "ciudad",
-          "nombre"
+          "nombres",
+          "apellidos",
+          "ciudadId"
         ],
         "type": "object",
         "properties": {
@@ -4437,17 +4508,24 @@
               "string"
             ]
           },
-          "ciudad": {
+          "nombres": {
             "type": [
               "null",
               "string"
             ]
           },
-          "nombre": {
+          "apellidos": {
             "type": [
               "null",
               "string"
             ]
+          },
+          "ciudadId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
           }
         }
       },
@@ -4707,6 +4785,55 @@
           },
           "comentario": {
             "type": "string"
+          }
+        }
+      },
+      "DetalleSolicitudKycDto": {
+        "required": [
+          "solicitudId",
+          "nombres",
+          "apellidos",
+          "numeroCi",
+          "complementoCi",
+          "departamentoExpedicion",
+          "estado",
+          "scoreSimilitud"
+        ],
+        "type": "object",
+        "properties": {
+          "solicitudId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombres": {
+            "type": "string"
+          },
+          "apellidos": {
+            "type": "string"
+          },
+          "numeroCi": {
+            "type": "string"
+          },
+          "complementoCi": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "departamentoExpedicion": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "scoreSimilitud": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -5398,8 +5525,10 @@
         "required": [
           "id",
           "email",
-          "nombre",
-          "ciudad",
+          "nombres",
+          "apellidos",
+          "ciudadId",
+          "nombreCiudad",
           "verificado"
         ],
         "type": "object",
@@ -5411,10 +5540,17 @@
           "email": {
             "type": "string"
           },
-          "nombre": {
+          "nombres": {
             "type": "string"
           },
-          "ciudad": {
+          "apellidos": {
+            "type": "string"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombreCiudad": {
             "type": "string"
           },
           "verificado": {
@@ -5425,8 +5561,9 @@
       "PerfilPublicoConReputacionDto": {
         "required": [
           "id",
-          "nombre",
-          "ciudad",
+          "nombreVisible",
+          "ciudadId",
+          "nombreCiudad",
           "verificado",
           "promedio",
           "totalResenas"
@@ -5437,10 +5574,14 @@
             "type": "string",
             "format": "uuid"
           },
-          "nombre": {
+          "nombreVisible": {
             "type": "string"
           },
-          "ciudad": {
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombreCiudad": {
             "type": "string"
           },
           "verificado": {
@@ -5546,8 +5687,9 @@
         "required": [
           "email",
           "password",
-          "nombre",
-          "ciudad"
+          "nombres",
+          "apellidos",
+          "ciudadId"
         ],
         "type": "object",
         "properties": {
@@ -5557,11 +5699,15 @@
           "password": {
             "type": "string"
           },
-          "nombre": {
+          "nombres": {
             "type": "string"
           },
-          "ciudad": {
+          "apellidos": {
             "type": "string"
+          },
+          "ciudadId": {
+            "type": "string",
+            "format": "uuid"
           }
         }
       },

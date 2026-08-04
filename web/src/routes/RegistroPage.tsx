@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
@@ -17,14 +17,16 @@ import {
   Typography,
 } from '@mui/material';
 import { useAuth } from '../auth/AuthContext';
+import { SelectorCiudad } from '../perfil/SelectorCiudad';
 
 const esquema = z
   .object({
     email: z.string().email('Email inválido'),
     password: z.string().min(8, 'Mínimo 8 caracteres'),
     confirmarPassword: z.string(),
-    nombre: z.string().min(1, 'El nombre es obligatorio'),
-    ciudad: z.string().min(1, 'La ciudad es obligatoria'),
+    nombres: z.string().min(1, 'Los nombres son obligatorios'),
+    apellidos: z.string().min(1, 'Los apellidos son obligatorios'),
+    ciudadId: z.string().min(1, 'Selecciona una ciudad'),
   })
   .refine((datos) => datos.password === datos.confirmarPassword, {
     message: 'Las contraseñas no coinciden',
@@ -58,8 +60,9 @@ export function RegistroPage() {
       const datosRegistro = {
         email: datos.email,
         password: datos.password,
-        nombre: datos.nombre,
-        ciudad: datos.ciudad,
+        nombres: datos.nombres,
+        apellidos: datos.apellidos,
+        ciudadId: datos.ciudadId,
       };
       await registrar(datosRegistro);
       setRegistrado(true);
@@ -151,17 +154,20 @@ export function RegistroPage() {
             }}
           />
           <TextField
-            label="Nombre"
-            {...register('nombre')}
-            error={!!errors.nombre}
-            helperText={errors.nombre?.message}
+            label="Nombres"
+            {...register('nombres')}
+            error={!!errors.nombres}
+            helperText={errors.nombres?.message}
           />
           <TextField
-            label="Ciudad"
-            {...register('ciudad')}
-            error={!!errors.ciudad}
-            helperText={errors.ciudad?.message}
+            label="Apellidos"
+            {...register('apellidos')}
+            error={!!errors.apellidos}
+            helperText={errors.apellidos?.message}
           />
+          <Controller name="ciudadId" control={control} defaultValue="" render={({ field }) =>
+            <SelectorCiudad value={field.value} onChange={field.onChange}
+              error={!!errors.ciudadId} helperText={errors.ciudadId?.message} />} />
           <Button
             type="submit"
             variant="contained"

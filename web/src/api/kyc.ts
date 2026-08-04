@@ -7,15 +7,22 @@ export type EstadoKyc = 'NoIniciado' | 'Pendiente' | 'Aprobada' | 'Rechazada';
 export type EstadoKycDto = components['schemas']['EstadoKycDto'];
 export type SolicitudKycResumen = components['schemas']['SolicitudKycResumenDto'];
 export type PaginaSolicitudes = components['schemas']['ResultadoPaginadoOfSolicitudKycResumenDto'];
+export type DetalleSolicitudKyc = components['schemas']['DetalleSolicitudKycDto'];
 
 export async function obtenerEstadoKyc(): Promise<EstadoKycDto> {
   return desempaquetar(await api.GET('/api/kyc/estado'));
 }
 
-export async function enviarKyc(documento: File, selfie: File): Promise<void> {
+export async function enviarKyc(datos: {
+  numeroCi: string; complementoCi?: string; departamentoExpedicion: string;
+  documento: File; selfie: File;
+}): Promise<void> {
   const form = new FormData();
-  form.append('documento', documento);
-  form.append('selfie', selfie);
+  form.append('numeroCi', datos.numeroCi);
+  if (datos.complementoCi) form.append('complementoCi', datos.complementoCi);
+  form.append('departamentoExpedicion', datos.departamentoExpedicion);
+  form.append('documento', datos.documento);
+  form.append('selfie', datos.selfie);
   // El body real que viaja es el FormData: el bodySerializer por defecto de
   // openapi-fetch detecta instancias de FormData y las deja pasar tal cual (sin
   // tocarlas), dejando que el navegador fije el Content-Type con el boundary. El
@@ -23,9 +30,20 @@ export async function enviarKyc(documento: File, selfie: File): Promise<void> {
   // (IFormFile), por eso el cast: en tiempo de ejecución lo que se envía es el FormData.
   desempaquetar(
     await api.POST('/api/kyc', {
-      body: form as unknown as { documento: string; selfie: string },
+      params: { query: {
+        numeroCi: datos.numeroCi,
+        complementoCi: datos.complementoCi,
+        departamentoExpedicion: datos.departamentoExpedicion,
+      } },
+      body: form as never,
     }),
   );
+}
+
+export async function obtenerDetalleKyc(solicitudId: string): Promise<DetalleSolicitudKyc> {
+  return desempaquetar(await api.GET('/api/admin/kyc/{solicitudId}', {
+    params: { path: { solicitudId } },
+  }));
 }
 
 export function listarSolicitudesKyc(

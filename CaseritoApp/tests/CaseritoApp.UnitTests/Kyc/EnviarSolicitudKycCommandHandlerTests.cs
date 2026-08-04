@@ -54,7 +54,7 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             Task.FromResult(resultado);
     }
 
-    private sealed class PublicadorFake : IPublicadorEventosIntegracion
+    private sealed class PublicadorFake : IPublicadorEventosIntegracion, IProtectorDocumentoKyc
     {
         public List<IIntegrationEvent> Eventos { get; } = [];
 
@@ -63,6 +63,14 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             Eventos.Add(evento);
             return Task.CompletedTask;
         }
+
+        public DocumentoKycProtegido Proteger(
+            string numeroCi,
+            string? complementoCi,
+            DepartamentoBolivia departamentoExpedicion) =>
+            new("HUELLA", "CIFRADO", null, departamentoExpedicion);
+
+        public string Descifrar(string valorCifrado) => "1234567";
     }
 
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
@@ -108,7 +116,7 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
     }
 
     [Fact]
-    public async Task Envio_con_coincidencia_automatica_aprueba_y_publica_UserVerified()
+    public async Task Envio_con_coincidencia_deja_pendiente_para_revision_manual()
     {
         var usuarioId = Guid.NewGuid();
         var almacen = new AlmacenFake();
@@ -122,8 +130,8 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             usuarioId, _png, "image/png", _png, "image/png"), CancellationToken.None);
 
         Assert.True(r.EsExito);
-        Assert.Single(publicador.Eventos.OfType<UserVerified>());
-        Assert.True(repo.Agregada!.EstaVerificado);
+        Assert.Empty(publicador.Eventos);
+        Assert.Equal(EstadoKyc.Pendiente, repo.Agregada!.SolicitudActual!.Estado);
         Assert.Equal(92.5, repo.Agregada.Solicitudes.Single().ScoreSimilitud);
     }
 

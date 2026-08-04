@@ -90,7 +90,7 @@ public sealed class AuthExternaLoginTests(CaseritoApiFactory factory) : IClassFi
         using var scope = factory.Services.CreateScope();
         var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var email = $"externo-{Guid.NewGuid():N}@caserito.test";
-        var usuario = new ApplicationUser { UserName = email, Email = email, Nombre = "Usuario", Ciudad = "Lima" };
+        var usuario = new ApplicationUser { UserName = email, Email = email, Nombres = "Usuario", CiudadId = new Guid("22222222-2222-2222-2222-000000000001") };
         Assert.True((await usuarios.CreateAsync(usuario)).Succeeded);
         Assert.True((await usuarios.AddToRoleAsync(usuario, "Cliente")).Succeeded);
         Assert.True((await usuarios.AddLoginAsync(usuario, new UserLoginInfo(proveedor.ToLowerInvariant(), clave, proveedor))).Succeeded);

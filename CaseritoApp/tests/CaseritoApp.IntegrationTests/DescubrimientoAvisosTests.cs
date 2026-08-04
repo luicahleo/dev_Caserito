@@ -47,7 +47,7 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
         form.Add(doc, "documento", "ci.png");
         var self = new ByteArrayContent(_png); self.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(self, "selfie", "selfie.png");
-        using (var subir = Con(HttpMethod.Post, "/api/kyc/", token))
+        using (var subir = Con(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token))
         {
             subir.Content = form;
             Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);

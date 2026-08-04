@@ -9,7 +9,9 @@ import {
   CircularProgress,
   Container,
   Link,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
@@ -17,6 +19,11 @@ import { HttpError } from '../api/http';
 
 const MIME_PERMITIDOS = ['image/jpeg', 'image/png'];
 const LIMITE_BYTES = 5 * 1024 * 1024;
+const DEPARTAMENTOS = [
+  ['LaPaz', 'La Paz'], ['Cochabamba', 'Cochabamba'], ['SantaCruz', 'Santa Cruz'],
+  ['Chuquisaca', 'Chuquisaca'], ['Oruro', 'Oruro'], ['Potosi', 'Potosí'],
+  ['Tarija', 'Tarija'], ['Beni', 'Beni'], ['Pando', 'Pando'],
+] as const;
 
 // Valida un archivo contra los límites del backend. Devuelve mensaje de error o null.
 function validarArchivo(archivo: File | null): string | null {
@@ -35,11 +42,20 @@ export function KycPage() {
 
   const [documento, setDocumento] = useState<File | null>(null);
   const [selfie, setSelfie] = useState<File | null>(null);
+  const [numeroCi, setNumeroCi] = useState('');
+  const [complementoCi, setComplementoCi] = useState('');
+  const [departamento, setDepartamento] = useState('');
   const [errorDoc, setErrorDoc] = useState<string | null>(null);
   const [errorSelfie, setErrorSelfie] = useState<string | null>(null);
 
   const mutacion = useMutation({
-    mutationFn: () => enviarKyc(documento as File, selfie as File),
+    mutationFn: () => enviarKyc({
+      numeroCi,
+      complementoCi: complementoCi || undefined,
+      departamentoExpedicion: departamento,
+      documento: documento as File,
+      selfie: selfie as File,
+    }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] }),
     onError: (error) => {
       if (error instanceof HttpError && error.status === 409) {
@@ -53,7 +69,7 @@ export function KycPage() {
     const eSelfie = validarArchivo(selfie);
     setErrorDoc(eDoc);
     setErrorSelfie(eSelfie);
-    if (eDoc || eSelfie) return;
+    if (eDoc || eSelfie || !/^\d{5,12}$/.test(numeroCi) || !departamento) return;
     mutacion.mutate();
   };
 
@@ -82,7 +98,7 @@ export function KycPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Verificación de identidad automática
+        Verificación de identidad
       </Typography>
 
       {estado?.estado === 'Aprobada' && (
@@ -91,7 +107,7 @@ export function KycPage() {
 
       {estado?.estado === 'Pendiente' && (
         <Alert severity="info" sx={{ my: 2 }}>
-          Tu solicitud está siendo verificada automáticamente. Te avisaremos cuando haya una decisión.
+          Tu solicitud está pendiente de revisión humana. Te avisaremos cuando haya una decisión.
         </Alert>
       )}
 
@@ -105,13 +121,25 @@ export function KycPage() {
       {mostrarFormulario && (
         <Stack spacing={3} sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Sube una foto de tu documento de identidad y una selfie. Nuestro sistema las comparará
-            automáticamente. Formatos JPG o PNG, máximo 5 MB cada uno.
+            Sube el frontal de tu CI y una selfie. El sistema compara ambos rostros y un revisor
+            autorizado confirma el resultado. Formatos JPG o PNG, máximo 5 MB cada uno.
           </Typography>
+
+          <TextField label="Número de CI" value={numeroCi}
+            onChange={(e) => setNumeroCi(e.target.value)} required
+            error={numeroCi.length > 0 && !/^\d{5,12}$/.test(numeroCi)}
+            helperText="Solo números, entre 5 y 12 dígitos" />
+          <TextField label="Complemento (opcional)" value={complementoCi}
+            onChange={(e) => setComplementoCi(e.target.value)} />
+          <TextField select label="Departamento de expedición" value={departamento}
+            onChange={(e) => setDepartamento(e.target.value)} required>
+            {DEPARTAMENTOS.map(([valor, etiqueta]) =>
+              <MenuItem key={valor} value={valor}>{etiqueta}</MenuItem>)}
+          </TextField>
 
           <Box>
             <Button component="label" variant="outlined">
-              Documento
+              Frontal del CI
               <input
                 type="file"
                 hidden
@@ -164,7 +192,8 @@ export function KycPage() {
             </Alert>
           )}
 
-          <Button variant="contained" onClick={onEnviar} disabled={mutacion.isPending}>
+          <Button variant="contained" onClick={onEnviar}
+            disabled={mutacion.isPending || !numeroCi || !departamento}>
             Enviar
           </Button>
         </Stack>

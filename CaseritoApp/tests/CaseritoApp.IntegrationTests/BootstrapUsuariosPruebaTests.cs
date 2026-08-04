@@ -79,8 +79,8 @@ public sealed class BootstrapUsuariosPruebaTests(CaseritoApiFactory factory)
         {
             UserName = opciones.Vendedor.Email,
             Email = opciones.Vendedor.Email,
-            Nombre = "Nombre previo",
-            Ciudad = "Ciudad previa",
+            Nombres = "Nombre previo",
+            CiudadId = new Guid("22222222-2222-2222-2222-000000000001"),
         };
         const string clavePrevia = "Clave-Previa-987!";
         Assert.True((await usuarios.CreateAsync(existente, clavePrevia)).Succeeded);
@@ -93,8 +93,8 @@ public sealed class BootstrapUsuariosPruebaTests(CaseritoApiFactory factory)
 
         var despues = await usuarios.FindByEmailAsync(opciones.Vendedor.Email);
         Assert.NotNull(despues);
-        Assert.Equal("Nombre previo", despues.Nombre);
-        Assert.Equal("Ciudad previa", despues.Ciudad);
+        Assert.Equal("Nombre previo", despues.Nombres);
+        Assert.Equal(new Guid("22222222-2222-2222-2222-000000000001"), despues.CiudadId);
         Assert.True(await usuarios.CheckPasswordAsync(despues, clavePrevia));
         Assert.Equal([RolesApp.Moderador], await usuarios.GetRolesAsync(despues));
         var textoLogs = string.Join(Environment.NewLine, logger.Mensajes);

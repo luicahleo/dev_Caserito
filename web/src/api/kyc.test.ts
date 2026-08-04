@@ -19,7 +19,7 @@ describe('api/kyc', () => {
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
     const doc = new File(['a'], 'doc.png', { type: 'image/png' });
     const selfie = new File(['b'], 'selfie.jpg', { type: 'image/jpeg' });
-    await enviarKyc(doc, selfie);
+    await enviarKyc({ numeroCi: '1234567', departamentoExpedicion: 'LaPaz', documento: doc, selfie });
     const req = fetchMock.mock.calls[0][0] as Request;
     expect(req.method).toBe('POST');
     expect(req.url).toContain('/api/kyc');

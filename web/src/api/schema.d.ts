@@ -830,7 +830,11 @@ export interface paths {
         put?: never;
         post: {
             parameters: {
-                query?: never;
+                query: {
+                    numeroCi: string;
+                    complementoCi?: string;
+                    departamentoExpedicion: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -972,6 +976,52 @@ export interface paths {
                     };
                     content: {
                         "application/problem+json": components["schemas"]["HttpValidationProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/kyc/{solicitudId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    solicitudId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DetalleSolicitudKycDto"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -4408,8 +4458,10 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         ActualizarPerfilRequest: {
-            nombre: string;
-            ciudad: string;
+            nombres: string;
+            apellidos: string;
+            /** Format: uuid */
+            ciudadId: string;
         };
         AsignarRolRequest: {
             rol: string;
@@ -4542,8 +4594,10 @@ export interface components {
         };
         CompletarRegistroExternoRequest: {
             email: null | string;
-            ciudad: null | string;
-            nombre: null | string;
+            nombres: null | string;
+            apellidos: null | string;
+            /** Format: uuid */
+            ciudadId: null | string;
         };
         ConfirmarEmailRequest: {
             /** Format: uuid */
@@ -4614,6 +4668,18 @@ export interface components {
             /** Format: int32 */
             puntuacion: number | string;
             comentario: string;
+        };
+        DetalleSolicitudKycDto: {
+            /** Format: uuid */
+            solicitudId: string;
+            nombres: string;
+            apellidos: string;
+            numeroCi: string;
+            complementoCi: null | string;
+            departamentoExpedicion: string;
+            estado: string;
+            /** Format: double */
+            scoreSimilitud: null | number | string;
         };
         EditarAvisoRequest: {
             titulo: string;
@@ -4806,15 +4872,20 @@ export interface components {
             /** Format: uuid */
             id: string;
             email: string;
-            nombre: string;
-            ciudad: string;
+            nombres: string;
+            apellidos: string;
+            /** Format: uuid */
+            ciudadId: string;
+            nombreCiudad: string;
             verificado: boolean;
         };
         PerfilPublicoConReputacionDto: {
             /** Format: uuid */
             id: string;
-            nombre: string;
-            ciudad: string;
+            nombreVisible: string;
+            /** Format: uuid */
+            ciudadId: string;
+            nombreCiudad: string;
             verificado: boolean;
             /** Format: double */
             promedio: null | number | string;
@@ -4843,8 +4914,10 @@ export interface components {
         RegistroRequest: {
             email: string;
             password: string;
-            nombre: string;
-            ciudad: string;
+            nombres: string;
+            apellidos: string;
+            /** Format: uuid */
+            ciudadId: string;
         };
         ReportarAvisoRequest: {
             motivo: string;

@@ -48,10 +48,10 @@ export function PerfilPublicoPage() {
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        {perfil.data.nombre}
+        {perfil.data.nombreVisible}
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-        <Chip label={perfil.data.ciudad} />
+        <Chip label={perfil.data.nombreCiudad} />
         {perfil.data.verificado && <Chip color="success" label="Usuario verificado" />}
       </Stack>
       <Typography variant="h6">

@@ -1,6 +1,5 @@
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Application.Messaging;
-using CaseritoApp.BuildingBlocks.Contracts.Identity;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Domain.Kyc;
 using FluentValidation;
@@ -11,10 +10,22 @@ namespace CaseritoApp.Identity.Application.Kyc;
 /// <summary>Envía una solicitud de verificación con documento (CI) y selfie del usuario autenticado.</summary>
 public sealed record EnviarSolicitudKycCommand(
     Guid UsuarioId,
+    string NumeroCi,
+    string? ComplementoCi,
+    DepartamentoBolivia DepartamentoExpedicion,
     byte[] Documento,
     string DocumentoContentType,
     byte[] Selfie,
-    string SelfieContentType) : ICommand;
+    string SelfieContentType) : ICommand
+{
+    public EnviarSolicitudKycCommand(
+        Guid usuarioId, byte[] documento, string documentoContentType,
+        byte[] selfie, string selfieContentType)
+        : this(usuarioId, "1234567", null, DepartamentoBolivia.Cochabamba,
+            documento, documentoContentType, selfie, selfieContentType)
+    {
+    }
+}
 
 /// <summary>
 /// Handler: valida invariants, guarda los blobs cifrados, consulta a ARGOS y aplica la decisión
@@ -25,7 +36,7 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
     IRepositorioVerificacionKyc repositorio,
     IAlmacenBlobsKyc almacen,
     IVerificadorIdentidadArgos verificador,
-    IPublicadorEventosIntegracion publicador,
+    IProtectorDocumentoKyc protectorDocumento,
     TimeProvider tiempo,
     ILogger<EnviarSolicitudKycCommandHandler> logger)
     : ICommandHandler<EnviarSolicitudKycCommand>
@@ -42,6 +53,18 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
         {
             RegistrarEnvio(logger, request.UsuarioId, validacionPrevia.Error.Code);
             return Result.Fallo(validacionPrevia.Error);
+        }
+
+        var protegido = protectorDocumento.Proteger(
+            request.NumeroCi, request.ComplementoCi, request.DepartamentoExpedicion);
+        if (!await repositorio.ReservarDocumentoAsync(
+            new DocumentoKycRegistrado(
+                request.UsuarioId, protegido.HuellaCi, protegido.NumeroCiCifrado,
+                protegido.ComplementoCiCifrado, protegido.DepartamentoExpedicion,
+                tiempo.GetUtcNow()),
+            cancellationToken))
+        {
+            return Result.Fallo(new Error("Kyc.DocumentoEnUso", "No se pudo registrar el documento."));
         }
 
         var claveDoc = await almacen.GuardarAsync(request.Documento, request.DocumentoContentType, cancellationToken);
@@ -76,8 +99,12 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
 
         var ahora = tiempo.GetUtcNow();
         var resolucion = facial.Coinciden
-            ? verificacion.Aprobar(solicitud.Id, SistemaActor.Id, ahora)
-            : verificacion.Rechazar(solicitud.Id, SistemaActor.Id, facial.MotivoRechazo ?? "El rostro no coincide con el documento.", ahora);
+            ? Result.Exito()
+            : verificacion.Rechazar(
+                solicitud.Id,
+                SistemaActor.Id,
+                "La validación facial no fue satisfactoria.",
+                ahora);
 
         if (!resolucion.EsExito)
         {
@@ -88,18 +115,12 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
             return Result.Fallo(resolucion.Error);
         }
 
-        if (facial.Coinciden)
-        {
-            await publicador.PublicarAsync(
-                new UserVerified(Guid.NewGuid(), ahora, verificacion.UsuarioId), cancellationToken);
-        }
-
         if (esNueva)
         {
             repositorio.Agregar(verificacion);
         }
 
-        RegistrarEnvio(logger, request.UsuarioId, facial.Coinciden ? "aprobado-automatico" : "rechazado-automatico");
+        RegistrarEnvio(logger, request.UsuarioId, facial.Coinciden ? "pendiente-revision" : "rechazado-automatico");
         return Result.Exito();
     }
 
@@ -113,6 +134,18 @@ public sealed class EnviarSolicitudKycCommandValidator : AbstractValidator<Envia
 {
     public EnviarSolicitudKycCommandValidator()
     {
+        RuleFor(c => c.NumeroCi)
+            .NotEmpty()
+            .Matches("^[0-9]{5,12}$")
+            .WithMessage("El número de CI no es válido.");
+
+        RuleFor(c => c.ComplementoCi)
+            .Matches("^[A-Za-z0-9]{1,5}$")
+            .When(c => !string.IsNullOrWhiteSpace(c.ComplementoCi))
+            .WithMessage("El complemento de CI no es válido.");
+
+        RuleFor(c => c.DepartamentoExpedicion).IsInEnum();
+
         RuleFor(c => c)
             .Must(c => ValidacionImagenKyc.EsImagenValida(c.Documento, c.DocumentoContentType))
             .WithName("Documento")

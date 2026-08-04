@@ -65,6 +65,7 @@ public static class DependencyInjection
         servicios.AddScoped<IRepositorioRestablecimientoPassword, RepositorioRestablecimientoPassword>();
         servicios.AddScoped<IRepositorioRolesUsuario, RepositorioRolesUsuarioUserManager>();
         servicios.AddScoped<IRepositorioVerificacionKyc, RepositorioVerificacionKycEfCore>();
+        servicios.AddScoped<IProtectorDocumentoKyc, ProtectorDocumentoKyc>();
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
@@ -81,6 +82,11 @@ public static class DependencyInjection
         });
 
         var permiteArgosOpcional = entorno.IsDevelopment() || entorno.IsEnvironment("Testing");
+        if (!permiteArgosOpcional && string.IsNullOrWhiteSpace(config["Kyc:ClaveHuellaCi"]))
+        {
+            throw new InvalidOperationException("La protección documental KYC no está configurada.");
+        }
+
         servicios.AddOptions<OpcionesArgos>()
             .Validate(
                 o => permiteArgosOpcional || !string.IsNullOrWhiteSpace(o.Url),

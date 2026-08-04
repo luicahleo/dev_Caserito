@@ -39,7 +39,7 @@ describe('AdminKycPage', () => {
     expect(await screen.findByText('u1')).toBeInTheDocument();
   });
 
-  it('una solicitud pendiente no muestra botones Aprobar/Rechazar y avisa resolución automática', async () => {
+  it('una solicitud pendiente muestra detalle y acciones manuales', async () => {
     vi.spyOn(api, 'listarSolicitudesKyc').mockResolvedValue({
       items: [solicitud],
       pagina: 1,
@@ -47,14 +47,15 @@ describe('AdminKycPage', () => {
       total: 1,
     });
     vi.spyOn(api, 'obtenerImagenKyc').mockResolvedValue('blob:fake');
+    vi.spyOn(api, 'obtenerDetalleKyc').mockResolvedValue({ solicitudId: 'abc', nombres: 'Ana',
+      apellidos: 'Quispe', numeroCi: '1234567', complementoCi: null,
+      departamentoExpedicion: 'LaPaz', estado: 'Pendiente', scoreSimilitud: 95 });
     montar();
     const u = userEvent.setup();
     await u.click(await screen.findByRole('button', { name: /revisar/i }));
-    expect(
-      await screen.findByText(/esta solicitud será resuelta automáticamente por el sistema/i),
-    ).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^aprobar$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^rechazar$/i })).not.toBeInTheDocument();
+    expect(await screen.findByText(/Ana/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^aprobar$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^rechazar$/i })).toBeInTheDocument();
   });
 
   it('revoca el objectURL si el panel se desmonta antes de que resuelva la imagen (evita fuga de PII)', async () => {

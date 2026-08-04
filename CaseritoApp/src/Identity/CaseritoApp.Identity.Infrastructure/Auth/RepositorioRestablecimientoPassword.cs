@@ -24,7 +24,7 @@ public sealed class RepositorioRestablecimientoPassword(UserManager<ApplicationU
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(usuario);
-        return new SolicitudRestablecimiento(usuario.Id, usuario.Email, usuario.Nombre, token);
+        return new SolicitudRestablecimiento(usuario.Id, usuario.Email, usuario.Nombres, token);
     }
 
     public async Task<Result<Guid>> RestablecerAsync(

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -22,7 +22,10 @@ import {
 } from '@mui/material';
 import {
   listarSolicitudesKyc,
+  obtenerDetalleKyc,
   obtenerImagenKyc,
+  aprobarKyc,
+  rechazarKyc,
   type EstadoKyc,
   type SolicitudKycResumen,
 } from '../api/kyc';
@@ -53,6 +56,21 @@ function PanelRevision({
   const [urlDoc, setUrlDoc] = useState<string | null>(null);
   const [urlSelfie, setUrlSelfie] = useState<string | null>(null);
   const [errorImg, setErrorImg] = useState(false);
+  const [motivo, setMotivo] = useState('');
+  const queryClient = useQueryClient();
+  const detalle = useQuery({
+    queryKey: ['admin', 'kyc', solicitud.solicitudId, 'detalle'],
+    queryFn: () => obtenerDetalleKyc(solicitud.solicitudId),
+  });
+  const resolver = useMutation({
+    mutationFn: (accion: 'aprobar' | 'rechazar') => accion === 'aprobar'
+      ? aprobarKyc(solicitud.solicitudId)
+      : rechazarKyc(solicitud.solicitudId, motivo),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'kyc'] });
+      onCerrar();
+    },
+  });
 
   useEffect(() => {
     let doc: string | null = null;
@@ -89,6 +107,12 @@ function PanelRevision({
     <Dialog open onClose={onCerrar} maxWidth="md" fullWidth>
       <DialogTitle>Revisar solicitud</DialogTitle>
       <DialogContent>
+        {detalle.isError && <Alert severity="error">No se pudo cargar el detalle documental.</Alert>}
+        {detalle.data && <Stack spacing={0.5} sx={{ mb: 2 }}>
+          <Typography><strong>Persona:</strong> {detalle.data.nombres} {detalle.data.apellidos}</Typography>
+          <Typography><strong>CI:</strong> {detalle.data.numeroCi}{detalle.data.complementoCi ? `-${detalle.data.complementoCi}` : ''}</Typography>
+          <Typography><strong>Expedido en:</strong> {detalle.data.departamentoExpedicion}</Typography>
+        </Stack>}
         {errorImg && <Alert severity="error">No se pudieron cargar las imágenes.</Alert>}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ my: 1 }}>
           <Box sx={{ flex: 1 }}>
@@ -113,9 +137,14 @@ function PanelRevision({
       <DialogActions>
         <Button onClick={onCerrar}>Cerrar</Button>
         {solicitud.estado === 'Pendiente' ? (
-          <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
-            Esta solicitud será resuelta automáticamente por el sistema.
-          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+            <TextField size="small" label="Motivo de rechazo" value={motivo}
+              onChange={(e) => setMotivo(e.target.value)} />
+            <Button color="error" disabled={!motivo || resolver.isPending}
+              onClick={() => resolver.mutate('rechazar')}>Rechazar</Button>
+            <Button variant="contained" disabled={resolver.isPending}
+              onClick={() => resolver.mutate('aprobar')}>Aprobar</Button>
+          </Stack>
         ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
             Esta solicitud ya fue resuelta.

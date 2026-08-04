@@ -64,7 +64,7 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
     }
 
     [Fact]
-    public async Task Subir_con_coincidencia_automatica_aprueba_y_marca_verificado()
+    public async Task Subir_con_coincidencia_deja_pendiente_revision_manual()
     {
         using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
         {
@@ -75,14 +75,14 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         var email = Email("kyc-ok");
         var token = await RegistrarYLoguearAsync(cliente, email, null);
 
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234561&departamentoExpedicion=LaPaz", token);
         subir.Content = Formulario();
         var resp = await cliente.SendAsync(subir);
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
 
         using var estado = Autorizada(HttpMethod.Get, "/api/kyc/estado", token);
         var dto = await (await cliente.SendAsync(estado)).Content.ReadFromJsonAsync<EstadoKycDto>();
-        Assert.Equal("Aprobada", dto!.Estado);
+        Assert.Equal("Pendiente", dto!.Estado);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         var email = Email("kyc-fail");
         var token = await RegistrarYLoguearAsync(cliente, email, null);
 
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234562&departamentoExpedicion=LaPaz", token);
         subir.Content = Formulario();
         var resp = await cliente.SendAsync(subir);
         Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
@@ -105,7 +105,7 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         using var estado = Autorizada(HttpMethod.Get, "/api/kyc/estado", token);
         var dto = await (await cliente.SendAsync(estado)).Content.ReadFromJsonAsync<EstadoKycDto>();
         Assert.Equal("Rechazada", dto!.Estado);
-        Assert.Equal("Rostros no coinciden", dto.MotivoRechazo);
+        Assert.Equal("La validación facial no fue satisfactoria.", dto.MotivoRechazo);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         var email = Email("kyc-down");
         var token = await RegistrarYLoguearAsync(cliente, email, null);
 
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234563&departamentoExpedicion=LaPaz", token);
         subir.Content = Formulario();
         var resp = await cliente.SendAsync(subir);
         Assert.Equal(HttpStatusCode.ServiceUnavailable, resp.StatusCode);

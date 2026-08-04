@@ -12,8 +12,9 @@ describe('PerfilPublicoPage', () => {
   it('muestra perfil, resumen y reseñas sin identificadores internos', async () => {
     vi.spyOn(reputation, 'obtenerPerfilPublico').mockResolvedValue({
       id: 'id-no-visible',
-      nombre: 'Ana',
-      ciudad: 'La Paz',
+      nombreVisible: 'Ana Q.',
+      ciudadId: '22222222-2222-2222-2222-000000000003',
+      nombreCiudad: 'La Paz',
       verificado: true,
       promedio: 4.5,
       totalResenas: 2,
@@ -33,7 +34,7 @@ describe('PerfilPublicoPage', () => {
     });
     montar();
 
-    expect(await screen.findByRole('heading', { name: 'Ana' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Ana Q.' })).toBeInTheDocument();
     expect(screen.getByText('La Paz')).toBeInTheDocument();
     expect(screen.getByText('Usuario verificado')).toBeInTheDocument();
     expect(screen.getByText(/4,5 de 5/i)).toBeInTheDocument();

@@ -252,7 +252,7 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         Assert.Equal(HttpStatusCode.OK, loginRespuesta.StatusCode);
         var loginBody = await loginRespuesta.Content.ReadFromJsonAsync<TokenAccesoResponse>();
 
-        using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/kyc/");
+        using var solicitud = new HttpRequestMessage(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz");
         solicitud.Headers.Authorization = new AuthenticationHeaderValue("Bearer", loginBody!.AccessToken);
         var respuesta = await cliente.SendAsync(solicitud);
 

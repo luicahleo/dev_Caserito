@@ -21,7 +21,7 @@ public sealed class GeneradorTokensAccesoTests
         var tiempo = new FakeTimeProvider();
         var proveedorClave = new ProveedorClaveFirma(opciones);
         var gen = new GeneradorTokensAcceso(opciones, proveedorClave, tiempo);
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombre = "Ana" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombres = "Ana" };
 
         var jwt = gen.Generar(usuario, [], verificado: false);
         var leido = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
@@ -45,7 +45,7 @@ public sealed class GeneradorTokensAccesoTests
         var ahora = tiempo.GetUtcNow();
         var proveedorClave = new ProveedorClaveFirma(opciones);
         var gen = new GeneradorTokensAcceso(opciones, proveedorClave, tiempo);
-        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombre = "Ana" };
+        var usuario = new ApplicationUser { Id = Guid.NewGuid(), Email = "a@b.com", Nombres = "Ana" };
 
         var jwt = gen.Generar(usuario, [], verificado: false);
         var leido = new JwtSecurityTokenHandler().ReadJwtToken(jwt);

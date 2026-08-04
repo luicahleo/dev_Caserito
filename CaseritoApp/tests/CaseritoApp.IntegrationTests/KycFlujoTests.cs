@@ -72,7 +72,7 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
         }));
 
     [Fact]
-    public async Task Subir_con_aprobacion_automatica_verifica_perfil_y_token()
+    public async Task Revision_manual_aprueba_y_verifica_perfil_y_token()
     {
         using var cliente = FactoryConVerificador(
             Result.Exito(new VerificacionFacialResultado(true, 94.5, null))).CreateClient();
@@ -80,10 +80,21 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
         var tokenUsuario = await RegistrarYLoguearAsync(cliente, email, rolExtra: null);
 
         // 1) Subir CI + selfie; ARGOS mockeado aprueba automáticamente.
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/", tokenUsuario);
+        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=3234567&departamentoExpedicion=LaPaz", tokenUsuario);
         subir.Content = Formulario();
         var respSubir = await cliente.SendAsync(subir);
         Assert.Equal(HttpStatusCode.NoContent, respSubir.StatusCode);
+
+        var tokenAdmin = await RegistrarYLoguearAsync(
+            cliente, Email("kyc-admin"), CaseritoApp.Identity.Domain.Autorizacion.RolesApp.AdminPlataforma);
+        using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc/?estado=Pendiente", tokenAdmin);
+        var pagina = await (await cliente.SendAsync(listar)).Content
+            .ReadFromJsonAsync<CaseritoApp.Identity.Application.Autorizacion.ResultadoPaginado<SolicitudKycResumenDto>>();
+        var usuarioId = Guid.Parse(new JwtSecurityTokenHandler().ReadJwtToken(tokenUsuario)
+            .Claims.Single(c => c.Type == "sub").Value);
+        var solicitudId = pagina!.Items.Single(s => s.UsuarioId == usuarioId).SolicitudId;
+        using var aprobar = Autorizada(HttpMethod.Post, $"/api/admin/kyc/{solicitudId}/aprobar", tokenAdmin);
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(aprobar)).StatusCode);
 
         // 2) Perfil del usuario muestra verificado=true.
         using var perfil = Autorizada(HttpMethod.Get, "/api/perfil/", tokenUsuario);
@@ -98,17 +109,17 @@ public sealed class KycFlujoTests(CaseritoApiFactory factory) : IClassFixture<Ca
     }
 
     [Fact]
-    public async Task Subir_dos_veces_da_409_por_ya_verificado()
+    public async Task Subir_dos_veces_da_409_por_solicitud_pendiente()
     {
         using var cliente = FactoryConVerificador(
             Result.Exito(new VerificacionFacialResultado(true, 94.5, null))).CreateClient();
         var token = await RegistrarYLoguearAsync(cliente, Email("kyc-dup"), rolExtra: null);
 
-        using var primera = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var primera = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=2234567&departamentoExpedicion=LaPaz", token);
         primera.Content = Formulario();
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(primera)).StatusCode);
 
-        using var segunda = Autorizada(HttpMethod.Post, "/api/kyc/", token);
+        using var segunda = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=2234567&departamentoExpedicion=LaPaz", token);
         segunda.Content = Formulario();
         Assert.Equal(HttpStatusCode.Conflict, (await cliente.SendAsync(segunda)).StatusCode);
     }

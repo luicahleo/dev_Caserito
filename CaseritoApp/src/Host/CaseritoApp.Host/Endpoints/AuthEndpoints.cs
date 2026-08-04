@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using CaseritoApp.Identity.Application.Auth;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Application.Perfil;
@@ -14,6 +15,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 namespace CaseritoApp.Host.Endpoints;
 
 /// <summary>Contrato de registro de un nuevo usuario.</summary>
+[method: JsonConstructor]
 public sealed record RegistroRequest(
     string Email,
     string Password,
@@ -322,7 +324,7 @@ public static class AuthEndpoints
                 tiempo.GetUtcNow(),
                 appUser.Id,
                 appUser.Email!,
-                appUser.Nombre),
+                appUser.Nombres),
             ct);
 
         return Results.NoContent();

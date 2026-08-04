@@ -79,8 +79,11 @@ public sealed partial class BootstrapUsuariosPrueba(
         {
             UserName = cuenta.Email,
             Email = cuenta.Email,
-            Nombre = cuenta.Nombre,
-            Ciudad = cuenta.Ciudad,
+            Nombres = cuenta.Nombre,
+            Apellidos = "Prueba",
+            CiudadId = Guid.TryParse(cuenta.Ciudad, out var ciudadId)
+                ? ciudadId
+                : new Guid("22222222-2222-2222-2222-000000000001"),
         };
 
         if (!(await usuarios.CreateAsync(usuario, cuenta.Password)).Succeeded)

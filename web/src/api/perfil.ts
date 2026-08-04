@@ -7,8 +7,8 @@ export async function obtenerPerfil(): Promise<Perfil> {
   return desempaquetar(await api.GET('/api/perfil'));
 }
 
-export async function actualizarPerfil(datos: { nombre: string; ciudad: string }): Promise<void> {
-  desempaquetar(
-    await api.PUT('/api/perfil', { body: { nombre: datos.nombre, ciudad: datos.ciudad } }),
-  );
+export async function actualizarPerfil(datos: {
+  nombres: string; apellidos: string; ciudadId: string;
+}): Promise<void> {
+  desempaquetar(await api.PUT('/api/perfil', { body: datos }));
 }

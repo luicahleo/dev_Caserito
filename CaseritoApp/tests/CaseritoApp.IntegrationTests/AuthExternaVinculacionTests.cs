@@ -107,7 +107,7 @@ public sealed class AuthExternaVinculacionTests(CaseritoApiFactory factory) : IC
     {
         using var scope = factory.Services.CreateScope();
         var usuarios = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var usuario = new ApplicationUser { UserName = email, Email = email, Nombre = "Usuario", Ciudad = "Lima" };
+        var usuario = new ApplicationUser { UserName = email, Email = email, Nombres = "Usuario", CiudadId = new Guid("22222222-2222-2222-2222-000000000001") };
         Assert.True((await usuarios.CreateAsync(usuario, password)).Succeeded);
         Assert.True((await usuarios.AddToRoleAsync(usuario, "Cliente")).Succeeded);
         return usuario;
