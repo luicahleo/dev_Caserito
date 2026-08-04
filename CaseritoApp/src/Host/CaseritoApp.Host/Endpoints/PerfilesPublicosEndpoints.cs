@@ -7,8 +7,9 @@ namespace CaseritoApp.Host.Endpoints;
 
 public sealed record PerfilPublicoConReputacionDto(
     Guid Id,
-    string Nombre,
-    string Ciudad,
+    string NombreVisible,
+    Guid CiudadId,
+    string NombreCiudad,
     bool Verificado,
     decimal? Promedio,
     int TotalResenas);
@@ -51,8 +52,9 @@ public static class PerfilesPublicosEndpoints
         var resumen = await sender.Send(new ObtenerResumenReputacionQuery(id), ct);
         return Results.Ok(new PerfilPublicoConReputacionDto(
             perfil.Valor.Id,
-            perfil.Valor.Nombre,
-            perfil.Valor.Ciudad,
+            perfil.Valor.NombreVisible,
+            perfil.Valor.CiudadId,
+            perfil.Valor.NombreCiudad,
             perfil.Valor.Verificado,
             resumen.Promedio,
             resumen.Total));

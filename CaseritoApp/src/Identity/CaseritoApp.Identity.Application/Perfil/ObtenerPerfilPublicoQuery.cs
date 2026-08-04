@@ -4,7 +4,12 @@ using CaseritoApp.BuildingBlocks.Domain;
 namespace CaseritoApp.Identity.Application.Perfil;
 
 /// <summary>Datos mínimos que Identity permite publicar de un usuario.</summary>
-public sealed record PerfilPublicoDto(Guid Id, string Nombre, string Ciudad, bool Verificado);
+public sealed record PerfilPublicoDto(
+    Guid Id,
+    string NombreVisible,
+    Guid CiudadId,
+    string NombreCiudad,
+    bool Verificado);
 
 /// <summary>Consulta anónima del perfil público mínimo.</summary>
 public sealed record ObtenerPerfilPublicoQuery(Guid UserId)

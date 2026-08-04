@@ -48,7 +48,15 @@ public sealed class RepositorioPerfilUserManager(
         }
 
         var verificado = await consultaKyc.EstaVerificadoAsync(usuario.Id, cancellationToken);
-        return new PerfilPublicoDto(usuario.Id, usuario.Nombre, usuario.Ciudad, verificado);
+        var nombreCiudad = await consultaCiudades.ObtenerNombreActivaAsync(
+            usuario.CiudadId,
+            cancellationToken) ?? string.Empty;
+        return new PerfilPublicoDto(
+            usuario.Id,
+            CrearNombreVisible(usuario.Nombres, usuario.Apellidos),
+            usuario.CiudadId,
+            nombreCiudad,
+            verificado);
     }
 
     public async Task<Result> ActualizarAsync(
@@ -91,5 +99,14 @@ public sealed class RepositorioPerfilUserManager(
         }
 
         return Result.Exito();
+    }
+
+    private static string CrearNombreVisible(string nombres, string apellidos)
+    {
+        var primerNombre = nombres.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty;
+        var primerApellido = apellidos.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return string.IsNullOrEmpty(primerApellido)
+            ? primerNombre
+            : $"{primerNombre} {char.ToUpperInvariant(primerApellido[0])}.";
     }
 }

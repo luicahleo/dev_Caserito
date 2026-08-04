@@ -9,7 +9,12 @@ public sealed class PerfilPublicoTests
     public async Task Devuelve_solo_datos_publicos_cuando_el_usuario_existe()
     {
         var id = Guid.NewGuid();
-        var esperado = new PerfilPublicoDto(id, "Ana", "La Paz", true);
+        var esperado = new PerfilPublicoDto(
+            id,
+            "Ana Q.",
+            Guid.NewGuid(),
+            "La Paz",
+            true);
         var handler = new ObtenerPerfilPublicoQueryHandler(new RepositorioFake(esperado));
 
         var resultado = await handler.Handle(new ObtenerPerfilPublicoQuery(id), CancellationToken.None);
@@ -18,7 +23,7 @@ public sealed class PerfilPublicoTests
         Assert.Equal(esperado, resultado.Valor);
         Assert.DoesNotContain(
             typeof(PerfilPublicoDto).GetProperties(),
-            propiedad => propiedad.Name is "Email" or "Roles" or "Permisos" or "Kyc");
+            propiedad => propiedad.Name is "Email" or "Nombres" or "Apellidos" or "Roles" or "Permisos" or "Kyc");
     }
 
     [Fact]
