@@ -15,6 +15,7 @@ using CaseritoApp.Host.Health;
 using CaseritoApp.Host.Notifications;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Host.Orders;
+using CaseritoApp.Host.Perfil;
 using CaseritoApp.Host.Reputation;
 using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
@@ -82,6 +83,7 @@ builder.Services.AddScoped<IConsultaEmailUsuario, ConsultaEmailUsuarioAdapter>()
 builder.Services.AddScoped<IConsultaProductoParaAlerta, ConsultaProductoParaAlertaAdapter>();
 builder.Services.AddScoped<IConsultaParticipantesOrden, ConsultaParticipantesOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
+builder.Services.AddScoped<IConsultaCiudadesPerfil, ConsultaCiudadesPerfilAdapter>();
 builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
 builder.Services.AddScoped<IConsultaOrdenCalificable, ConsultaOrdenCalificableAdapter>();
 builder.Services.AddOptions<OpcionesTiempoRealChat>()
