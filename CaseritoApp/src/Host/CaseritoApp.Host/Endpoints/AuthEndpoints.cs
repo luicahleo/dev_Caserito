@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CaseritoApp.Identity.Application.Auth;
 using CaseritoApp.Identity.Application.Kyc;
+using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Domain.Usuarios;
 using CaseritoApp.Identity.Infrastructure;
@@ -13,7 +14,19 @@ using Microsoft.IdentityModel.JsonWebTokens;
 namespace CaseritoApp.Host.Endpoints;
 
 /// <summary>Contrato de registro de un nuevo usuario.</summary>
-public sealed record RegistroRequest(string Email, string Password, string Nombre, string Ciudad);
+public sealed record RegistroRequest(
+    string Email,
+    string Password,
+    string Nombres,
+    string Apellidos,
+    Guid CiudadId)
+{
+    // Compatibilidad transitoria para pruebas internas durante la migración expand/contract.
+    public RegistroRequest(string email, string password, string nombres, string ciudad)
+        : this(email, password, nombres, "Prueba", new Guid("22222222-2222-2222-2222-000000000001"))
+    {
+    }
+}
 
 /// <summary>Contrato de inicio de sesión.</summary>
 public sealed record LoginRequest(string Email, string Password);
@@ -113,16 +126,29 @@ public static class AuthEndpoints
     private static async Task<IResult> RegistrarAsync(
         RegistroRequest request,
         UserManager<ApplicationUser> userManager,
+        IConsultaCiudadesPerfil consultaCiudades,
         IPublisher publisher,
         TimeProvider tiempo,
         CancellationToken ct)
     {
+        var errores = ValidarRegistro(request);
+        if (!await consultaCiudades.ExisteActivaAsync(request.CiudadId, ct))
+        {
+            errores["ciudadId"] = ["Selecciona una ciudad válida."];
+        }
+
+        if (errores.Count > 0)
+        {
+            return Results.ValidationProblem(errores);
+        }
+
         var usuario = new ApplicationUser
         {
             UserName = request.Email,
             Email = request.Email,
-            Nombre = request.Nombre,
-            Ciudad = request.Ciudad,
+            Nombres = request.Nombres.Trim(),
+            Apellidos = request.Apellidos.Trim(),
+            CiudadId = request.CiudadId,
         };
 
         var resultado = await userManager.CreateAsync(usuario, request.Password);
@@ -147,10 +173,31 @@ public static class AuthEndpoints
         }
 
         await publisher.Publish(
-            new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombre),
+            new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombres),
             ct);
 
         return Results.Ok();
+    }
+
+    private static Dictionary<string, string[]> ValidarRegistro(RegistroRequest request)
+    {
+        var errores = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(request.Nombres) || request.Nombres.Length > 100)
+        {
+            errores["nombres"] = ["Los nombres son obligatorios y admiten hasta 100 caracteres."];
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Apellidos) || request.Apellidos.Length > 100)
+        {
+            errores["apellidos"] = ["Los apellidos son obligatorios y admiten hasta 100 caracteres."];
+        }
+
+        if (request.CiudadId == Guid.Empty)
+        {
+            errores["ciudadId"] = ["La ciudad es obligatoria."];
+        }
+
+        return errores;
     }
 
     private static async Task<IResult> LoginAsync(

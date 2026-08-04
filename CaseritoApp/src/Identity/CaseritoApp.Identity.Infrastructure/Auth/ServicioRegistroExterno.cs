@@ -58,8 +58,9 @@ public sealed class ServicioRegistroExterno(
     public async Task<ResultadoRegistroExterno> RegistrarAsync(
         LoginExternoPendiente pendiente,
         string email,
-        string nombre,
-        string ciudad,
+        string nombres,
+        string apellidos,
+        Guid ciudadId,
         CancellationToken ct)
     {
         var asociado = await usuarios.FindByLoginAsync(pendiente.Proveedor, pendiente.ClaveProveedor);
@@ -81,8 +82,9 @@ public sealed class ServicioRegistroExterno(
             Email = email,
             EmailConfirmed = pendiente.Proveedor == "google" && pendiente.EmailConfiable &&
                 string.Equals(pendiente.Email, email, StringComparison.OrdinalIgnoreCase),
-            Nombre = nombre,
-            Ciudad = ciudad,
+            Nombres = nombres,
+            Apellidos = apellidos,
+            CiudadId = ciudadId,
         };
         if (!(await usuarios.CreateAsync(usuario)).Succeeded)
         {
@@ -101,7 +103,7 @@ public sealed class ServicioRegistroExterno(
         if (!usuario.EmailConfirmed)
         {
             await publisher.Publish(
-                new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombre),
+                new UsuarioRegistrado(Guid.NewGuid(), tiempo.GetUtcNow(), usuario.Id, usuario.Email!, usuario.Nombres),
                 ct);
         }
 

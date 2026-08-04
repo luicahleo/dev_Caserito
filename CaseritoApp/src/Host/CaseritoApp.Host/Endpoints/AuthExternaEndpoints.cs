@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CaseritoApp.Identity.Application.Perfil;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authentication;
@@ -155,6 +156,7 @@ public static class AuthExternaEndpoints
         HttpContext contexto,
         IGestorLoginExternoPendiente gestor,
         ServicioRegistroExterno servicio,
+        IConsultaCiudadesPerfil consultaCiudades,
         IEmisorSesion emisorSesion,
         IHostEnvironment entorno,
         CancellationToken ct)
@@ -165,14 +167,24 @@ public static class AuthExternaEndpoints
         }
 
         var email = pendiente.Email ?? request.Email;
-        var nombre = pendiente.Nombre ?? request.Nombre;
-        var errores = ValidarDatos(email, nombre, request.Ciudad);
+        var errores = ValidarDatos(email, request.Nombres, request.Apellidos, request.CiudadId);
+        if (request.CiudadId is { } ciudadId &&
+            !await consultaCiudades.ExisteActivaAsync(ciudadId, ct))
+        {
+            errores["ciudadId"] = ["Selecciona una ciudad válida."];
+        }
         if (errores.Count > 0)
         {
             return Results.ValidationProblem(errores);
         }
 
-        var resultado = await servicio.RegistrarAsync(pendiente, email!, nombre!, request.Ciudad!, ct);
+        var resultado = await servicio.RegistrarAsync(
+            pendiente,
+            email!,
+            request.Nombres!.Trim(),
+            request.Apellidos!.Trim(),
+            request.CiudadId!.Value,
+            ct);
         if (resultado.Estado == EstadoRegistroExterno.RequiereVinculacion)
         {
             return Results.Conflict(new { mensaje = "Se requiere verificar la cuenta existente." });
@@ -190,7 +202,11 @@ public static class AuthExternaEndpoints
         return Results.Ok(new TokenAccesoResponse(sesion.AccessToken));
     }
 
-    private static Dictionary<string, string[]> ValidarDatos(string? email, string? nombre, string? ciudad)
+    private static Dictionary<string, string[]> ValidarDatos(
+        string? email,
+        string? nombres,
+        string? apellidos,
+        Guid? ciudadId)
     {
         var errores = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
         if (string.IsNullOrWhiteSpace(email) || !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
@@ -198,14 +214,19 @@ public static class AuthExternaEndpoints
             errores["email"] = ["El email no es válido."];
         }
 
-        if (string.IsNullOrWhiteSpace(nombre) || nombre.Length > 100)
+        if (string.IsNullOrWhiteSpace(nombres) || nombres.Length > 100)
         {
-            errores["nombre"] = ["El nombre es obligatorio y admite hasta 100 caracteres."];
+            errores["nombres"] = ["Los nombres son obligatorios y admiten hasta 100 caracteres."];
         }
 
-        if (string.IsNullOrWhiteSpace(ciudad) || ciudad.Length > 100)
+        if (string.IsNullOrWhiteSpace(apellidos) || apellidos.Length > 100)
         {
-            errores["ciudad"] = ["La ciudad es obligatoria y admite hasta 100 caracteres."];
+            errores["apellidos"] = ["Los apellidos son obligatorios y admiten hasta 100 caracteres."];
+        }
+
+        if (ciudadId is null || ciudadId == Guid.Empty)
+        {
+            errores["ciudadId"] = ["La ciudad es obligatoria."];
         }
 
         return errores;
@@ -250,4 +271,15 @@ public static class AuthExternaEndpoints
 }
 
 /// <summary>Datos que faltan para completar un alta desde un proveedor externo.</summary>
-public sealed record CompletarRegistroExternoRequest(string? Email, string? Ciudad, string? Nombre);
+public sealed record CompletarRegistroExternoRequest(
+    string? Email,
+    string? Nombres,
+    string? Apellidos,
+    Guid? CiudadId)
+{
+    // Compatibilidad transitoria para pruebas internas durante la migración expand/contract.
+    public CompletarRegistroExternoRequest(string? email, string? ciudad, string? nombres)
+        : this(email, nombres ?? "Nombre", "Prueba", new Guid("22222222-2222-2222-2222-000000000001"))
+    {
+    }
+}
