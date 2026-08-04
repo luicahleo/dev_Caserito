@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -16,6 +18,7 @@ namespace CaseritoApp.IntegrationTests;
 public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
     : IClassFixture<CaseritoApiFactory>
 {
+    private static int _siguienteCi = 4_300_000;
     private static readonly Guid _categoria = new("11111111-1111-1111-1111-000000000001");
     private static readonly Guid _ciudad = new("22222222-2222-2222-2222-000000000001");
 
@@ -51,9 +54,20 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
 
         // Subir KYC; el verificador mockeado aprueba automáticamente.
         var formKyc = FormularioKyc();
-        using var subKyc = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token);
+        var numeroCi = Interlocked.Increment(ref _siguienteCi);
+        using var subKyc = Autorizada(HttpMethod.Post, $"/api/kyc/?numeroCi={numeroCi}&departamentoExpedicion=LaPaz", token);
         subKyc.Content = formKyc;
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subKyc)).StatusCode);
+
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var verificacion = await db.VerificacionesKyc
+            .Include(v => v.Solicitudes)
+            .SingleAsync(v => v.Id == usuario.Id);
+        Assert.True(verificacion.Aprobar(
+            verificacion.SolicitudActual!.Id,
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow).EsExito);
+        await db.SaveChangesAsync();
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);

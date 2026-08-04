@@ -35,8 +35,8 @@ public sealed class ReputationPerfilPublicoTests(CaseritoApiFactory factory)
         using var documento = JsonDocument.Parse(json);
 
         Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
-        Assert.Equal("María", documento.RootElement.GetProperty("nombre").GetString());
-        Assert.Equal("Sucre", documento.RootElement.GetProperty("ciudad").GetString());
+        Assert.Equal("María", documento.RootElement.GetProperty("nombreVisible").GetString());
+        Assert.Equal("Cochabamba", documento.RootElement.GetProperty("nombreCiudad").GetString());
         Assert.Equal(JsonValueKind.Null, documento.RootElement.GetProperty("promedio").ValueKind);
         Assert.Equal(0, documento.RootElement.GetProperty("totalResenas").GetInt32());
         Assert.DoesNotContain("email", json, StringComparison.OrdinalIgnoreCase);

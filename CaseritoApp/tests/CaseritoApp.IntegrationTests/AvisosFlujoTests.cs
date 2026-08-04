@@ -4,9 +4,11 @@ using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Autorizacion;
+using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -15,6 +17,7 @@ namespace CaseritoApp.IntegrationTests;
 /// <summary>Flujo del dueño sobre sus avisos: crear (verificado), listar, detalle, pausar/reactivar, eliminar, y gates 403.</summary>
 public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
+    private static int _siguienteCi = 4_100_000;
     private static readonly Guid _categoria = new("11111111-1111-1111-1111-000000000001");
     private static readonly Guid _ciudad = new("22222222-2222-2222-2222-000000000001");
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];
@@ -71,9 +74,24 @@ public sealed class AvisosFlujoTests(CaseritoApiFactory factory) : IClassFixture
         var email = Email("aviso-user");
         var token = await RegistrarYLoguearAsync(cliente, email);
 
-        using var subir = Con(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token);
+        var numeroCi = Interlocked.Increment(ref _siguienteCi);
+        using var subir = Con(HttpMethod.Post, $"/api/kyc/?numeroCi={numeroCi}&departamentoExpedicion=LaPaz", token);
         subir.Content = FormularioKyc();
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+            var usuario = await db.Users.SingleAsync(u => u.Email == email);
+            var verificacion = await db.VerificacionesKyc
+                .Include(v => v.Solicitudes)
+                .SingleAsync(v => v.Id == usuario.Id);
+            Assert.True(verificacion.Aprobar(
+                verificacion.SolicitudActual!.Id,
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow).EsExito);
+            await db.SaveChangesAsync();
+        }
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);

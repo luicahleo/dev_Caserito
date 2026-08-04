@@ -2,9 +2,11 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -13,6 +15,7 @@ namespace CaseritoApp.IntegrationTests;
 /// <summary>Descubrimiento público: solo avisos Activos, filtros, acento-insensibilidad, paginación y detalle 404.</summary>
 public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : IClassFixture<CaseritoApiFactory>
 {
+    private static int _siguienteCi = 4_200_000;
     private static readonly Guid _categoria = new("11111111-1111-1111-1111-000000000001");
     private static readonly Guid _ciudad = new("22222222-2222-2222-2222-000000000001");
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01];
@@ -47,11 +50,22 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
         form.Add(doc, "documento", "ci.png");
         var self = new ByteArrayContent(_png); self.Headers.ContentType = new MediaTypeHeaderValue("image/png");
         form.Add(self, "selfie", "selfie.png");
-        using (var subir = Con(HttpMethod.Post, "/api/kyc/?numeroCi=1234567&departamentoExpedicion=LaPaz", token))
+        var numeroCi = Interlocked.Increment(ref _siguienteCi);
+        using (var subir = Con(HttpMethod.Post, $"/api/kyc/?numeroCi={numeroCi}&departamentoExpedicion=LaPaz", token))
         {
             subir.Content = form;
             Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
         }
+
+        var db = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        var verificacion = await db.VerificacionesKyc
+            .Include(v => v.Solicitudes)
+            .SingleAsync(v => v.Id == usuario.Id);
+        Assert.True(verificacion.Aprobar(
+            verificacion.SolicitudActual!.Id,
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow).EsExito);
+        await db.SaveChangesAsync();
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);
