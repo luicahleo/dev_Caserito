@@ -82,11 +82,7 @@ export function ExplorarPage() {
         Explorar avisos
       </Typography>
 
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        sx={{ mb: 3, flexWrap: 'wrap' }}
-      >
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3, flexWrap: 'wrap' }}>
         <TextField
           label="Buscar"
           value={borrador.q ?? ''}
@@ -217,11 +213,7 @@ export function ExplorarPage() {
           </Grid>
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <Pagination
-              count={totalPaginas}
-              page={pagina}
-              onChange={(_, p) => cambiarPagina(p)}
-            />
+            <Pagination count={totalPaginas} page={pagina} onChange={(_, p) => cambiarPagina(p)} />
           </Box>
         </>
       )}

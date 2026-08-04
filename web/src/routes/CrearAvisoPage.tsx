@@ -70,7 +70,9 @@ export function CrearAvisoPage() {
         enviando={mutacion.isPending}
         textoBoton="Publicar"
         onSubmit={mutacion.mutate}
-        onFotasLocalesChange={(archivos) => { fotasLocalesRef.current = archivos; }}
+        onFotasLocalesChange={(archivos) => {
+          fotasLocalesRef.current = archivos;
+        }}
       />
     </Container>
   );

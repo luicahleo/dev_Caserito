@@ -98,7 +98,9 @@ export function FormAviso({
 
     const disponibles = MAX_FOTOS - totalFotos;
     if (archivos.length > disponibles) {
-      setErrorFoto(`Solo podés agregar ${disponibles} foto${disponibles !== 1 ? 's' : ''} más (máx. ${MAX_FOTOS}).`);
+      setErrorFoto(
+        `Solo podés agregar ${disponibles} foto${disponibles !== 1 ? 's' : ''} más (máx. ${MAX_FOTOS}).`,
+      );
       return;
     }
     for (const archivo of archivos) {
@@ -116,7 +118,11 @@ export function FormAviso({
           const url = URL.createObjectURL(archivo);
           setFotosGuardadas((prev) => [
             ...prev,
-            { id, url, orden: prev.length === 0 ? 0 : Math.max(...prev.map((f) => Number(f.orden))) + 1 },
+            {
+              id,
+              url,
+              orden: prev.length === 0 ? 0 : Math.max(...prev.map((f) => Number(f.orden))) + 1,
+            },
           ]);
         }
       } catch {
@@ -243,8 +249,13 @@ export function FormAviso({
                   size="small"
                   onClick={() => handleBorrarGuardada(f.id)}
                   sx={{
-                    position: 'absolute', top: 0, right: 0, minWidth: 0,
-                    p: 0.25, bgcolor: 'rgba(0,0,0,0.5)', color: 'white',
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    minWidth: 0,
+                    p: 0.25,
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
                     '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' },
                   }}
                   aria-label="Borrar foto"
@@ -270,8 +281,13 @@ export function FormAviso({
                   size="small"
                   onClick={() => handleBorrarLocal(i)}
                   sx={{
-                    position: 'absolute', top: 0, right: 0, minWidth: 0,
-                    p: 0.25, bgcolor: 'rgba(0,0,0,0.5)', color: 'white',
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    minWidth: 0,
+                    p: 0.25,
+                    bgcolor: 'rgba(0,0,0,0.5)',
+                    color: 'white',
                     '&:hover': { bgcolor: 'rgba(0,0,0,0.75)' },
                   }}
                   aria-label="Quitar foto"
@@ -300,7 +316,11 @@ export function FormAviso({
           />
         </Button>
 
-        {errorFoto && <Alert severity="error" sx={{ mt: 1 }}>{errorFoto}</Alert>}
+        {errorFoto && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {errorFoto}
+          </Alert>
+        )}
       </Box>
 
       <Box>

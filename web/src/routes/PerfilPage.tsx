@@ -3,7 +3,19 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Box, Button, Chip, Container, Link, Snackbar, Stack, TextField, Typography, CircularProgress } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Container,
+  Link,
+  Snackbar,
+  Stack,
+  TextField,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { actualizarPerfil, type Perfil } from '../api/perfil';
@@ -31,11 +43,13 @@ export function PerfilPage() {
     formState: { errors, isSubmitting },
   } = useForm<Datos>({
     resolver: zodResolver(esquema),
-    values: perfil ? {
-      nombres: perfil.nombres,
-      apellidos: perfil.apellidos,
-      ciudadId: perfil.ciudadId,
-    } : undefined,
+    values: perfil
+      ? {
+          nombres: perfil.nombres,
+          apellidos: perfil.apellidos,
+          ciudadId: perfil.ciudadId,
+        }
+      : undefined,
   });
 
   const onSubmit = async (datos: Datos) => {
@@ -78,10 +92,20 @@ export function PerfilPage() {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip
             color={verificado ? 'success' : identidadHabilitada ? 'info' : 'default'}
-            label={verificado ? 'Verificado' : identidadHabilitada ? 'Exento por rol de administrador' : 'Sin verificar'}
+            label={
+              verificado
+                ? 'Verificado'
+                : identidadHabilitada
+                  ? 'Exento por rol de administrador'
+                  : 'Sin verificar'
+            }
           />
           <Link component={RouterLink} to="/kyc">
-            {verificado ? 'Ver estado' : identidadHabilitada ? 'Consultar rol' : 'Verificar identidad'}
+            {verificado
+              ? 'Ver estado'
+              : identidadHabilitada
+                ? 'Consultar rol'
+                : 'Verificar identidad'}
           </Link>
         </Box>
         {tienePermiso('kyc.revisar') && (
@@ -104,9 +128,18 @@ export function PerfilPage() {
               error={!!errors.apellidos}
               helperText={errors.apellidos?.message}
             />
-            <Controller name="ciudadId" control={control} render={({ field }) =>
-              <SelectorCiudad value={field.value} onChange={field.onChange}
-                error={!!errors.ciudadId} helperText={errors.ciudadId?.message} />} />
+            <Controller
+              name="ciudadId"
+              control={control}
+              render={({ field }) => (
+                <SelectorCiudad
+                  value={field.value}
+                  onChange={field.onChange}
+                  error={!!errors.ciudadId}
+                  helperText={errors.ciudadId?.message}
+                />
+              )}
+            />
             <Button type="submit" variant="contained" disabled={isSubmitting}>
               Guardar
             </Button>

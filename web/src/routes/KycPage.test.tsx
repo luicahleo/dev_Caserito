@@ -22,17 +22,21 @@ function montar() {
 
 describe('KycPage', () => {
   it('estado Aprobada muestra el chip de verificado', async () => {
-    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'Aprobada', motivoRechazo: null });
+    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({
+      estado: 'Aprobada',
+      motivoRechazo: null,
+    });
     montar();
     expect(await screen.findByText(/identidad verificada/i)).toBeInTheDocument();
   });
 
   it('estado Pendiente muestra revisión humana y no muestra formulario', async () => {
-    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'Pendiente', motivoRechazo: null });
+    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({
+      estado: 'Pendiente',
+      motivoRechazo: null,
+    });
     montar();
-    expect(
-      await screen.findByText(/pendiente de revisión humana/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/pendiente de revisión humana/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument();
   });
 
@@ -47,7 +51,10 @@ describe('KycPage', () => {
   });
 
   it('NoIniciado: rechaza archivo con tipo inválido y no envía', async () => {
-    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'NoIniciado', motivoRechazo: null });
+    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({
+      estado: 'NoIniciado',
+      motivoRechazo: null,
+    });
     const enviar = vi.spyOn(api, 'enviarKyc').mockResolvedValue(undefined);
     montar();
     await screen.findByRole('button', { name: /enviar/i });
@@ -61,7 +68,10 @@ describe('KycPage', () => {
   });
 
   it('NoIniciado: con documento y selfie válidos, envía', async () => {
-    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'NoIniciado', motivoRechazo: null });
+    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({
+      estado: 'NoIniciado',
+      motivoRechazo: null,
+    });
     const enviar = vi.spyOn(api, 'enviarKyc').mockResolvedValue(undefined);
     montar();
     await screen.findByRole('button', { name: /enviar/i });
@@ -74,9 +84,16 @@ describe('KycPage', () => {
     await u.upload(screen.getByLabelText(/documento/i), doc);
     await u.upload(screen.getByLabelText(/selfie/i), selfie);
     await u.click(screen.getByRole('button', { name: /enviar/i }));
-    await waitFor(() => expect(enviar).toHaveBeenCalledWith(expect.objectContaining({
-      numeroCi: '1234567', departamentoExpedicion: 'LaPaz', documento: doc, selfie,
-    })));
+    await waitFor(() =>
+      expect(enviar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          numeroCi: '1234567',
+          departamentoExpedicion: 'LaPaz',
+          documento: doc,
+          selfie,
+        }),
+      ),
+    );
   });
 
   it('ante un 409 en el envío, muestra un mensaje amable y refresca el estado', async () => {
@@ -98,9 +115,7 @@ describe('KycPage', () => {
     await u.upload(screen.getByLabelText(/selfie/i), selfie);
     const llamadasPrevias = obtenerEstado.mock.calls.length;
     await u.click(screen.getByRole('button', { name: /enviar/i }));
-    expect(
-      await screen.findByText(/ya no se puede enviar en este estado/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/ya no se puede enviar en este estado/i)).toBeInTheDocument();
     await waitFor(() => expect(obtenerEstado.mock.calls.length).toBeGreaterThan(llamadasPrevias));
   });
 

@@ -20,9 +20,15 @@ import { HttpError } from '../api/http';
 const MIME_PERMITIDOS = ['image/jpeg', 'image/png'];
 const LIMITE_BYTES = 5 * 1024 * 1024;
 const DEPARTAMENTOS = [
-  ['LaPaz', 'La Paz'], ['Cochabamba', 'Cochabamba'], ['SantaCruz', 'Santa Cruz'],
-  ['Chuquisaca', 'Chuquisaca'], ['Oruro', 'Oruro'], ['Potosi', 'Potosí'],
-  ['Tarija', 'Tarija'], ['Beni', 'Beni'], ['Pando', 'Pando'],
+  ['LaPaz', 'La Paz'],
+  ['Cochabamba', 'Cochabamba'],
+  ['SantaCruz', 'Santa Cruz'],
+  ['Chuquisaca', 'Chuquisaca'],
+  ['Oruro', 'Oruro'],
+  ['Potosi', 'Potosí'],
+  ['Tarija', 'Tarija'],
+  ['Beni', 'Beni'],
+  ['Pando', 'Pando'],
 ] as const;
 
 // Valida un archivo contra los límites del backend. Devuelve mensaje de error o null.
@@ -35,7 +41,11 @@ function validarArchivo(archivo: File | null): string | null {
 
 export function KycPage() {
   const queryClient = useQueryClient();
-  const { data: estado, isLoading, isError } = useQuery({
+  const {
+    data: estado,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['kyc', 'estado'],
     queryFn: obtenerEstadoKyc,
   });
@@ -49,13 +59,14 @@ export function KycPage() {
   const [errorSelfie, setErrorSelfie] = useState<string | null>(null);
 
   const mutacion = useMutation({
-    mutationFn: () => enviarKyc({
-      numeroCi,
-      complementoCi: complementoCi || undefined,
-      departamentoExpedicion: departamento,
-      documento: documento as File,
-      selfie: selfie as File,
-    }),
+    mutationFn: () =>
+      enviarKyc({
+        numeroCi,
+        complementoCi: complementoCi || undefined,
+        departamentoExpedicion: departamento,
+        documento: documento as File,
+        selfie: selfie as File,
+      }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] }),
     onError: (error) => {
       if (error instanceof HttpError && error.status === 409) {
@@ -125,16 +136,31 @@ export function KycPage() {
             autorizado confirma el resultado. Formatos JPG o PNG, máximo 5 MB cada uno.
           </Typography>
 
-          <TextField label="Número de CI" value={numeroCi}
-            onChange={(e) => setNumeroCi(e.target.value)} required
+          <TextField
+            label="Número de CI"
+            value={numeroCi}
+            onChange={(e) => setNumeroCi(e.target.value)}
+            required
             error={numeroCi.length > 0 && !/^\d{5,12}$/.test(numeroCi)}
-            helperText="Solo números, entre 5 y 12 dígitos" />
-          <TextField label="Complemento (opcional)" value={complementoCi}
-            onChange={(e) => setComplementoCi(e.target.value)} />
-          <TextField select label="Departamento de expedición" value={departamento}
-            onChange={(e) => setDepartamento(e.target.value)} required>
-            {DEPARTAMENTOS.map(([valor, etiqueta]) =>
-              <MenuItem key={valor} value={valor}>{etiqueta}</MenuItem>)}
+            helperText="Solo números, entre 5 y 12 dígitos"
+          />
+          <TextField
+            label="Complemento (opcional)"
+            value={complementoCi}
+            onChange={(e) => setComplementoCi(e.target.value)}
+          />
+          <TextField
+            select
+            label="Departamento de expedición"
+            value={departamento}
+            onChange={(e) => setDepartamento(e.target.value)}
+            required
+          >
+            {DEPARTAMENTOS.map(([valor, etiqueta]) => (
+              <MenuItem key={valor} value={valor}>
+                {etiqueta}
+              </MenuItem>
+            ))}
           </TextField>
 
           <Box>
@@ -152,8 +178,16 @@ export function KycPage() {
                 }}
               />
             </Button>
-            {documento && <Typography variant="caption" sx={{ ml: 2 }}>{documento.name}</Typography>}
-            {errorDoc && <Alert severity="warning" sx={{ mt: 1 }}>{errorDoc}</Alert>}
+            {documento && (
+              <Typography variant="caption" sx={{ ml: 2 }}>
+                {documento.name}
+              </Typography>
+            )}
+            {errorDoc && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                {errorDoc}
+              </Alert>
+            )}
           </Box>
 
           <Box>
@@ -171,8 +205,16 @@ export function KycPage() {
                 }}
               />
             </Button>
-            {selfie && <Typography variant="caption" sx={{ ml: 2 }}>{selfie.name}</Typography>}
-            {errorSelfie && <Alert severity="warning" sx={{ mt: 1 }}>{errorSelfie}</Alert>}
+            {selfie && (
+              <Typography variant="caption" sx={{ ml: 2 }}>
+                {selfie.name}
+              </Typography>
+            )}
+            {errorSelfie && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                {errorSelfie}
+              </Alert>
+            )}
           </Box>
 
           {mutacion.isError && es503 && (
@@ -192,8 +234,11 @@ export function KycPage() {
             </Alert>
           )}
 
-          <Button variant="contained" onClick={onEnviar}
-            disabled={mutacion.isPending || !numeroCi || !departamento}>
+          <Button
+            variant="contained"
+            onClick={onEnviar}
+            disabled={mutacion.isPending || !numeroCi || !departamento}
+          >
             Enviar
           </Button>
         </Stack>

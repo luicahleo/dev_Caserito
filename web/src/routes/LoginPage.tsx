@@ -21,7 +21,10 @@ export function LoginPage() {
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [proveedores, setProveedores] = useState<authApi.ProveedorExterno[]>([]);
   useEffect(() => {
-    authApi.obtenerProveedores().then(setProveedores).catch(() => setProveedores([]));
+    authApi
+      .obtenerProveedores()
+      .then(setProveedores)
+      .catch(() => setProveedores([]));
   }, []);
   const {
     register,
@@ -54,8 +57,12 @@ export function LoginPage() {
       </Typography>
       <Stack spacing={1.5} sx={{ mb: 2 }}>
         {proveedores.map((proveedor) => (
-          <Button key={proveedor} component="a" variant="outlined"
-            href={`/api/auth/external/${proveedor}/start?returnUrl=${encodeURIComponent(authApi.normalizarRetorno((location.state as { from?: unknown } | null)?.from))}`}>
+          <Button
+            key={proveedor}
+            component="a"
+            variant="outlined"
+            href={`/api/auth/external/${proveedor}/start?returnUrl=${encodeURIComponent(authApi.normalizarRetorno((location.state as { from?: unknown } | null)?.from))}`}
+          >
             Continuar con {proveedor === 'facebook' ? 'Facebook' : 'Google'}
           </Button>
         ))}
@@ -63,7 +70,14 @@ export function LoginPage() {
       </Stack>
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Stack spacing={2}>
-          {(errorGeneral || params.has('authExterna')) && <Alert severity="error">{errorGeneral ?? (params.get('authExterna') === 'cancelado' ? 'El acceso externo fue cancelado. Puedes intentarlo de nuevo.' : 'El proveedor no está disponible. Inténtalo de nuevo.')}</Alert>}
+          {(errorGeneral || params.has('authExterna')) && (
+            <Alert severity="error">
+              {errorGeneral ??
+                (params.get('authExterna') === 'cancelado'
+                  ? 'El acceso externo fue cancelado. Puedes intentarlo de nuevo.'
+                  : 'El proveedor no está disponible. Inténtalo de nuevo.')}
+            </Alert>
+          )}
           <TextField
             label="Email"
             type="email"
