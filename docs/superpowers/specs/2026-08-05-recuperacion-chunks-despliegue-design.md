@@ -24,14 +24,15 @@ versión anterior.
 
 La recuperación se implementa en el `errorElement` raíz de React Router. Se
 reconocen únicamente los mensajes habituales de importación dinámica y carga de
-chunks. Una clave en `sessionStorage` limita la recarga automática a un intento
-por ruta; se elimina al completar correctamente la navegación para permitir una
-recuperación futura.
+chunks. Una clave temporal en `sessionStorage` limita la recarga automática a un
+intento por ruta durante cinco minutos: evita bucles y permite recuperaciones
+futuras sin depender de que el árbol anterior termine de renderizar.
 
-Durante el despliegue, antes de construir la imagen candidata, se copian sin
-sobrescribir los archivos de `wwwroot/assets` del release indicado por
-`current-release`. Los archivos actuales prevalecen y los hashes hacen segura la
-convivencia. Si no existe release anterior, el despliegue continúa normalmente.
+Durante el despliegue se crea un contexto de construcción temporal. Allí se
+copian, sin sobrescribir, los archivos de `wwwroot/assets` del release indicado
+por `current-release`. Los releases permanecen inmutables, los archivos actuales
+prevalecen y los hashes hacen segura la convivencia. Si no existe release
+anterior, el despliegue continúa normalmente.
 
 ## UI, seguridad y accesibilidad
 

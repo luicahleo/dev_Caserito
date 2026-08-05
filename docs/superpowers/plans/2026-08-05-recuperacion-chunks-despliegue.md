@@ -19,8 +19,8 @@
 ## 3. Compatibilidad durante despliegues
 
 - Modificar `.github/workflows/deploy.yml` antes del `docker build` remoto.
-- Leer de forma validada `current-release` y copiar los assets anteriores con
-  `cp -an` al release candidato, sin sobrescribir los actuales.
+- Crear un contexto temporal, leer de forma validada `current-release` y copiar
+  allí los assets anteriores con `cp -an`, sin sobrescribir los actuales.
 - Si el release o sus assets no existen, continuar sin error.
 - Verificar sintaxis y revisar el diff dirigido.
 - Commit previsto: `fix(deploy): conserva assets de la versión anterior`.
