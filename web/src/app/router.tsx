@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
+import { ErrorAplicacion } from './ErrorAplicacion';
 import {
   AdminKycPage,
   AdminModeracionChatPage,
@@ -38,6 +39,7 @@ import {
 export const router = createBrowserRouter([
   {
     element: <AppLayout />,
+    errorElement: <ErrorAplicacion />,
     children: [
       { path: '/', element: <ExplorarPage /> },
       { path: '/avisos/:id', element: <DetalleAvisoPage /> },

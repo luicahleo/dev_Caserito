@@ -3,8 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { ProtectedRoute } from '../auth/ProtectedRoute';
 import { RequierePermiso } from '../auth/RequierePermiso';
 import { router } from './router';
+import { ErrorAplicacion } from './ErrorAplicacion';
 
 describe('router', () => {
+  it('usa una pantalla de error propia en la ruta raíz', () => {
+    const errorElement = router.routes[0].errorElement;
+
+    expect(isValidElement(errorElement)).toBe(true);
+    expect(isValidElement(errorElement) ? errorElement.type : null).toBe(ErrorAplicacion);
+  });
+
   it.each(['/privacidad', '/terminos', '/cookies', '/contacto', '/eliminacion-de-datos'])(
     'expone la página pública %s sin guard de sesión',
     (path) => {
