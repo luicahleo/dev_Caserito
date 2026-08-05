@@ -13,6 +13,7 @@ using CaseritoApp.Host.Chat;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Host.Health;
 using CaseritoApp.Host.Notifications;
+using CaseritoApp.Host.Observability;
 using CaseritoApp.Host.OpenApi;
 using CaseritoApp.Host.Orders;
 using CaseritoApp.Host.Perfil;
@@ -285,6 +286,8 @@ builder.Services.AddRateLimiter(opciones =>
         }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
@@ -388,6 +391,8 @@ forwardedHeaders.KnownIPNetworks.Clear();
 forwardedHeaders.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeaders);
 
+app.UseMiddleware<RequestObservabilityMiddleware>();
+app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseRateLimiter();
 app.UseAuthorization();
@@ -442,12 +447,21 @@ app.MapHub<ChatHub>("/hubs/chat", opciones =>
 }).RequireAuthorization(ChatHub.Politica);
 
 app.MapHealthChecks("/health");
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.MapGet("/api/testing/observability/error", LanzarErrorObservabilidad)
+        .ExcludeFromDescription();
+}
+
 app.MapFallbackToFile("index.html");
 
 static string Particion(HttpContext contexto) =>
     contexto.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
     ?? contexto.Connection.RemoteIpAddress?.ToString()
     ?? "anonimo";
+
+static IResult LanzarErrorObservabilidad() =>
+    throw new InvalidOperationException("detalle-sensible");
 
 await app.RunAsync();
 
