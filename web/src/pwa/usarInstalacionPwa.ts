@@ -10,7 +10,6 @@ const EVENTO_DISPONIBLE = 'caserito:pwa-instalable';
 
 export function inicializarInstalacionPwa(): void {
   window.addEventListener('beforeinstallprompt', (evento) => {
-    evento.preventDefault();
     solicitud = evento as SolicitudInstalacionPwa;
     window.dispatchEvent(new Event(EVENTO_DISPONIBLE));
   });
