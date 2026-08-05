@@ -140,6 +140,14 @@ jobs:
           raiz='/var/apps/caseritoapp'
           release="$raiz/releases/$sha"
           candidato="caseritoapp-candidate-${sha:0:12}"
+          contexto_build=''
+
+          limpiar_contexto_build() {
+            if [[ -n "$contexto_build" && "$contexto_build" == "$raiz"/build-context-* ]]; then
+              rm -rf -- "$contexto_build"
+            fi
+          }
+          trap limpiar_contexto_build EXIT
 
           test -s "$release/web/CaseritoApp.Host.dll"
           test -s "$release/web/wwwroot/index.html"
@@ -231,7 +239,24 @@ jobs:
 
           install -m 0644 "$release/.dockerignore" "$raiz/.dockerignore"
           CASERITOAPP_IMAGE_TAG="$sha" docker compose --file "$release/docker-compose.yml" --project-directory "$raiz" config --quiet
-          docker build --file "$release/Dockerfile.web" --tag "caseritoapp:$sha" "$release"
+
+          contexto_build="$(mktemp -d "$raiz/build-context-${sha:0:12}.XXXXXX")"
+          cp -a "$release/." "$contexto_build/"
+
+          if [ -s "$raiz/current-release" ]; then
+            sha_anterior="$(tr -d '\r\n' < "$raiz/current-release")"
+            if [[ "$sha_anterior" =~ ^[0-9a-f]{40}$ ]]; then
+              assets_anteriores="$raiz/releases/$sha_anterior/web/wwwroot/assets"
+              if [ -d "$assets_anteriores" ]; then
+                cp -an "$assets_anteriores/." "$contexto_build/web/wwwroot/assets/"
+                echo 'Assets de la versión anterior añadidos al candidato.'
+              fi
+            fi
+          fi
+
+          docker build --file "$contexto_build/Dockerfile.web" --tag "caseritoapp:$sha" "$contexto_build"
+          limpiar_contexto_build
+          contexto_build=''
 
           if docker container inspect "$candidato" >/dev/null 2>&1; then
             docker rm -f "$candidato" >/dev/null
