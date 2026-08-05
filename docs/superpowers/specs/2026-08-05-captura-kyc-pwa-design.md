@@ -1,9 +1,20 @@
 # Diseño — Captura KYC desde PWA móvil instalada
 
 **Fecha:** 2026-08-05
-**Estado:** aprobado por instrucción del usuario
+**Estado:** sustituido parcialmente por decisión del usuario del 2026-08-05
 **Sustituye:** la restricción Android/Capacitor del diseño
 `2026-08-05-captura-kyc-movil-design.md`.
+
+## Decisión posterior — instalación opcional
+
+La instalación dejó de ser requisito funcional. La cámara web funciona mediante
+`getUserMedia` en Chrome/Safari móviles bajo HTTPS; por tanto, se habilita en
+Android, iPhone y iPad con cámara tanto desde una pestaña normal como desde la
+PWA. Escritorio continúa bloqueado y nunca se ofrece selector de archivos.
+
+Esta decisión sustituye las referencias posteriores a exigir `standalone`. La
+PWA sigue siendo instalable, pero su instalación es opcional y no interviene en
+el gate KYC.
 
 ## Objetivo
 

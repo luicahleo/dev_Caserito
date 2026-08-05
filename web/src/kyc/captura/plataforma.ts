@@ -1,32 +1,22 @@
-interface EntornoPwa {
-  displayStandalone: boolean;
-  iosStandalone: boolean;
+interface EntornoMovil {
   userAgent: string;
   platform: string;
   maxTouchPoints: number;
   tieneCamaraWeb: boolean;
 }
 
-interface NavigatorIos extends Navigator {
-  standalone?: boolean;
-}
-
-function entornoActual(): EntornoPwa {
-  const navegador = navigator as NavigatorIos;
+function entornoActual(): EntornoMovil {
   return {
-    displayStandalone: window.matchMedia('(display-mode: standalone)').matches,
-    iosStandalone: navegador.standalone === true,
-    userAgent: navegador.userAgent,
-    platform: navegador.platform,
-    maxTouchPoints: navegador.maxTouchPoints,
-    tieneCamaraWeb: typeof navegador.mediaDevices?.getUserMedia === 'function',
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    maxTouchPoints: navigator.maxTouchPoints,
+    tieneCamaraWeb: typeof navigator.mediaDevices?.getUserMedia === 'function',
   };
 }
 
-export function esPwaMovilInstalada(entorno: EntornoPwa = entornoActual()): boolean {
-  const instalada = entorno.displayStandalone || entorno.iosStandalone;
+export function esMovilConCamara(entorno: EntornoMovil = entornoActual()): boolean {
   const movilDeclarado = /Android|iPhone|iPad|iPod/i.test(entorno.userAgent);
   const ipadConAgenteEscritorio = entorno.platform === 'MacIntel' && entorno.maxTouchPoints > 1;
 
-  return instalada && (movilDeclarado || ipadConAgenteEscritorio) && entorno.tieneCamaraWeb;
+  return (movilDeclarado || ipadConAgenteEscritorio) && entorno.tieneCamaraWeb;
 }

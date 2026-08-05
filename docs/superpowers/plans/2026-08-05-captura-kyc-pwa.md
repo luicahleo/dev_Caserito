@@ -1,5 +1,9 @@
 # Plan — Migrar captura KYC a PWA móvil instalada
 
+> **Actualización 2026-08-05:** la instalación pasó a ser opcional. El cierre
+> reemplaza `esPwaMovilInstalada` por `esMovilConCamara`, retira el prompt propio
+> y permite Chrome/Safari móviles manteniendo escritorio bloqueado.
+
 **Spec:** `docs/superpowers/specs/2026-08-05-captura-kyc-pwa-design.md`
 
 ## Tarea 1 — Detectar PWA móvil instalada

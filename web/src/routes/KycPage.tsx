@@ -16,9 +16,8 @@ import {
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
 import { HttpError } from '../api/http';
-import { esPwaMovilInstalada } from '../kyc/captura/plataforma';
+import { esMovilConCamara } from '../kyc/captura/plataforma';
 import { FlujoCapturaKyc } from '../kyc/captura/FlujoCapturaKyc';
-import { useInstalacionPwa } from '../pwa/usarInstalacionPwa';
 
 const DEPARTAMENTOS = [
   ['LaPaz', 'La Paz'],
@@ -34,8 +33,7 @@ const DEPARTAMENTOS = [
 
 export function KycPage() {
   const queryClient = useQueryClient();
-  const esPwaMovil = esPwaMovilInstalada();
-  const instalacionPwa = useInstalacionPwa();
+  const esDispositivoMovil = esMovilConCamara();
   const {
     data: estado,
     isLoading,
@@ -124,25 +122,14 @@ export function KycPage() {
         </Alert>
       )}
 
-      {mostrarFormulario && !esPwaMovil && (
-        <Alert
-          severity="info"
-          sx={{ mt: 2 }}
-          action={
-            instalacionPwa.puedeInstalar ? (
-              <Button color="inherit" onClick={() => void instalacionPwa.instalar()}>
-                Instalar Caserito
-              </Button>
-            ) : undefined
-          }
-        >
-          Para tomar las fotografías, instala Caserito desde el navegador de tu móvil. En Android
-          usa «Instalar aplicación»; en iPhone abre Safari, pulsa Compartir y «Añadir a pantalla de
-          inicio».
+      {mostrarFormulario && !esDispositivoMovil && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          La fotografía del CI debe realizarse desde un teléfono o una tableta con cámara. Abre
+          Caserito en Chrome o Safari desde tu dispositivo móvil para continuar.
         </Alert>
       )}
 
-      {mostrarFormulario && esPwaMovil && (
+      {mostrarFormulario && esDispositivoMovil && (
         <Stack spacing={3} sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
             Toma una fotografía del frontal de tu CI y una selfie. Un revisor autorizado comprobará

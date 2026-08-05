@@ -10,7 +10,7 @@ SPA en React + TypeScript (PWA) que consume la API .NET de CaseritoApp.
 - `npm run typecheck` — verificación de tipos (tsc)
 - `npm run test` — tests (Vitest)
 
-## Instalación móvil sin tiendas
+## Uso móvil sin tiendas
 
 Caserito se distribuye como PWA desde el sitio HTTPS:
 
@@ -18,9 +18,10 @@ Caserito se distribuye como PWA desde el sitio HTTPS:
   `Instalar aplicación` del menú del navegador.
 - iPhone/iPad: abrir con Safari, pulsar Compartir y `Añadir a pantalla de inicio`.
 
-La captura KYC se habilita únicamente al abrir esa PWA instalada en un dispositivo
-móvil. Una pestaña normal y una instalación de escritorio permanecen bloqueadas.
-No se solicita micrófono, galería ni almacenamiento.
+La instalación es opcional. La captura KYC funciona directamente en Chrome o
+Safari desde Android, iPhone y iPad con cámara, y también desde la PWA instalada.
+En escritorio permanece bloqueada. No se solicita micrófono, galería ni
+almacenamiento.
 
 ## Contenedor Android opcional
 

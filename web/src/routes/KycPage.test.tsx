@@ -6,9 +6,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { KycPage } from './KycPage';
 import * as api from '../api/kyc';
 import { HttpError } from '../api/http';
-import { esPwaMovilInstalada } from '../kyc/captura/plataforma';
+import { esMovilConCamara } from '../kyc/captura/plataforma';
 
-vi.mock('../kyc/captura/plataforma', () => ({ esPwaMovilInstalada: vi.fn(() => true) }));
+vi.mock('../kyc/captura/plataforma', () => ({ esMovilConCamara: vi.fn(() => true) }));
 vi.mock('../kyc/captura/FlujoCapturaKyc', () => ({
   FlujoCapturaKyc: ({
     onDocumento,
@@ -32,7 +32,7 @@ vi.mock('../kyc/captura/FlujoCapturaKyc', () => ({
 
 afterEach(() => {
   vi.restoreAllMocks();
-  vi.mocked(esPwaMovilInstalada).mockReturnValue(true);
+  vi.mocked(esMovilConCamara).mockReturnValue(true);
 });
 
 function montar() {
@@ -77,13 +77,13 @@ describe('KycPage', () => {
   });
 
   it('NoIniciado: en navegador bloquea la captura y no ofrece archivos', async () => {
-    vi.mocked(esPwaMovilInstalada).mockReturnValue(false);
+    vi.mocked(esMovilConCamara).mockReturnValue(false);
     vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({
       estado: 'NoIniciado',
       motivoRechazo: null,
     });
     montar();
-    expect(await screen.findByText(/instala Caserito desde el navegador/i)).toBeInTheDocument();
+    expect(await screen.findByText(/debe realizarse desde un teléfono/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /enviar/i })).not.toBeInTheDocument();
     expect(document.querySelector('input[type="file"]')).not.toBeInTheDocument();
   });

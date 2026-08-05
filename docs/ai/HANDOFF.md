@@ -1,19 +1,18 @@
-# Handoff — Captura KYC desde PWA móvil
+# Handoff — Captura KYC desde navegador móvil
 
 **Rama:** `feature/captura-kyc-pwa`
 
 ## Objetivo
 
-Permitir captura guiada de CI y selfie en Android e iOS sin Play Store ni App
-Store. La captura solo se habilita en la PWA instalada desde el sitio.
+Permitir captura guiada de CI y selfie en Android e iOS sin Play Store, App Store
+ni instalación obligatoria.
 
 ## Estado
 
-Se sustituyó el gate Android/Capacitor por detección de PWA móvil `standalone`,
-incluyendo Safari iOS/iPadOS. `getUserMedia` solicita directamente el permiso de
-cámara y ya no se usa `@capacitor/camera`. Android puede mostrar un botón propio
-`Instalar Caserito` mediante `beforeinstallprompt`; iOS mantiene el flujo manual
-de Safari → Compartir → Añadir a pantalla de inicio.
+El gate detecta Android, iPhone e iPadOS con cámara web. Chrome/Safari móviles y
+la PWA instalada pueden capturar; escritorio queda bloqueado. `getUserMedia`
+solicita directamente el permiso y no se usa `@capacitor/camera`, selector de
+archivos ni prompt de instalación propio.
 
 Spec y plan:
 
