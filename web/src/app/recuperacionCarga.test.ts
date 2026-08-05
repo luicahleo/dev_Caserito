@@ -15,14 +15,14 @@ describe('intentarRecuperarCarga', () => {
     const recargar = vi.fn();
     const error = new TypeError('Failed to fetch dynamically imported module: /assets/Perfil.js');
 
-    expect(
-      intentarRecuperarCarga(error, '/perfil', almacenamiento, recargar, () => 1_000),
-    ).toBe(true);
+    expect(intentarRecuperarCarga(error, '/perfil', almacenamiento, recargar, () => 1_000)).toBe(
+      true,
+    );
     expect(recargar).toHaveBeenCalledOnce();
 
-    expect(
-      intentarRecuperarCarga(error, '/perfil', almacenamiento, recargar, () => 1_001),
-    ).toBe(false);
+    expect(intentarRecuperarCarga(error, '/perfil', almacenamiento, recargar, () => 1_001)).toBe(
+      false,
+    );
     expect(recargar).toHaveBeenCalledOnce();
   });
 
