@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { EstadoPermisoCamara } from './permisosCamara';
-import { solicitarPermisoCamara } from './permisosCamara';
 import type { ErrorCamara } from './erroresCamara';
 import { normalizarErrorCamara } from './erroresCamara';
 
@@ -8,7 +6,6 @@ export type LenteCamara = 'trasera' | 'frontal';
 export type EstadoCamara = 'inactiva' | 'solicitandoPermiso' | 'activa' | 'error';
 
 interface DependenciasCamara {
-  solicitarPermiso?: () => Promise<EstadoPermisoCamara>;
   obtenerMedios?: (restricciones: MediaStreamConstraints) => Promise<MediaStream>;
 }
 
@@ -22,10 +19,6 @@ export function useCamara(dependencias: DependenciasCamara = {}) {
   const [error, setError] = useState<ErrorCamara | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const operacionRef = useRef(0);
-  const solicitarPermiso = useMemo(
-    () => dependencias.solicitarPermiso ?? solicitarPermisoCamara,
-    [dependencias.solicitarPermiso],
-  );
   const obtenerMedios = useMemo(
     () =>
       dependencias.obtenerMedios ??
@@ -52,14 +45,6 @@ export function useCamara(dependencias: DependenciasCamara = {}) {
       setEstado('solicitandoPermiso');
 
       try {
-        const permiso = await solicitarPermiso();
-        if (operacion !== operacionRef.current) return;
-        if (permiso !== 'concedido') {
-          setError({ tipo: permiso === 'denegado' ? 'permisoDenegado' : 'solicitarEnAjustes' });
-          setEstado('error');
-          return;
-        }
-
         const restricciones: MediaStreamConstraints = {
           audio: false,
           video: {
@@ -89,7 +74,7 @@ export function useCamara(dependencias: DependenciasCamara = {}) {
         setEstado('error');
       }
     },
-    [obtenerMedios, solicitarPermiso],
+    [obtenerMedios],
   );
 
   useEffect(() => {

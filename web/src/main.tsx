@@ -8,6 +8,9 @@ import '@fontsource/prompt/latin-600.css';
 import '@fontsource/prompt/latin-700.css';
 import { theme } from './theme/theme';
 import App from './App.tsx';
+import { inicializarInstalacionPwa } from './pwa/usarInstalacionPwa';
+
+inicializarInstalacionPwa();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

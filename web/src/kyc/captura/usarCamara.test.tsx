@@ -16,7 +16,6 @@ describe('useCamara', () => {
     const obtenerMedios = vi.fn().mockResolvedValue(falso.stream);
     const { result } = renderHook(() =>
       useCamara({
-        solicitarPermiso: vi.fn().mockResolvedValue('concedido'),
         obtenerMedios,
       }),
     );
@@ -32,17 +31,18 @@ describe('useCamara', () => {
     expect(result.current.estado).toBe('inactiva');
   });
 
-  it('no solicita medios cuando se deniega el permiso', async () => {
-    const obtenerMedios = vi.fn();
+  it('normaliza la denegación producida por getUserMedia', async () => {
+    const obtenerMedios = vi
+      .fn()
+      .mockRejectedValue(new DOMException('detalle del dispositivo', 'NotAllowedError'));
     const { result } = renderHook(() =>
       useCamara({
-        solicitarPermiso: vi.fn().mockResolvedValue('denegado'),
         obtenerMedios,
       }),
     );
 
     await act(() => result.current.abrir('frontal'));
-    expect(obtenerMedios).not.toHaveBeenCalled();
+    expect(obtenerMedios).toHaveBeenCalledOnce();
     expect(result.current.error).toEqual({ tipo: 'permisoDenegado' });
   });
 });
