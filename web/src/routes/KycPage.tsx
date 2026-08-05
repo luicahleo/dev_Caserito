@@ -16,9 +16,9 @@ import {
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
 import { HttpError } from '../api/http';
+import { esAndroidNativo } from '../kyc/captura/plataforma';
+import { FlujoCapturaKyc } from '../kyc/captura/FlujoCapturaKyc';
 
-const MIME_PERMITIDOS = ['image/jpeg', 'image/png'];
-const LIMITE_BYTES = 5 * 1024 * 1024;
 const DEPARTAMENTOS = [
   ['LaPaz', 'La Paz'],
   ['Cochabamba', 'Cochabamba'],
@@ -31,16 +31,9 @@ const DEPARTAMENTOS = [
   ['Pando', 'Pando'],
 ] as const;
 
-// Valida un archivo contra los límites del backend. Devuelve mensaje de error o null.
-function validarArchivo(archivo: File | null): string | null {
-  if (!archivo) return 'Selecciona un archivo';
-  if (!MIME_PERMITIDOS.includes(archivo.type)) return 'Formato no permitido (usa JPG o PNG)';
-  if (archivo.size > LIMITE_BYTES) return 'El archivo supera el máximo de 5 MB';
-  return null;
-}
-
 export function KycPage() {
   const queryClient = useQueryClient();
+  const esAppAndroid = esAndroidNativo();
   const {
     data: estado,
     isLoading,
@@ -55,8 +48,6 @@ export function KycPage() {
   const [numeroCi, setNumeroCi] = useState('');
   const [complementoCi, setComplementoCi] = useState('');
   const [departamento, setDepartamento] = useState('');
-  const [errorDoc, setErrorDoc] = useState<string | null>(null);
-  const [errorSelfie, setErrorSelfie] = useState<string | null>(null);
 
   const mutacion = useMutation({
     mutationFn: () =>
@@ -67,20 +58,22 @@ export function KycPage() {
         documento: documento as File,
         selfie: selfie as File,
       }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] }),
+    onSuccess: () => {
+      setDocumento(null);
+      setSelfie(null);
+      return queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] });
+    },
     onError: (error) => {
       if (error instanceof HttpError && error.status === 409) {
+        setDocumento(null);
+        setSelfie(null);
         queryClient.invalidateQueries({ queryKey: ['kyc', 'estado'] });
       }
     },
   });
 
   const onEnviar = () => {
-    const eDoc = validarArchivo(documento);
-    const eSelfie = validarArchivo(selfie);
-    setErrorDoc(eDoc);
-    setErrorSelfie(eSelfie);
-    if (eDoc || eSelfie || !/^\d{5,12}$/.test(numeroCi) || !departamento) return;
+    if (!documento || !selfie || !/^\d{5,12}$/.test(numeroCi) || !departamento) return;
     mutacion.mutate();
   };
 
@@ -129,11 +122,17 @@ export function KycPage() {
         </Alert>
       )}
 
-      {mostrarFormulario && (
+      {mostrarFormulario && !esAppAndroid && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          Para proteger tu identidad, toma las fotografías desde la aplicación móvil de Caserito.
+        </Alert>
+      )}
+
+      {mostrarFormulario && esAppAndroid && (
         <Stack spacing={3} sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Sube el frontal de tu CI y una selfie. El sistema compara ambos rostros y un revisor
-            autorizado confirma el resultado. Formatos JPG o PNG, máximo 5 MB cada uno.
+            Toma una fotografía del frontal de tu CI y una selfie. Un revisor autorizado comprobará
+            manualmente ambas imágenes. Cada fotografía debe ocupar como máximo 5 MB.
           </Typography>
 
           <TextField
@@ -163,59 +162,12 @@ export function KycPage() {
             ))}
           </TextField>
 
-          <Box>
-            <Button component="label" variant="outlined">
-              Frontal del CI
-              <input
-                type="file"
-                hidden
-                aria-label="documento"
-                accept="image/jpeg,image/png"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setDocumento(f);
-                  setErrorDoc(validarArchivo(f));
-                }}
-              />
-            </Button>
-            {documento && (
-              <Typography variant="caption" sx={{ ml: 2 }}>
-                {documento.name}
-              </Typography>
-            )}
-            {errorDoc && (
-              <Alert severity="warning" sx={{ mt: 1 }}>
-                {errorDoc}
-              </Alert>
-            )}
-          </Box>
-
-          <Box>
-            <Button component="label" variant="outlined">
-              Selfie
-              <input
-                type="file"
-                hidden
-                aria-label="selfie"
-                accept="image/jpeg,image/png"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setSelfie(f);
-                  setErrorSelfie(validarArchivo(f));
-                }}
-              />
-            </Button>
-            {selfie && (
-              <Typography variant="caption" sx={{ ml: 2 }}>
-                {selfie.name}
-              </Typography>
-            )}
-            {errorSelfie && (
-              <Alert severity="warning" sx={{ mt: 1 }}>
-                {errorSelfie}
-              </Alert>
-            )}
-          </Box>
+          <FlujoCapturaKyc
+            documento={documento}
+            selfie={selfie}
+            onDocumento={setDocumento}
+            onSelfie={setSelfie}
+          />
 
           {mutacion.isError && es503 && (
             <Alert severity="warning">
@@ -237,7 +189,9 @@ export function KycPage() {
           <Button
             variant="contained"
             onClick={onEnviar}
-            disabled={mutacion.isPending || !numeroCi || !departamento}
+            disabled={
+              mutacion.isPending || !/^\d{5,12}$/.test(numeroCi) || !departamento || !documento || !selfie
+            }
           >
             Enviar
           </Button>
