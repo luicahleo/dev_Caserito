@@ -21,7 +21,15 @@ public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandle
         var traceId = DiagnosticContext.GetTraceId(httpContext) ?? httpContext.TraceIdentifier;
         DiagnosticContext.SetErrorId(httpContext, errorId);
 
-        LogUnexpectedError(logger, exception.GetType().FullName ?? exception.GetType().Name, traceId, errorId);
+        using (logger.BeginScope(new Dictionary<string, object>
+        {
+            ["ErrorId"] = errorId,
+            ["TraceId"] = traceId,
+            ["ExceptionType"] = exception.GetType().FullName ?? exception.GetType().Name,
+        }))
+        {
+            LogUnexpectedError(logger);
+        }
 
         var problem = new ProblemDetails
         {
@@ -44,11 +52,8 @@ public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandle
 
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "{EventName}: error inesperado de tipo {ExceptionType}. TraceId={TraceId} ErrorId={ErrorId}")]
+        Message = "{EventName}: error inesperado")]
     private static partial void LogUnexpectedError(
         ILogger logger,
-        string exceptionType,
-        string traceId,
-        string errorId,
         string eventName = "http.request.failed");
 }

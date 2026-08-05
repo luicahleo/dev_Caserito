@@ -295,8 +295,9 @@ builder.Services.AddRateLimiter(opciones =>
         }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
-builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddExceptionHandler(options =>
+    options.ExceptionHandler = _ => Task.CompletedTask);
 
 var app = builder.Build();
 

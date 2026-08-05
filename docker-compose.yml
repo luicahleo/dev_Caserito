@@ -5,6 +5,11 @@ services:
     image: caseritoapp:${CASERITOAPP_IMAGE_TAG:-latest}
     container_name: caseritoapp
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     env_file: .env
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"

@@ -75,6 +75,41 @@
         }
       }
     },
+    "/api/diagnosticos/frontend": {
+      "post": {
+        "tags": [
+          "DiagnosticsEndpoints"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientDiagnosticReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload Too Large"
+          }
+        }
+      }
+    },
     "/api/auth/register": {
       "post": {
         "tags": [
@@ -4493,6 +4528,54 @@
           }
         }
       },
+      "ClientDiagnosticReport": {
+        "required": [
+          "errorId",
+          "eventName",
+          "category",
+          "source",
+          "traceId",
+          "statusCode",
+          "release"
+        ],
+        "type": "object",
+        "properties": {
+          "errorId": {
+            "type": "string"
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "statusCode": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "release": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
       "CompletarRegistroExternoRequest": {
         "required": [
           "email",
@@ -6371,6 +6454,9 @@
   "tags": [
     {
       "name": "ModeracionEndpoints"
+    },
+    {
+      "name": "DiagnosticsEndpoints"
     },
     {
       "name": "AuthEndpoints"

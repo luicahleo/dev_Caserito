@@ -29,31 +29,27 @@ public static partial class DiagnosticsEndpoints
                 title: "El diagnóstico no es válido.");
         }
 
-        LogFrontendDiagnostic(
-            logger,
-            report.ErrorId,
-            report.EventName,
-            report.Category,
-            report.Source,
-            report.TraceId,
-            report.StatusCode,
-            report.Release);
+        using (logger.BeginScope(new Dictionary<string, object?>
+        {
+            ["ErrorId"] = report.ErrorId,
+            ["ClientEventName"] = report.EventName,
+            ["Category"] = report.Category,
+            ["Source"] = report.Source,
+            ["TraceId"] = report.TraceId,
+            ["StatusCode"] = report.StatusCode,
+            ["Release"] = report.Release,
+        }))
+        {
+            LogFrontendDiagnostic(logger);
+        }
 
         return Results.Accepted();
     }
 
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "{LogEventName}: evento {ClientEventName}, categoría {Category}, origen {Source}. "
-            + "ErrorId={ErrorId} TraceId={TraceId} StatusCode={StatusCode} Release={Release}")]
+        Message = "{LogEventName}: evento técnico del navegador")]
     private static partial void LogFrontendDiagnostic(
         ILogger logger,
-        string errorId,
-        string clientEventName,
-        string category,
-        string source,
-        string? traceId,
-        int? statusCode,
-        string? release,
         string logEventName = "frontend.error");
 }

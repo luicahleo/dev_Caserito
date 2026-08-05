@@ -22,35 +22,33 @@ public sealed partial class RequestObservabilityMiddleware(
         using (logger.BeginScope(new Dictionary<string, object> { ["TraceId"] = traceId }))
         {
             await next(context);
-        }
 
-        if (logger.IsEnabled(LogLevel.Information))
-        {
-            var routePattern = (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unmatched";
-            var durationMs = Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
-            var errorId = DiagnosticContext.GetErrorId(context);
-            LogRequestCompleted(
-                logger,
-                context.Request.Method,
-                routePattern,
-                context.Response.StatusCode,
-                durationMs,
-                traceId,
-                errorId);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var routePattern = (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unmatched";
+                var durationMs = Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
+                var errorId = DiagnosticContext.GetErrorId(context);
+                using (logger.BeginScope(new Dictionary<string, object?> { ["ErrorId"] = errorId }))
+                {
+                    LogRequestCompleted(
+                        logger,
+                        context.Request.Method,
+                        routePattern,
+                        context.Response.StatusCode,
+                        durationMs);
+                }
+            }
         }
     }
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "{EventName}: {Method} {RoutePattern} respondió {StatusCode} en {DurationMs} ms. "
-            + "TraceId={TraceId} ErrorId={ErrorId}")]
+        Message = "{EventName}: {Method} {RoutePattern} respondió {StatusCode} en {DurationMs} ms")]
     private static partial void LogRequestCompleted(
         ILogger logger,
         string method,
         string routePattern,
         int statusCode,
         double durationMs,
-        string traceId,
-        string? errorId,
         string eventName = "http.request.completed");
 }
