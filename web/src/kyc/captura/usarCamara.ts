@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EstadoPermisoCamara } from './permisosCamara';
 import { solicitarPermisoCamara } from './permisosCamara';
 import type { ErrorCamara } from './erroresCamara';
@@ -22,9 +22,17 @@ export function useCamara(dependencias: DependenciasCamara = {}) {
   const [error, setError] = useState<ErrorCamara | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const operacionRef = useRef(0);
-  const solicitarPermiso = dependencias.solicitarPermiso ?? solicitarPermisoCamara;
-  const obtenerMedios =
-    dependencias.obtenerMedios ?? ((r: MediaStreamConstraints) => navigator.mediaDevices.getUserMedia(r));
+  const solicitarPermiso = useMemo(
+    () => dependencias.solicitarPermiso ?? solicitarPermisoCamara,
+    [dependencias.solicitarPermiso],
+  );
+  const obtenerMedios = useMemo(
+    () =>
+      dependencias.obtenerMedios ??
+      ((restricciones: MediaStreamConstraints) =>
+        navigator.mediaDevices.getUserMedia(restricciones)),
+    [dependencias.obtenerMedios],
+  );
 
   const cerrar = useCallback(() => {
     operacionRef.current += 1;
@@ -64,7 +72,8 @@ export function useCamara(dependencias: DependenciasCamara = {}) {
         try {
           nuevo = await obtenerMedios(restricciones);
         } catch (fallo) {
-          if (!(fallo instanceof DOMException) || fallo.name !== 'OverconstrainedError') throw fallo;
+          if (!(fallo instanceof DOMException) || fallo.name !== 'OverconstrainedError')
+            throw fallo;
           nuevo = await obtenerMedios({ audio: false, video: true });
         }
         if (operacion !== operacionRef.current) {

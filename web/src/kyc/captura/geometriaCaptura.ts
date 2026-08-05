@@ -15,14 +15,7 @@ export function calcularRecorteCover(
   guia: Rectangulo,
 ): Rectangulo {
   if (
-    !dimensionesValidas(
-      video.ancho,
-      video.alto,
-      visor.ancho,
-      visor.alto,
-      guia.ancho,
-      guia.alto,
-    )
+    !dimensionesValidas(video.ancho, video.alto, visor.ancho, visor.alto, guia.ancho, guia.alto)
   ) {
     throw new Error('Dimensiones de captura inválidas');
   }

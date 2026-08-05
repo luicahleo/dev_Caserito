@@ -18,7 +18,9 @@ vi.mock('../kyc/captura/FlujoCapturaKyc', () => ({
     onSelfie(archivo: File): void;
   }) => (
     <>
-      <button onClick={() => onDocumento(new File(['x'], 'documento-ci.jpg', { type: 'image/jpeg' }))}>
+      <button
+        onClick={() => onDocumento(new File(['x'], 'documento-ci.jpg', { type: 'image/jpeg' }))}
+      >
         Capturar documento
       </button>
       <button onClick={() => onSelfie(new File(['y'], 'selfie.jpg', { type: 'image/jpeg' }))}>

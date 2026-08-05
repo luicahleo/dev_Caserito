@@ -1,9 +1,5 @@
 export type TipoErrorCamara =
-  | 'permisoDenegado'
-  | 'solicitarEnAjustes'
-  | 'sinCamara'
-  | 'noDisponible'
-  | 'desconocido';
+  'permisoDenegado' | 'solicitarEnAjustes' | 'sinCamara' | 'noDisponible' | 'desconocido';
 
 export interface ErrorCamara {
   tipo: TipoErrorCamara;

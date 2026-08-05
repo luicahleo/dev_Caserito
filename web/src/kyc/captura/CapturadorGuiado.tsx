@@ -26,7 +26,8 @@ const MENSAJES_ERROR: Record<TipoErrorCamara, string> = {
   permisoDenegado: 'No se concedió acceso a la cámara. Revisa el permiso e inténtalo de nuevo.',
   solicitarEnAjustes: 'Habilita el permiso de cámara en los ajustes de Caserito.',
   sinCamara: 'No encontramos una cámara disponible en este dispositivo.',
-  noDisponible: 'La cámara está ocupada o no está disponible. Cierra otras aplicaciones e inténtalo de nuevo.',
+  noDisponible:
+    'La cámara está ocupada o no está disponible. Cierra otras aplicaciones e inténtalo de nuevo.',
   desconocido: 'No se pudo abrir la cámara. Inténtalo de nuevo.',
 };
 
@@ -127,7 +128,10 @@ export function CapturadorGuiado({ tipo, onConfirmar, onCancelar }: CapturadorGu
             <Alert
               severity="error"
               action={
-                <Button color="inherit" onClick={() => void abrir(tipo === 'documento' ? 'trasera' : 'frontal')}>
+                <Button
+                  color="inherit"
+                  onClick={() => void abrir(tipo === 'documento' ? 'trasera' : 'frontal')}
+                >
                   Reintentar
                 </Button>
               }
@@ -162,7 +166,11 @@ export function CapturadorGuiado({ tipo, onConfirmar, onCancelar }: CapturadorGu
                   autoPlay
                   playsInline
                   muted
-                  aria-label={tipo === 'documento' ? 'Cámara para fotografiar el CI' : 'Cámara para tomar la selfie'}
+                  aria-label={
+                    tipo === 'documento'
+                      ? 'Cámara para fotografiar el CI'
+                      : 'Cámara para tomar la selfie'
+                  }
                   sx={{
                     width: '100%',
                     height: '100%',
@@ -192,7 +200,9 @@ export function CapturadorGuiado({ tipo, onConfirmar, onCancelar }: CapturadorGu
             </Box>
           )}
 
-          {errorCaptura && <Alert severity="error">No se pudo crear la fotografía. Inténtalo de nuevo.</Alert>}
+          {errorCaptura && (
+            <Alert severity="error">No se pudo crear la fotografía. Inténtalo de nuevo.</Alert>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions>

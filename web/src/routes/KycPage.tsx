@@ -190,7 +190,11 @@ export function KycPage() {
             variant="contained"
             onClick={onEnviar}
             disabled={
-              mutacion.isPending || !/^\d{5,12}$/.test(numeroCi) || !departamento || !documento || !selfie
+              mutacion.isPending ||
+              !/^\d{5,12}$/.test(numeroCi) ||
+              !departamento ||
+              !documento ||
+              !selfie
             }
           >
             Enviar
