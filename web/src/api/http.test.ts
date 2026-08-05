@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { api, desempaquetar, HttpError } from './http';
 import { setAccessToken, getAccessToken, clearAccessToken } from '../auth/session';
+import * as diagnosticos from '../lib/diagnosticos';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -64,11 +65,73 @@ describe('desempaquetar / HttpError', () => {
     }
   });
 
+  it('conserva errorId y traceId seguros de ProblemDetails', () => {
+    const r = {
+      error: {
+        title: 'Error inesperado',
+        errorId: 'ERR-0123456789AB',
+        traceId: '0123456789abcdef0123456789abcdef',
+      },
+      response: new Response(null, { status: 500 }),
+    };
+
+    expect(() => desempaquetar(r as never)).toThrowError(
+      expect.objectContaining({
+        errorId: 'ERR-0123456789AB',
+        traceId: '0123456789abcdef0123456789abcdef',
+      }),
+    );
+  });
+
   it('inyecta Authorization: Bearer desde la sesión', async () => {
     setAccessToken('tok');
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(respuesta(200, {}));
     await api.GET('/api/perfil');
     const req = fetchMock.mock.calls[0][0] as Request;
     expect(req.headers.get('Authorization')).toBe('Bearer tok');
+  });
+});
+
+describe('diagnóstico del transporte', () => {
+  it('reporta respuestas 5xx con el traceId del backend', async () => {
+    const reportar = vi.spyOn(diagnosticos, 'reportarDiagnostico').mockResolvedValue();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ title: 'Error inesperado' }), {
+        status: 503,
+        headers: {
+          'Content-Type': 'application/problem+json',
+          'X-Trace-Id': '0123456789abcdef0123456789abcdef',
+        },
+      }),
+    );
+
+    await api.GET('/api/catalogo/categorias');
+
+    expect(reportar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventName: 'http.server_failed',
+        traceId: '0123456789abcdef0123456789abcdef',
+        statusCode: 503,
+      }),
+    );
+  });
+
+  it('reporta errores de red y vuelve a lanzarlos', async () => {
+    const reportar = vi.spyOn(diagnosticos, 'reportarDiagnostico').mockResolvedValue();
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Failed to fetch'));
+
+    await expect(api.GET('/api/catalogo/categorias')).rejects.toBeInstanceOf(TypeError);
+    expect(reportar).toHaveBeenCalledWith(
+      expect.objectContaining({ eventName: 'http.network_failed' }),
+    );
+  });
+
+  it('no reporta respuestas 4xx esperadas', async () => {
+    const reportar = vi.spyOn(diagnosticos, 'reportarDiagnostico').mockResolvedValue();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(respuesta(404, { title: 'No encontrado' }));
+
+    await api.GET('/api/catalogo/categorias');
+
+    expect(reportar).not.toHaveBeenCalled();
   });
 });

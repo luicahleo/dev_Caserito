@@ -13,17 +13,28 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './schema';
 import { clearAccessToken, getAccessToken, setAccessToken } from '../auth/session';
+import { crearErrorId, reportarDiagnostico } from '../lib/diagnosticos';
 
 // Error tipado para ramificar por status (p. ej. 409). Solo status + code no-PII de ProblemDetails.
 export class HttpError extends Error {
   readonly status: number;
   readonly code: string | null;
+  readonly errorId: string | null;
+  readonly traceId: string | null;
 
-  constructor(status: number, code: string | null, mensaje: string) {
+  constructor(
+    status: number,
+    code: string | null,
+    mensaje: string,
+    errorId: string | null = null,
+    traceId: string | null = null,
+  ) {
     super(mensaje);
     this.name = 'HttpError';
     this.status = status;
     this.code = code;
+    this.errorId = errorId;
+    this.traceId = traceId;
   }
 }
 
@@ -59,15 +70,41 @@ async function transporte(request: Request): Promise<Response> {
   const esRutaAuth = new URL(request.url).pathname.startsWith('/api/auth/');
 
   const originalParaReintento = esRutaAuth ? null : request.clone();
-  const respuesta = await fetch(conAutorizacion(request));
+  let respuesta = await fetchConDiagnostico(conAutorizacion(request));
 
   if (respuesta.status === 401 && !esRutaAuth && originalParaReintento) {
     if (await refrescarToken()) {
-      return fetch(conAutorizacion(originalParaReintento));
+      respuesta = await fetchConDiagnostico(conAutorizacion(originalParaReintento));
+    } else {
+      clearAccessToken();
     }
-    clearAccessToken();
   }
   return respuesta;
+}
+
+async function fetchConDiagnostico(request: Request): Promise<Response> {
+  try {
+    const response = await fetch(request);
+    if (response.status >= 500) {
+      void reportarDiagnostico({
+        errorId: crearErrorId(),
+        eventName: 'http.server_failed',
+        category: 'server',
+        source: 'http',
+        traceId: leerTraceId(response.headers.get('X-Trace-Id')) ?? undefined,
+        statusCode: response.status,
+      });
+    }
+    return response;
+  } catch (error) {
+    void reportarDiagnostico({
+      errorId: crearErrorId(),
+      eventName: 'http.network_failed',
+      category: 'network',
+      source: 'http',
+    });
+    throw error;
+  }
 }
 
 // openapi-fetch arma la URL final concatenando baseUrl + pathname y construye un
@@ -89,14 +126,35 @@ function leerCodigo(error: unknown): string | null {
   return null;
 }
 
+function leerErrorId(error: unknown): string | null {
+  if (error && typeof error === 'object' && 'errorId' in error) {
+    const value = (error as { errorId?: unknown }).errorId;
+    return typeof value === 'string' && /^ERR-[0-9A-F]{12}$/.test(value) ? value : null;
+  }
+  return null;
+}
+
+function leerTraceId(value: unknown): string | null {
+  return typeof value === 'string' && /^[0-9a-f]{32}$/.test(value) ? value : null;
+}
+
 // Desempaqueta un resultado de openapi-fetch: devuelve data si ok; si no, lanza HttpError.
 export function desempaquetar<T>(resultado: { data?: T; error?: unknown; response: Response }): T {
   if (resultado.error !== undefined || !resultado.response.ok) {
     const code = leerCodigo(resultado.error);
+    const errorId = leerErrorId(resultado.error);
+    const errorTraceId =
+      resultado.error && typeof resultado.error === 'object' && 'traceId' in resultado.error
+        ? (resultado.error as { traceId?: unknown }).traceId
+        : null;
+    const traceId =
+      leerTraceId(errorTraceId) ?? leerTraceId(resultado.response.headers.get('X-Trace-Id'));
     throw new HttpError(
       resultado.response.status,
       code,
       `Petición fallida (${resultado.response.status})`,
+      errorId,
+      traceId,
     );
   }
   return resultado.data as T;
