@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { crearErrorId, reportarDiagnostico } from './diagnosticos';
+import { crearErrorId, instalarCapturaGlobal, reportarDiagnostico } from './diagnosticos';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -53,5 +53,34 @@ describe('diagnósticos seguros', () => {
         source: 'window',
       }),
     ).resolves.toBeUndefined();
+  });
+
+  it('captura errores globales sin propagar su contenido', () => {
+    const reportar = vi.fn().mockResolvedValue(undefined);
+    const desinstalar = instalarCapturaGlobal(reportar);
+
+    window.dispatchEvent(new ErrorEvent('error', { message: 'documento privado' }));
+    window.dispatchEvent(new Event('unhandledrejection'));
+
+    expect(reportar).toHaveBeenCalledTimes(2);
+    expect(reportar).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        eventName: 'window.unexpected',
+        category: 'unexpected',
+        source: 'window',
+      }),
+    );
+    expect(reportar).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        eventName: 'promise.unhandled',
+        category: 'unexpected',
+        source: 'promise',
+      }),
+    );
+    expect(JSON.stringify(reportar.mock.calls)).not.toContain('documento privado');
+
+    desinstalar();
   });
 });

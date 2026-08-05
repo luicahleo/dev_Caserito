@@ -3,7 +3,7 @@ const VIGENCIA_INTENTO_MS = 5 * 60 * 1_000;
 
 type AlmacenamientoRecuperacion = Pick<Storage, 'getItem' | 'setItem'>;
 
-function esErrorCargaDiferida(error: unknown): boolean {
+export function esErrorCargaDiferida(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
 
   return /failed to fetch dynamically imported module|importing a module script failed|chunkloaderror|loading chunk [\d]+ failed/i.test(

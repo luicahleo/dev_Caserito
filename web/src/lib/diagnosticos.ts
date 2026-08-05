@@ -38,3 +38,40 @@ export async function reportarDiagnostico(report: DiagnosticReport): Promise<voi
     // El diagnóstico nunca debe generar otro error ni alterar el flujo del usuario.
   }
 }
+
+type DiagnosticReporter = (report: DiagnosticReport) => Promise<void>;
+
+let capturaGlobalInstalada = false;
+
+export function instalarCapturaGlobal(
+  reporter: DiagnosticReporter = reportarDiagnostico,
+): () => void {
+  if (capturaGlobalInstalada) return () => undefined;
+
+  const reportarError = () => {
+    void reporter({
+      errorId: crearErrorId(),
+      eventName: 'window.unexpected',
+      category: 'unexpected',
+      source: 'window',
+    });
+  };
+  const reportarPromesa = () => {
+    void reporter({
+      errorId: crearErrorId(),
+      eventName: 'promise.unhandled',
+      category: 'unexpected',
+      source: 'promise',
+    });
+  };
+
+  window.addEventListener('error', reportarError);
+  window.addEventListener('unhandledrejection', reportarPromesa);
+  capturaGlobalInstalada = true;
+
+  return () => {
+    window.removeEventListener('error', reportarError);
+    window.removeEventListener('unhandledrejection', reportarPromesa);
+    capturaGlobalInstalada = false;
+  };
+}
