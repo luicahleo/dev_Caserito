@@ -11,6 +11,12 @@ public sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandle
         Exception exception,
         CancellationToken cancellationToken)
     {
+        if (exception is BadHttpRequestException badRequest)
+        {
+            httpContext.Response.StatusCode = badRequest.StatusCode;
+            return true;
+        }
+
         var errorId = DiagnosticIds.NewErrorId();
         var traceId = DiagnosticContext.GetTraceId(httpContext) ?? httpContext.TraceIdentifier;
         DiagnosticContext.SetErrorId(httpContext, errorId);

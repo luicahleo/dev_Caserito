@@ -284,6 +284,15 @@ builder.Services.AddRateLimiter(opciones =>
             QueueLimit = 0,
             AutoReplenishment = true,
         }));
+    opciones.AddPolicy("diagnosticos-frontend", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        Particion(contexto),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            AutoReplenishment = true,
+        }));
 });
 builder.Services.AddOpenApi(options => options.AddDocumentTransformer<SecuritySchemeTransformer>());
 builder.Services.AddProblemDetails();
@@ -392,6 +401,7 @@ forwardedHeaders.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeaders);
 
 app.UseMiddleware<RequestObservabilityMiddleware>();
+app.UseMiddleware<ClientDiagnosticsBodyLimitMiddleware>();
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseRateLimiter();
@@ -436,6 +446,7 @@ app.MapReputationEndpoints();
 app.MapBusquedasGuardadasEndpoints();
 app.MapPuntosEncuentroEndpoints();
 app.MapNotificationsEndpoints();
+app.MapDiagnosticsEndpoints();
 app.MapHub<ChatHub>("/hubs/chat", opciones =>
 {
     var tiempoReal = app.Configuration
