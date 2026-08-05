@@ -16,8 +16,9 @@ import {
 } from '@mui/material';
 import { enviarKyc, obtenerEstadoKyc } from '../api/kyc';
 import { HttpError } from '../api/http';
-import { esAndroidNativo } from '../kyc/captura/plataforma';
+import { esPwaMovilInstalada } from '../kyc/captura/plataforma';
 import { FlujoCapturaKyc } from '../kyc/captura/FlujoCapturaKyc';
+import { useInstalacionPwa } from '../pwa/usarInstalacionPwa';
 
 const DEPARTAMENTOS = [
   ['LaPaz', 'La Paz'],
@@ -33,7 +34,8 @@ const DEPARTAMENTOS = [
 
 export function KycPage() {
   const queryClient = useQueryClient();
-  const esAppAndroid = esAndroidNativo();
+  const esPwaMovil = esPwaMovilInstalada();
+  const instalacionPwa = useInstalacionPwa();
   const {
     data: estado,
     isLoading,
@@ -122,13 +124,25 @@ export function KycPage() {
         </Alert>
       )}
 
-      {mostrarFormulario && !esAppAndroid && (
-        <Alert severity="info" sx={{ mt: 2 }}>
-          Para proteger tu identidad, toma las fotografías desde la aplicación móvil de Caserito.
+      {mostrarFormulario && !esPwaMovil && (
+        <Alert
+          severity="info"
+          sx={{ mt: 2 }}
+          action={
+            instalacionPwa.puedeInstalar ? (
+              <Button color="inherit" onClick={() => void instalacionPwa.instalar()}>
+                Instalar Caserito
+              </Button>
+            ) : undefined
+          }
+        >
+          Para tomar las fotografías, instala Caserito desde el navegador de tu móvil. En Android
+          usa «Instalar aplicación»; en iPhone abre Safari, pulsa Compartir y «Añadir a pantalla de
+          inicio».
         </Alert>
       )}
 
-      {mostrarFormulario && esAppAndroid && (
+      {mostrarFormulario && esPwaMovil && (
         <Stack spacing={3} sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
             Toma una fotografía del frontal de tu CI y una selfie. Un revisor autorizado comprobará
