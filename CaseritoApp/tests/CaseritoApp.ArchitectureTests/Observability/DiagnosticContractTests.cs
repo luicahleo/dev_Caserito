@@ -24,7 +24,7 @@ public sealed class DiagnosticContractTests
             .ToArray();
 
         Assert.Equal(
-            ["Category", "ErrorId", "EventName", "Release", "Source", "StatusCode", "TraceId"],
+            ["Category", "ErrorId", "EventName", "FlowEvents", "Release", "SessionId", "Source", "StatusCode", "TraceId"],
             propiedades);
     }
 
@@ -38,7 +38,9 @@ public sealed class DiagnosticContractTests
             "http",
             "0123456789abcdef0123456789abcdef",
             503,
-            "1.2.3");
+            "1.2.3",
+            null,
+            null);
 
         Assert.True(ClientDiagnosticReportValidator.IsValid(reporte));
     }
@@ -72,5 +74,90 @@ public sealed class DiagnosticContractTests
             "router",
             null,
             null,
+            null,
+            null,
             null);
+
+    [Fact]
+    public void Validador_acepta_sesion_y_flujo_permitidos()
+    {
+        var reporte = ReporteValido() with
+        {
+            SessionId = "SES-0123456789AB",
+            FlowEvents =
+            [
+                new ClientFlowEvent(
+                    1,
+                    new DateTimeOffset(2026, 8, 6, 10, 0, 0, TimeSpan.Zero),
+                    "flow.navigation",
+                    "/avisos/:id",
+                    null,
+                    null,
+                    null),
+                new ClientFlowEvent(
+                    2,
+                    new DateTimeOffset(2026, 8, 6, 10, 0, 1, TimeSpan.Zero),
+                    "flow.api_call",
+                    "GET /api/avisos/:id",
+                    "0123456789abcdef0123456789abcdef",
+                    200,
+                    42.5),
+            ],
+        };
+
+        Assert.True(ClientDiagnosticReportValidator.IsValid(reporte));
+    }
+
+    [Theory]
+    [MemberData(nameof(FlujosInvalidos))]
+    public void Validador_rechaza_flujos_fuera_de_la_lista_permitida(
+        string? sessionId,
+        IReadOnlyList<ClientFlowEvent>? flowEvents)
+    {
+        var reporte = ReporteValido() with { SessionId = sessionId, FlowEvents = flowEvents };
+
+        Assert.False(ClientDiagnosticReportValidator.IsValid(reporte));
+    }
+
+    public static TheoryData<string?, IReadOnlyList<ClientFlowEvent>?> FlujosInvalidos() =>
+        new()
+        {
+            { "SES-no-valido", null },
+            { "ses-0123456789AB", null },
+            {
+                "SES-0123456789AB",
+                Enumerable.Range(1, 51).Select(EventoValido).ToArray()
+            },
+            { "SES-0123456789AB", [EventoValido(1) with { EventName = "usuario.contenido" }] },
+            { "SES-0123456789AB", [EventoValido(1) with { Detail = "" }] },
+            { "SES-0123456789AB", [EventoValido(1) with { Detail = new string('a', 121) }] },
+            { "SES-0123456789AB", [EventoValido(1) with { Seq = 0 }] },
+            { "SES-0123456789AB", [EventoValido(1) with { StatusCode = 99 }] },
+            { "SES-0123456789AB", [EventoValido(1) with { DurationMs = -1 }] },
+            {
+                "SES-0123456789AB",
+                [EventoValido(1) with { Timestamp = new DateTimeOffset(2026, 8, 6, 10, 0, 0, TimeSpan.FromHours(2)) }]
+            },
+        };
+
+    private static ClientFlowEvent EventoValido(int seq) =>
+        new(
+            seq,
+            new DateTimeOffset(2026, 8, 6, 10, 0, 0, TimeSpan.Zero),
+            "flow.navigation",
+            "/explorar",
+            null,
+            null,
+            null);
+
+    [Theory]
+    [InlineData("SES-0123456789AB", true)]
+    [InlineData("SES-0123456789ab", false)]
+    [InlineData("ERR-0123456789AB", false)]
+    [InlineData("SES-012345678", false)]
+    [InlineData(null, false)]
+    public void IsSessionId_solo_acepta_el_patron_opaco(string? valor, bool esperado)
+    {
+        Assert.Equal(esperado, DiagnosticIds.IsSessionId(valor));
+    }
 }

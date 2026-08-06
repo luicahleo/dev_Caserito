@@ -10,10 +10,24 @@ public sealed record ClientDiagnosticReport(
     string Source,
     string? TraceId,
     int? StatusCode,
-    string? Release);
+    string? Release,
+    string? SessionId,
+    IReadOnlyList<ClientFlowEvent>? FlowEvents);
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record ClientFlowEvent(
+    int Seq,
+    DateTimeOffset Timestamp,
+    string EventName,
+    string Detail,
+    string? TraceId,
+    int? StatusCode,
+    double? DurationMs);
 
 public static class ClientDiagnosticReportValidator
 {
+    public const int MaximoEventosFlujo = 50;
+
     public static bool IsValid(ClientDiagnosticReport report) =>
         IsErrorId(report.ErrorId)
         && IsEventName(report.EventName)
@@ -21,7 +35,9 @@ public static class ClientDiagnosticReportValidator
         && IsSource(report.Source)
         && IsTraceId(report.TraceId)
         && IsStatusCode(report.StatusCode)
-        && IsRelease(report.Release);
+        && IsRelease(report.Release)
+        && IsSessionIdValido(report.SessionId)
+        && IsFlowEvents(report.FlowEvents);
 
     private static bool IsErrorId(string? value) =>
         value is not null
@@ -42,8 +58,8 @@ public static class ClientDiagnosticReportValidator
     private static bool IsCategory(string value) => value is
         "unexpected" or "network" or "server" or "chunk" or "critical";
 
-    private static bool IsSource(string value) => value is
-        "router" or "window" or "promise" or "http" or "flow";
+    private static bool IsSource(string value) =>
+        value is "router" or "window" or "promise" or "http" or "flow";
 
     private static bool IsTraceId(string? value) =>
         value is null
@@ -56,4 +72,30 @@ public static class ClientDiagnosticReportValidator
         value is null
         || value.Length is >= 1 and <= 40
         && value.All(character => char.IsAsciiLetterOrDigit(character) || character is '.' or '_' or '-');
+
+    private static bool IsSessionIdValido(string? value) =>
+        value is null || DiagnosticIds.IsSessionId(value);
+
+    private static bool IsFlowEvents(IReadOnlyList<ClientFlowEvent>? events) =>
+        events is null
+        || events.Count <= MaximoEventosFlujo && events.All(IsFlowEvent);
+
+    private static bool IsFlowEvent(ClientFlowEvent evento) =>
+        evento.Seq is >= 1 and <= 10000
+        && evento.Timestamp.Offset == TimeSpan.Zero
+        && IsFlowEventName(evento.EventName)
+        && IsDetail(evento.Detail)
+        && IsTraceId(evento.TraceId)
+        && IsFlowStatusCode(evento.StatusCode)
+        && IsDurationMs(evento.DurationMs);
+
+    private static bool IsFlowEventName(string? value) =>
+        value is "flow.navigation" or "flow.api_call";
+
+    private static bool IsDetail(string? value) =>
+        value is not null && value.Length is >= 1 and <= 120;
+
+    private static bool IsFlowStatusCode(int? value) => value is null or >= 100 and <= 599;
+
+    private static bool IsDurationMs(double? value) => value is null or >= 0 and <= 600000;
 }
