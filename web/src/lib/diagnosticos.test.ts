@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { crearErrorId, instalarCapturaGlobal, reportarDiagnostico } from './diagnosticos';
+import { registrarEventoFlujo } from './sesionDiagnostico';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  sessionStorage.clear();
+  vi.resetModules();
 });
 
 describe('diagnósticos seguros', () => {
@@ -39,6 +42,7 @@ describe('diagnósticos seguros', () => {
       source: 'http',
       traceId: '0123456789abcdef0123456789abcdef',
       statusCode: 503,
+      sessionId: expect.stringMatching(/^SES-[0-9A-F]{12}$/),
     });
   });
 
@@ -53,6 +57,29 @@ describe('diagnósticos seguros', () => {
         source: 'window',
       }),
     ).resolves.toBeUndefined();
+  });
+
+  it('adjunta los últimos 30 eventos de flujo cuando existen', async () => {
+    sessionStorage.setItem('caserito.debug', '1');
+    for (let i = 0; i < 35; i++) {
+      registrarEventoFlujo({ eventName: 'flow.navigation', detail: `/ruta-${i}` });
+    }
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(null, { status: 202 }));
+
+    await reportarDiagnostico({
+      errorId: 'ERR-0123456789AB',
+      eventName: 'window.unexpected',
+      category: 'unexpected',
+      source: 'window',
+    });
+
+    const cuerpo = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(cuerpo.sessionId).toMatch(/^SES-[0-9A-F]{12}$/);
+    expect(cuerpo.flowEvents).toHaveLength(30);
+    expect(cuerpo.flowEvents[0].detail).toBe('/ruta-5');
+    expect(cuerpo.flowEvents[29].detail).toBe('/ruta-34');
   });
 
   it('captura errores globales sin propagar su contenido', () => {

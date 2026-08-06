@@ -1,3 +1,5 @@
+import { obtenerEventosRecientes, obtenerSesionId } from './sesionDiagnostico';
+
 export type DiagnosticEventName =
   | 'router.unexpected'
   | 'window.unexpected'
@@ -26,12 +28,20 @@ export function crearErrorId(): string {
   return `ERR-${hex.toUpperCase()}`;
 }
 
+const MAX_EVENTOS_EN_REPORTE = 30;
+
 export async function reportarDiagnostico(report: DiagnosticReport): Promise<void> {
+  const eventosFlujo = obtenerEventosRecientes(MAX_EVENTOS_EN_REPORTE);
+  const carga = {
+    ...report,
+    sessionId: obtenerSesionId(),
+    ...(eventosFlujo.length > 0 ? { flowEvents: eventosFlujo } : {}),
+  };
   try {
     await fetch('/api/diagnosticos/frontend', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(report),
+      body: JSON.stringify(carga),
       keepalive: true,
     });
   } catch {
