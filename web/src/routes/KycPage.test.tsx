@@ -143,4 +143,21 @@ describe('KycPage', () => {
       await screen.findByText(/no se pudo cargar tu estado de verificación/i),
     ).toBeInTheDocument();
   });
+
+  it('ante un 422 por rostro no detectado, muestra un mensaje accionable', async () => {
+    vi.spyOn(api, 'obtenerEstadoKyc').mockResolvedValue({ estado: 'NoIniciado', motivoRechazo: null });
+    vi.spyOn(api, 'enviarKyc').mockRejectedValue(
+      new HttpError(422, 'Kyc.RostroNoDetectado', 'Petición fallida (422) a /api/kyc'),
+    );
+    montar();
+    await screen.findByRole('button', { name: /enviar/i });
+    const u = userEvent.setup();
+    await u.type(screen.getByLabelText(/número de ci/i), '1234567');
+    await u.click(screen.getByRole('combobox', { name: /departamento de expedición/i }));
+    await u.click(await screen.findByRole('option', { name: 'La Paz' }));
+    await u.click(screen.getByRole('button', { name: /capturar documento/i }));
+    await u.click(screen.getByRole('button', { name: /capturar selfie/i }));
+    await u.click(screen.getByRole('button', { name: /enviar/i }));
+    expect(await screen.findByText(/no detectamos un rostro/i)).toBeInTheDocument();
+  });
 });

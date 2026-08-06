@@ -96,6 +96,7 @@ export function KycPage() {
   }
 
   const es409 = mutacion.error instanceof HttpError && mutacion.error.status === 409;
+  const es422 = mutacion.error instanceof HttpError && mutacion.error.status === 422;
   const es503 = mutacion.error instanceof HttpError && mutacion.error.status === 503;
   const mostrarFormulario = estado?.estado === 'NoIniciado' || estado?.estado === 'Rechazada';
 
@@ -175,13 +176,19 @@ export function KycPage() {
               El servicio de verificación no está disponible en este momento. Inténtalo más tarde.
             </Alert>
           )}
+          {mutacion.isError && es422 && (
+            <Alert severity="warning">
+              No detectamos un rostro en alguna de las fotos. Asegúrate de que el rostro del CI y
+              tu selfie se vean frontales, nítidos y con buena luz, e inténtalo de nuevo.
+            </Alert>
+          )}
           {mutacion.isError && es409 && (
             <Alert severity="info">
               Tu solicitud ya no se puede enviar en este estado; actualizamos tu estado de
               verificación.
             </Alert>
           )}
-          {mutacion.isError && !es409 && !es503 && (
+          {mutacion.isError && !es409 && !es422 && !es503 && (
             <Alert severity="error">
               No se pudo enviar la solicitud. Verifica los archivos e inténtalo de nuevo.
             </Alert>
