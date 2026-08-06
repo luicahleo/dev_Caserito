@@ -34,12 +34,13 @@ describe('captura de navegación', () => {
     expect(eventos.every((evento) => evento.eventName === 'flow.navigation')).toBe(true);
   });
 
-  it('no registra navegación sin modo diagnóstico', () => {
+  it('registra navegación también sin modo diagnóstico', () => {
     const antes = obtenerEventosRecientes(100).length;
 
     render(<BancoDePruebas />);
     fireEvent.click(screen.getByRole('link', { name: 'ir al aviso' }));
 
-    expect(obtenerEventosRecientes(100).length).toBe(antes);
+    const eventos = obtenerEventosRecientes(100).slice(antes);
+    expect(eventos.map((evento) => evento.detail)).toEqual(['/', '/avisos/:id']);
   });
 });

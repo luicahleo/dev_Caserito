@@ -50,12 +50,14 @@ describe('sesión de diagnóstico', () => {
     expect(modulo.sanitizarRuta('/')).toBe('/');
   });
 
-  it('no registra eventos sin modo diagnóstico', async () => {
+  it('registra eventos siempre, también sin modo diagnóstico', async () => {
     const modulo = await cargarModulo();
 
     modulo.registrarEventoFlujo({ eventName: 'flow.navigation', detail: '/explorar' });
 
-    expect(modulo.obtenerEventosRecientes(10)).toEqual([]);
+    const eventos = modulo.obtenerEventosRecientes(10);
+    expect(eventos).toHaveLength(1);
+    expect(eventos[0]).toMatchObject({ eventName: 'flow.navigation', detail: '/explorar' });
   });
 
   it('registra eventos con seq incremental y trunca el detalle a 120', async () => {

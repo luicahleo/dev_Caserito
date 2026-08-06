@@ -15,7 +15,6 @@ import type { paths } from './schema';
 import { clearAccessToken, getAccessToken, setAccessToken } from '../auth/session';
 import { crearErrorId, reportarDiagnostico } from '../lib/diagnosticos';
 import {
-  modoDiagnosticoActivo,
   obtenerSesionId,
   registrarEventoFlujo,
   sanitizarRuta,
@@ -117,17 +116,15 @@ async function fetchConDiagnostico(request: Request): Promise<Response> {
   }
 }
 
-// Registra la llamada en el buffer de flujo solo con modo diagnóstico activo.
-// El detalle es método + ruta sanitizada (sin query); nunca bodies ni tokens.
+// Registra la llamada en el buffer de flujo (en memoria; solo sale del
+// navegador adjunta a un reporte de error). El detalle es método + ruta
+// sanitizada (sin query); nunca bodies ni tokens.
 function registrarLlamadaApi(
   request: Request,
   inicio: number,
   statusCode: number | undefined,
   traceIdCrudo: string | null,
 ): void {
-  if (!modoDiagnosticoActivo()) {
-    return;
-  }
   registrarEventoFlujo({
     eventName: 'flow.api_call',
     detail: `${request.method} ${sanitizarRuta(new URL(request.url).pathname)}`,

@@ -174,13 +174,19 @@ describe('flujo de llamadas API', () => {
     });
   });
 
-  it('no registra llamadas API sin modo diagnóstico', async () => {
+  it('registra llamadas API también sin modo diagnóstico', async () => {
     sessionStorage.removeItem('caserito.debug');
     const antes = obtenerEventosRecientes(100).length;
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(respuesta(200, {}));
 
     await api.GET('/api/perfil');
 
-    expect(obtenerEventosRecientes(100).length).toBe(antes);
+    const eventos = obtenerEventosRecientes(100);
+    expect(eventos.length).toBe(antes + 1);
+    expect(eventos[eventos.length - 1]).toMatchObject({
+      eventName: 'flow.api_call',
+      detail: 'GET /api/perfil',
+      statusCode: 200,
+    });
   });
 });

@@ -23,6 +23,22 @@ Enfoque C (híbrido), aprobado por el usuario:
 - El **flujo detallado** (navegación y llamadas API) solo se captura y envía
   cuando el modo diagnóstico está activo en esa pestaña.
 
+## Enmienda 2026-08-06: breadcrumbs siempre capturados
+
+Decisión posterior aprobada por el usuario (motivo: en producción no habrá
+contacto con el cliente más que por formulario, así que el error debe llegar
+con su contexto incluido):
+
+- El buffer de flujo se captura **siempre en memoria**, con o sin modo
+  diagnóstico. No sale del navegador por sí solo.
+- El envío sigue ocurriendo **solo adjunto a un reporte de error** (los
+  últimos 30 eventos), exactamente como antes.
+- El modo diagnóstico (`?debug=1`) se conserva únicamente como herramienta
+  manual: muestra el botón "Descargar diagnóstico" para exportar el JSON.
+- El perfil anti-PII no cambia: los breadcrumbs son la misma metadata
+  sanitizada (rutas parametrizadas, métodos, status, duraciones) validada por
+  la whitelist del backend.
+
 ## No objetivos
 
 - No se instrumentan acciones de UI concretas (`flow.action`) en esta
@@ -48,7 +64,8 @@ Módulo puro y transversal, sin dependencias de React:
   o si ya existe esa marca en `sessionStorage`.
 - `registrarEventoFlujo(evento)` — añade al buffer circular en memoria
   (máximo 100 eventos) asignando `seq` incremental (empieza en 1 por pestaña)
-  y `timestamp` ISO UTC. No hace nada si el modo diagnóstico está inactivo.
+  y `timestamp` ISO UTC. Captura siempre (ver enmienda); el buffer solo sale
+  del navegador adjunto a un error o por exportación manual en modo debug.
 - `obtenerEventosRecientes(n): EventoFlujo[]` — copia de los últimos `n`.
 - `sanitizarRuta(pathname): string` — sustituye por `:id` cualquier segmento
   puramente numérico o con formato UUID; nunca incluye query string ni hash.
@@ -180,8 +197,9 @@ Backend:
 2. El botón "Descargar diagnóstico" produce un JSON legible con la secuencia
    completa de la pestaña.
 3. Un error de front reportado incluye `sessionId` y los últimos 30 eventos.
-4. Sin modo diagnóstico no se capturan ni envían eventos de flujo; los
-   reportes de error siguen funcionando como antes.
+4. Los eventos de flujo se capturan en memoria con o sin modo diagnóstico
+   (enmienda 2026-08-06), pero solo se envían adjuntos a un reporte de error;
+   sin errores no sale nada del navegador.
 5. `docker logs caseritoapp | grep SES-XXXX` muestra intercalados
    `http.request.completed`, `frontend.flow` y `frontend.error`.
 6. Ningún log contiene query strings, IDs de recursos, bodies ni datos

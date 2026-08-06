@@ -1,7 +1,9 @@
 // Sesión de diagnóstico por pestaña: identificador opaco, modo diagnóstico
-// activable con ?debug=1 y buffer circular de eventos de flujo. Solo registra
-// metadatos seguros (rutas sanitizadas, status, duraciones); nunca query
-// strings, bodies ni contenido de usuario.
+// activable con ?debug=1 y buffer circular de eventos de flujo. El buffer se
+// captura siempre en memoria (nunca sale del navegador por sí solo) y solo se
+// envía adjunto a un reporte de error; la exportación manual requiere el modo
+// diagnóstico. Solo registra metadatos seguros (rutas sanitizadas, status,
+// duraciones); nunca query strings, bodies ni contenido de usuario.
 
 export interface EventoFlujo {
   seq: number;
@@ -51,9 +53,6 @@ export function sanitizarRuta(pathname: string): string {
 }
 
 export function registrarEventoFlujo(evento: Omit<EventoFlujo, 'seq' | 'timestamp'>): void {
-  if (!modoDiagnosticoActivo()) {
-    return;
-  }
   eventos.push({
     ...evento,
     detail: evento.detail.slice(0, MAX_DETALLE),
