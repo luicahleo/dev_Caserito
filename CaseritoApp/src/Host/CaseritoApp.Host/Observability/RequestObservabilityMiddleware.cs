@@ -19,7 +19,14 @@ public sealed partial class RequestObservabilityMiddleware(
         });
         var startedAt = Stopwatch.GetTimestamp();
 
-        using (logger.BeginScope(new Dictionary<string, object> { ["TraceId"] = traceId }))
+        var scope = new Dictionary<string, object?> { ["TraceId"] = traceId };
+        var sessionId = context.Request.Headers["X-Session-Id"].FirstOrDefault();
+        if (DiagnosticIds.IsSessionId(sessionId))
+        {
+            scope["SessionId"] = sessionId;
+        }
+
+        using (logger.BeginScope(scope))
         {
             await next(context);
 

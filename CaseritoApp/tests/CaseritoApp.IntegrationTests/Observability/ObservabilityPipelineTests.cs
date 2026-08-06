@@ -19,6 +19,21 @@ public sealed class ObservabilityPipelineTests(CaseritoApiFactory factory) : ICl
         Assert.Matches("^[0-9a-f]{32}$", traceId);
     }
 
+    [Theory]
+    [InlineData("SES-0123456789AB")]
+    [InlineData("sesion-no-valida")]
+    public async Task Peticion_con_header_de_sesion_responde_con_normalidad(string sessionId)
+    {
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/health");
+        request.Headers.TryAddWithoutValidation("X-Session-Id", sessionId);
+
+        using var response = await client.SendAsync(request);
+
+        response.EnsureSuccessStatusCode();
+        Assert.Single(response.Headers.GetValues("X-Trace-Id"));
+    }
+
     [Fact]
     public async Task Excepcion_inesperada_devuelve_problem_details_generico_y_correlacionado()
     {
