@@ -53,17 +53,109 @@ public sealed class DiagnosticsEndpointTests(CaseritoApiFactory factory) : IClas
     }
 
     [Fact]
-    public async Task Rechaza_cuerpos_mayores_a_cuatro_kibibytes()
+    public async Task Rechaza_cuerpos_mayores_a_dieciseis_kibibytes()
     {
         using var client = factory.CreateClient();
         using var content = new StringContent(
-            $"{{\"errorId\":\"ERR-0123456789AB\",\"padding\":\"{new string('a', 5000)}\"}}",
+            $"{{\"errorId\":\"ERR-0123456789AB\",\"padding\":\"{new string('a', 17000)}\"}}",
             Encoding.UTF8,
             "application/json");
 
         using var response = await client.PostAsync("/api/diagnosticos/frontend", content);
 
         Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Acepta_reporte_con_sesion_y_flujo_permitidos()
+    {
+        using var client = factory.CreateClient();
+        var report = ReporteValido();
+        report["sessionId"] = "SES-0123456789AB";
+        report["flowEvents"] = new[]
+        {
+            new Dictionary<string, object?>
+            {
+                ["seq"] = 1,
+                ["timestamp"] = "2026-08-06T10:00:00.000Z",
+                ["eventName"] = "flow.navigation",
+                ["detail"] = "/avisos/:id",
+            },
+            new Dictionary<string, object?>
+            {
+                ["seq"] = 2,
+                ["timestamp"] = "2026-08-06T10:00:01.000Z",
+                ["eventName"] = "flow.api_call",
+                ["detail"] = "GET /api/avisos/:id",
+                ["traceId"] = "0123456789abcdef0123456789abcdef",
+                ["statusCode"] = 200,
+                ["durationMs"] = 42.5,
+            },
+        };
+
+        using var response = await client.PostAsJsonAsync("/api/diagnosticos/frontend", report);
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Acepta_el_maximo_de_eventos_de_flujo_superando_cuatro_kibibytes()
+    {
+        using var client = factory.CreateClient();
+        var report = ReporteValido();
+        report["sessionId"] = "SES-0123456789AB";
+        report["flowEvents"] = Enumerable.Range(1, 50)
+            .Select(seq => new Dictionary<string, object?>
+            {
+                ["seq"] = seq,
+                ["timestamp"] = "2026-08-06T10:00:00.000Z",
+                ["eventName"] = "flow.api_call",
+                ["detail"] = $"GET /api/recurso/{new string('a', 100)}",
+            })
+            .ToArray();
+
+        using var response = await client.PostAsJsonAsync("/api/diagnosticos/frontend", report);
+
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("ses-0123456789ab")]
+    [InlineData("SES-no-valido")]
+    public async Task Rechaza_sesion_fuera_del_patron(string sessionId)
+    {
+        using var client = factory.CreateClient();
+        var report = ReporteValido();
+        report["sessionId"] = sessionId;
+
+        using var response = await client.PostAsJsonAsync("/api/diagnosticos/frontend", report);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Rechaza_eventos_de_flujo_fuera_de_la_lista_permitida()
+    {
+        using var client = factory.CreateClient();
+        var report = ReporteValido();
+        report["flowEvents"] = new[]
+        {
+            new Dictionary<string, object?>
+            {
+                ["seq"] = 1,
+                ["timestamp"] = "2026-08-06T10:00:00.000Z",
+                ["eventName"] = "usuario.contenido",
+                ["detail"] = "texto libre del usuario",
+            },
+        };
+
+        using var response = await client.PostAsJsonAsync("/api/diagnosticos/frontend", report);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.DoesNotContain(
+            "texto libre del usuario",
+            await response.Content.ReadAsStringAsync(),
+            StringComparison.Ordinal);
     }
 
     private static Dictionary<string, object?> ReporteValido() =>

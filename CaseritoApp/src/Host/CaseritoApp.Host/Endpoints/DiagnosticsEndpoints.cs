@@ -13,7 +13,7 @@ public static partial class DiagnosticsEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status413PayloadTooLarge)
             .RequireRateLimiting("diagnosticos-frontend")
-            .WithMetadata(new RequestSizeLimitAttribute(4096));
+            .WithMetadata(new RequestSizeLimitAttribute(16384));
 
         return app;
     }
@@ -38,9 +38,30 @@ public static partial class DiagnosticsEndpoints
             ["TraceId"] = report.TraceId,
             ["StatusCode"] = report.StatusCode,
             ["Release"] = report.Release,
+            ["SessionId"] = report.SessionId,
         }))
         {
             LogFrontendDiagnostic(logger);
+        }
+
+        if (report.FlowEvents is { } flowEvents)
+        {
+            foreach (var flowEvent in flowEvents)
+            {
+                using (logger.BeginScope(new Dictionary<string, object?>
+                {
+                    ["SessionId"] = report.SessionId,
+                    ["Seq"] = flowEvent.Seq,
+                    ["EventName"] = flowEvent.EventName,
+                    ["Detail"] = flowEvent.Detail,
+                    ["TraceId"] = flowEvent.TraceId,
+                    ["StatusCode"] = flowEvent.StatusCode,
+                    ["DurationMs"] = flowEvent.DurationMs,
+                }))
+                {
+                    LogFrontendFlow(logger);
+                }
+            }
         }
 
         return Results.Accepted();
@@ -52,4 +73,11 @@ public static partial class DiagnosticsEndpoints
     private static partial void LogFrontendDiagnostic(
         ILogger logger,
         string logEventName = "frontend.error");
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "{LogEventName}: evento de flujo del navegador")]
+    private static partial void LogFrontendFlow(
+        ILogger logger,
+        string logEventName = "frontend.flow");
 }
