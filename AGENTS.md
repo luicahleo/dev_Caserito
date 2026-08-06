@@ -9,7 +9,9 @@ corto: contiene solo reglas que aplican a casi cualquier tarea.
 - Textos de UI y comentarios en español, con acentos y UTF-8; nunca mojibake.
 - Anti-PII no negociable: nunca registrar documentos, imágenes, tokens, pagos,
   credenciales, texto de reportes ni otros datos sensibles. Usar errores genéricos.
-- No hacer push ni merge sin autorización explícita.
+- Flujo git autorizado de forma permanente (aprobado 2026-08-06): al terminar
+  un cambio verificado, hacer commit → merge a master → push → borrar la rama,
+  sin pedir confirmación cada vez. No dejar ramas pendientes.
 - Preservar cambios ajenos y evitar operaciones destructivas.
 
 ## Descubrimiento eficiente
