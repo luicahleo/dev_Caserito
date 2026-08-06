@@ -4536,7 +4536,9 @@
           "source",
           "traceId",
           "statusCode",
-          "release"
+          "release",
+          "sessionId",
+          "flowEvents"
         ],
         "type": "object",
         "properties": {
@@ -4572,6 +4574,78 @@
               "null",
               "string"
             ]
+          },
+          "sessionId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "flowEvents": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ClientFlowEvent"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ClientFlowEvent": {
+        "required": [
+          "seq",
+          "timestamp",
+          "eventName",
+          "detail",
+          "traceId",
+          "statusCode",
+          "durationMs"
+        ],
+        "type": "object",
+        "properties": {
+          "seq": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eventName": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "statusCode": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "durationMs": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         },
         "additionalProperties": false

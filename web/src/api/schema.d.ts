@@ -4654,6 +4654,21 @@ export interface components {
             /** Format: int32 */
             statusCode: null | number | string;
             release: null | string;
+            sessionId: null | string;
+            flowEvents: null | components["schemas"]["ClientFlowEvent"][];
+        };
+        ClientFlowEvent: {
+            /** Format: int32 */
+            seq: number | string;
+            /** Format: date-time */
+            timestamp: string;
+            eventName: string;
+            detail: string;
+            traceId: null | string;
+            /** Format: int32 */
+            statusCode: null | number | string;
+            /** Format: double */
+            durationMs: null | number | string;
         };
         CompletarRegistroExternoRequest: {
             email: null | string;
