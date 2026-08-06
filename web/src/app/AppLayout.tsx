@@ -29,6 +29,8 @@ import { ContadorChat } from '../chat/ContadorChat';
 import { NotificacionesBadge } from '../notificaciones/NotificacionesBadge';
 import { NotificacionesDropdown } from '../notificaciones/NotificacionesDropdown';
 import { MarcaCaserito } from './MarcaCaserito';
+import { BotonDiagnostico } from './BotonDiagnostico';
+import { CapturaFlujoNavegacion } from './CapturaFlujoNavegacion';
 
 export function CargandoRuta() {
   return (
@@ -67,6 +69,8 @@ export function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+      <CapturaFlujoNavegacion />
+      <BotonDiagnostico />
       <AppBar
         position="sticky"
         sx={{
