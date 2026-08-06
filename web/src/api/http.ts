@@ -106,7 +106,7 @@ async function fetchConDiagnostico(request: Request): Promise<Response> {
     }
     return response;
   } catch (error) {
-    registrarLlamadaApi(request, inicio, undefined, undefined);
+    registrarLlamadaApi(request, inicio, undefined, null);
     void reportarDiagnostico({
       errorId: crearErrorId(),
       eventName: 'http.network_failed',

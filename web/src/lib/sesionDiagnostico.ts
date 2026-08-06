@@ -20,7 +20,7 @@ const MAX_DETALLE = 120;
 const PATRON_SESION = /^SES-[0-9A-F]{12}$/;
 const PATRON_UUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
-let eventos: EventoFlujo[] = [];
+const eventos: EventoFlujo[] = [];
 let siguienteSeq = 1;
 
 export function obtenerSesionId(): string {

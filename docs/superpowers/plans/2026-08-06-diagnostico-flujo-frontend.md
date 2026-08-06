@@ -963,14 +963,13 @@ En `diagnosticos.test.ts`:
     });
 ```
 
-2. Añadir test nuevo al final del `describe`:
+2. Añadir test nuevo al final del `describe` (con import estático al inicio del fichero: `import { registrarEventoFlujo } from './sesionDiagnostico';` — ver nota al final):
 
 ```ts
   it('adjunta los últimos 30 eventos de flujo cuando existen', async () => {
     sessionStorage.setItem('caserito.debug', '1');
-    const sesion = await import('./sesionDiagnostico');
     for (let i = 0; i < 35; i++) {
-      sesion.registrarEventoFlujo({ eventName: 'flow.navigation', detail: `/ruta-${i}` });
+      registrarEventoFlujo({ eventName: 'flow.navigation', detail: `/ruta-${i}` });
     }
     const fetchMock = vi
       .spyOn(globalThis, 'fetch')
@@ -1001,7 +1000,7 @@ afterEach(() => {
 });
 ```
 
-Ojo: `vi.resetModules()` no afecta a los imports estáticos ya cargados (`diagnosticos` y su dependencia `sesionDiagnostico` quedan en la instancia original), así que el test de 35 eventos debe limpiar lo que ensucia: como el buffer es compartido en este fichero, basta con que este test sea el último o registrar y luego verificar con datos relativos. Solución simple: este test usa `sesion.registrarEventoFlujo` sobre el módulo ya cargado (el import dinámico devuelve la misma instancia cacheada) y se coloca al final del `describe`; los tests anteriores no registran eventos de flujo, así que no hay contaminación.
+Ojo: `vi.resetModules()` no afecta a los imports estáticos ya cargados (`diagnosticos` y su dependencia `sesionDiagnostico` quedan en la instancia original). Por eso el test usa el import **estático** de `registrarEventoFlujo`: un `await import('./sesionDiagnostico')` tras `vi.resetModules()` crearía una instancia nueva del módulo y los eventos no serían visibles para `reportarDiagnostico`. El buffer es compartido en este fichero; como los demás tests no registran eventos de flujo, no hay contaminación.
 
 - [ ] **Step 2: Ejecutar y observar el fallo**
 
