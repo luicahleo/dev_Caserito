@@ -10,4 +10,5 @@ public static class ErroresKyc
     public const string ConflictoConcurrencia = "Kyc.ConflictoConcurrencia";
     public const string VerificacionFacialFallida = "Kyc.VerificacionFacialFallida";
     public const string ServicioVerificacionNoDisponible = "Kyc.ServicioVerificacionNoDisponible";
+    public const string RostroNoDetectado = "Kyc.RostroNoDetectado";
 }

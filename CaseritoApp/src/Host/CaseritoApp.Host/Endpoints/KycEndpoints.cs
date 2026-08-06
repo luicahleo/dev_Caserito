@@ -27,6 +27,7 @@ public static class KycEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
             .ProducesValidationProblem();
         usuario.MapGet("/estado", EstadoAsync)
@@ -252,6 +253,8 @@ public static class KycEndpoints
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status409Conflict),
             ErroresKyc.ServicioVerificacionNoDisponible =>
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status503ServiceUnavailable),
+            ErroresKyc.RostroNoDetectado =>
+                Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status422UnprocessableEntity),
             _ =>
                 Results.Problem(title: resultado.Error.Code, detail: resultado.Error.Message, statusCode: StatusCodes.Status400BadRequest),
         };

@@ -121,6 +121,81 @@ public sealed class VerificadorIdentidadArgosHttpTests
         Assert.Equal("Rostro no detectado", r.Error.Message);
     }
 
+    [Fact]
+    public async Task Http_422_face_not_detected_en_img1_devuelve_rostro_no_detectado_en_documento()
+    {
+        var handler = new FakeHandler(new HttpResponseMessage((HttpStatusCode)422)
+        {
+            Content = new StringContent(
+                """{"success": false, "code": "face-not-detected", "image": "img1", "error": "No se detectó rostro"}""",
+                Encoding.UTF8,
+                "application/json"),
+        });
+        var verificador = Crear(handler);
+
+        var r = await verificador.VerificarAsync(_imagen, _imagen, CancellationToken.None);
+
+        Assert.False(r.EsExito);
+        Assert.Equal(ErroresKyc.RostroNoDetectado, r.Error.Code);
+        Assert.Contains("documento", r.Error.Message);
+    }
+
+    [Fact]
+    public async Task Http_422_face_not_detected_en_img2_devuelve_rostro_no_detectado_en_selfie()
+    {
+        var handler = new FakeHandler(new HttpResponseMessage((HttpStatusCode)422)
+        {
+            Content = new StringContent(
+                """{"success": false, "code": "face-not-detected", "image": "img2", "error": "No se detectó rostro"}""",
+                Encoding.UTF8,
+                "application/json"),
+        });
+        var verificador = Crear(handler);
+
+        var r = await verificador.VerificarAsync(_imagen, _imagen, CancellationToken.None);
+
+        Assert.False(r.EsExito);
+        Assert.Equal(ErroresKyc.RostroNoDetectado, r.Error.Code);
+        Assert.Contains("selfie", r.Error.Message);
+    }
+
+    [Fact]
+    public async Task Http_500_con_payload_de_imagen_sin_rostro_devuelve_rostro_no_detectado()
+    {
+        var handler = new FakeHandler(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent(
+                """{"success": false, "error": "Exception while processing img2_path: Face could not be detected"}""",
+                Encoding.UTF8,
+                "application/json"),
+        });
+        var verificador = Crear(handler);
+
+        var r = await verificador.VerificarAsync(_imagen, _imagen, CancellationToken.None);
+
+        Assert.False(r.EsExito);
+        Assert.Equal(ErroresKyc.RostroNoDetectado, r.Error.Code);
+        Assert.Contains("selfie", r.Error.Message);
+    }
+
+    [Fact]
+    public async Task Http_500_sin_payload_conocido_sigue_siendo_servicio_no_disponible()
+    {
+        var handler = new FakeHandler(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+        {
+            Content = new StringContent(
+                """{"success": false, "error": "Invalid base64-encoded string"}""",
+                Encoding.UTF8,
+                "application/json"),
+        });
+        var verificador = Crear(handler);
+
+        var r = await verificador.VerificarAsync(_imagen, _imagen, CancellationToken.None);
+
+        Assert.False(r.EsExito);
+        Assert.Equal(ErroresKyc.ServicioVerificacionNoDisponible, r.Error.Code);
+    }
+
     private sealed class FakeHandler : HttpMessageHandler
     {
         private readonly HttpResponseMessage? _respuesta;

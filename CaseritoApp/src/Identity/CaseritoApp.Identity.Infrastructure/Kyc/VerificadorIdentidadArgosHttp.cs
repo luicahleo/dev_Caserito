@@ -55,6 +55,14 @@ public sealed partial class VerificadorIdentidadArgosHttp(
 
         if (!respuesta.IsSuccessStatusCode)
         {
+            var imagenSinRostro = await ImagenSinRostroAsync(respuesta, ct);
+            if (imagenSinRostro is not null)
+            {
+                RegistrarError(logger, $"rostro-no-detectado-{imagenSinRostro}");
+                return Result.Fallo<VerificacionFacialResultado>(
+                    new Error(ErroresKyc.RostroNoDetectado, MensajeRostroNoDetectado(imagenSinRostro)));
+            }
+
             RegistrarError(logger, $"http-{(int)respuesta.StatusCode}");
             return Result.Fallo<VerificacionFacialResultado>(
                 new Error(ErroresKyc.ServicioVerificacionNoDisponible,
@@ -113,6 +121,64 @@ public sealed partial class VerificadorIdentidadArgosHttp(
         [property: JsonPropertyName("threshold")] double? Threshold,
         [property: JsonPropertyName("similarity_percent")] double SimilarityPercent,
         [property: JsonPropertyName("message")] string? Message);
+
+    // Contrato de error de ARGOS: 422 con {"code":"face-not-detected","image":"imgN"} (versión
+    // corregida) o 500 con {"error":"Exception while processing imgN_path..."} (versión actual).
+    private sealed record ErrorResponse(
+        [property: JsonPropertyName("code")] string? Code,
+        [property: JsonPropertyName("image")] string? Image,
+        [property: JsonPropertyName("error")] string? Error);
+
+    // Clasifica errores de entrada del usuario (foto sin rostro) para no tratarlos como caída
+    // del servicio. Devuelve "documento" (img1), "selfie" (img2) o "desconocida"; null si no
+    // es un caso de rostro no detectado.
+    private static async Task<string?> ImagenSinRostroAsync(HttpResponseMessage respuesta, CancellationToken ct)
+    {
+        ErrorResponse? cuerpo;
+        try
+        {
+            cuerpo = await respuesta.Content.ReadFromJsonAsync<ErrorResponse>(ct);
+        }
+        catch (Exception)
+        {
+            return null; // Cuerpo ilegible: se trata como fallo del servicio.
+        }
+
+        if (cuerpo is null)
+        {
+            return null;
+        }
+
+        if ((int)respuesta.StatusCode == 422 && cuerpo.Code == "face-not-detected")
+        {
+            return NombreImagen(cuerpo.Image);
+        }
+
+        const string patron = "Exception while processing img";
+        var error = cuerpo.Error;
+        if (error is not null && error.Contains(patron, StringComparison.Ordinal))
+        {
+            var indice = error.IndexOf(patron, StringComparison.Ordinal) + patron.Length;
+            return indice < error.Length ? NombreImagen($"img{error[indice]}") : "desconocida";
+        }
+
+        return null;
+    }
+
+    private static string NombreImagen(string? imagen) => imagen switch
+    {
+        "img1" => "documento",
+        "img2" => "selfie",
+        _ => "desconocida",
+    };
+
+    private static string MensajeRostroNoDetectado(string imagen) =>
+        imagen switch
+        {
+            "documento" => "No se detectó un rostro en la foto del documento. Usa una foto frontal, nítida y con buena luz, e inténtalo de nuevo.",
+            "selfie" => "No se detectó un rostro en la selfie. Usa una foto frontal, nítida y con buena luz, e inténtalo de nuevo.",
+            _ => "No se detectó un rostro en una de las fotos. Usa fotos frontales, nítidas y con buena luz, e inténtalo de nuevo.",
+        };
 
     // Auditoría sin PII: solo tipo de error de comunicación. Sin URLs completas, base64 ni bytes.
     [LoggerMessage(Level = LogLevel.Warning, Message = "ARGOS no disponible: tipo={TipoError}")]
