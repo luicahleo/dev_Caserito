@@ -98,6 +98,8 @@ Entregar un resumen con:
 - limitaciones o pruebas pendientes;
 - siguiente acción que requiere autorización.
 
-No mergear ni pushear salvo autorización explícita. Si la sesión termina antes,
+Al terminar un cambio verificado, seguir el flujo git autorizado de forma
+permanente (2026-08-06): commit → merge a master → push → borrar la rama, sin
+pedir confirmación cada vez. Si la sesión termina antes,
 crear o reemplazar `docs/ai/HANDOFF.md` usando la plantilla; eliminarlo cuando el
 trabajo quede completamente cerrado para que no se convierta en memoria obsoleta.
