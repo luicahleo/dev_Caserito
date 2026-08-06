@@ -14,6 +14,12 @@ import createClient from 'openapi-fetch';
 import type { paths } from './schema';
 import { clearAccessToken, getAccessToken, setAccessToken } from '../auth/session';
 import { crearErrorId, reportarDiagnostico } from '../lib/diagnosticos';
+import {
+  modoDiagnosticoActivo,
+  obtenerSesionId,
+  registrarEventoFlujo,
+  sanitizarRuta,
+} from '../lib/sesionDiagnostico';
 
 // Error tipado para ramificar por status (p. ej. 409). Solo status + code no-PII de ProblemDetails.
 export class HttpError extends Error {
@@ -54,6 +60,7 @@ async function refrescarToken(): Promise<boolean> {
 // según el token vigente en sesión. `new Request(request)` clona URL/método/headers/body.
 function conAutorizacion(request: Request): Request {
   const headers = new Headers(request.headers);
+  headers.set('X-Session-Id', obtenerSesionId());
   const token = getAccessToken();
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
@@ -83,8 +90,10 @@ async function transporte(request: Request): Promise<Response> {
 }
 
 async function fetchConDiagnostico(request: Request): Promise<Response> {
+  const inicio = performance.now();
   try {
     const response = await fetch(request);
+    registrarLlamadaApi(request, inicio, response.status, response.headers.get('X-Trace-Id'));
     if (response.status >= 500) {
       void reportarDiagnostico({
         errorId: crearErrorId(),
@@ -97,6 +106,7 @@ async function fetchConDiagnostico(request: Request): Promise<Response> {
     }
     return response;
   } catch (error) {
+    registrarLlamadaApi(request, inicio, undefined, undefined);
     void reportarDiagnostico({
       errorId: crearErrorId(),
       eventName: 'http.network_failed',
@@ -105,6 +115,26 @@ async function fetchConDiagnostico(request: Request): Promise<Response> {
     });
     throw error;
   }
+}
+
+// Registra la llamada en el buffer de flujo solo con modo diagnóstico activo.
+// El detalle es método + ruta sanitizada (sin query); nunca bodies ni tokens.
+function registrarLlamadaApi(
+  request: Request,
+  inicio: number,
+  statusCode: number | undefined,
+  traceIdCrudo: string | null,
+): void {
+  if (!modoDiagnosticoActivo()) {
+    return;
+  }
+  registrarEventoFlujo({
+    eventName: 'flow.api_call',
+    detail: `${request.method} ${sanitizarRuta(new URL(request.url).pathname)}`,
+    statusCode,
+    durationMs: Math.round(performance.now() - inicio),
+    traceId: leerTraceId(traceIdCrudo) ?? undefined,
+  });
 }
 
 // openapi-fetch arma la URL final concatenando baseUrl + pathname y construye un

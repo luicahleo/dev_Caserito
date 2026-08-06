@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { api, desempaquetar, HttpError } from './http';
 import { setAccessToken, getAccessToken, clearAccessToken } from '../auth/session';
 import * as diagnosticos from '../lib/diagnosticos';
+import { obtenerEventosRecientes } from '../lib/sesionDiagnostico';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -90,6 +91,13 @@ describe('desempaquetar / HttpError', () => {
     const req = fetchMock.mock.calls[0][0] as Request;
     expect(req.headers.get('Authorization')).toBe('Bearer tok');
   });
+
+  it('inyecta X-Session-Id opaco en todas las llamadas', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(respuesta(200, {}));
+    await api.GET('/api/perfil');
+    const req = fetchMock.mock.calls[0][0] as Request;
+    expect(req.headers.get('X-Session-Id')).toMatch(/^SES-[0-9A-F]{12}$/);
+  });
 });
 
 describe('diagnóstico del transporte', () => {
@@ -133,5 +141,46 @@ describe('diagnóstico del transporte', () => {
     await api.GET('/api/catalogo/categorias');
 
     expect(reportar).not.toHaveBeenCalled();
+  });
+});
+
+describe('flujo de llamadas API', () => {
+  afterEach(() => {
+    sessionStorage.removeItem('caserito.debug');
+  });
+
+  it('registra flow.api_call con ruta sanitizada en modo diagnóstico', async () => {
+    sessionStorage.setItem('caserito.debug', '1');
+    const antes = obtenerEventosRecientes(100).length;
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({}), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Trace-Id': '0123456789abcdef0123456789abcdef',
+        },
+      }),
+    );
+
+    await api.GET('/api/perfil');
+
+    const eventos = obtenerEventosRecientes(100);
+    expect(eventos.length).toBe(antes + 1);
+    expect(eventos[eventos.length - 1]).toMatchObject({
+      eventName: 'flow.api_call',
+      detail: 'GET /api/perfil',
+      statusCode: 200,
+      traceId: '0123456789abcdef0123456789abcdef',
+    });
+  });
+
+  it('no registra llamadas API sin modo diagnóstico', async () => {
+    sessionStorage.removeItem('caserito.debug');
+    const antes = obtenerEventosRecientes(100).length;
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(respuesta(200, {}));
+
+    await api.GET('/api/perfil');
+
+    expect(obtenerEventosRecientes(100).length).toBe(antes);
   });
 });
