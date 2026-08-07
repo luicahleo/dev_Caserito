@@ -11,6 +11,9 @@ agentes. La información se divide por frecuencia para no pagar contexto inútil
 3. `WORKFLOW.md`: proceso completo para features, fases y cambios complejos.
 4. Specs y planes: decisiones de un bloque concreto.
 5. `HANDOFF.md`: estado efímero de una sesión incompleta, si existe.
+6. `ECONOMIA_TOKENS.md` y `CONTEXT-EFFICIENCY.md`: elección de nivel de modelo,
+   tamaño de sesión y exploración eficiente. Consultar al planificar la sesión,
+   no en cada tarea.
 
 ## Qué leer al iniciar
 

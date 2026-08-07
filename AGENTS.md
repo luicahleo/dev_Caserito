@@ -59,7 +59,9 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 
 - Una feature o bloque por sesión.
 - Preferir sesiones nuevas con handoff breve frente a historiales largos.
-- Usar razonamiento bajo para tareas mecánicas y elevarlo solo ante complejidad.
+- Usar el nivel de modelo y razonamiento más económico que mantenga la calidad;
+  elevarlo ante decisiones de criterio. No bajarlo en cambios de configuración de
+  build o verificación, aunque parezcan mecánicos.
 - No usar subagentes salvo trabajo verdaderamente independiente que compense el
   coste adicional.
 - Guardar decisiones duraderas en specs; no convertir el chat en documentación.
