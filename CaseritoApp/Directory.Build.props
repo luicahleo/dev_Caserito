@@ -11,6 +11,10 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
 
+    <!-- Analizadores de mantenibilidad: se miden, no rompen el build.
+         El gate quality/check-complexity.mjs impide que el conteo suba. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CA1502;CA1505;CA1506</WarningsNotAsErrors>
+
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 </Project>

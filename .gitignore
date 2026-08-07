@@ -28,6 +28,9 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
+# Log del build usado por el gate de complejidad (quality/check-complexity.mjs)
+artifacts-build.log
+
 # Test results
 [Tt]est[Rr]esult*/
 coverage*.json
