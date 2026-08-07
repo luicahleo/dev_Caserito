@@ -19,9 +19,11 @@ hallazgos diferidos.
 
 ## Única acción pendiente: baseline de mutación (criterio 9)
 
-El workflow `Mutation testing` (`.github/workflows/mutation.yml`) no se ha
-ejecutado aún: Stryker bloqueó en local y la rama no estaba publicada. Ya
-despachado manualmente desde `master`. Tras el run:
+El workflow `Mutation testing` (`.github/workflows/mutation.yml`) se despachó
+manualmente desde `master` el 2026-08-07, pero el run fue **cancelado por
+timeout de 90 min**: Stryker se quedó colgado ~1h25m en «Identifying projects
+to mutate» (sin reporte subido). Reproduce el bloqueo Stryker/SDK preview
+previsto. Tras conseguir un run completo:
 
 1. Reemplazar el `score: 0` BLOQUEADO de `quality/mutation-baseline.json` por el
    score real del reporte subido en el artefacto `mutation-report`.
@@ -30,7 +32,8 @@ despachado manualmente desde `master`. Tras el run:
    SDK preview, dejar el marcador y reportar).
 
 Sin un baseline válido, el job nocturno no detecta regresiones; no declarar el
-criterio 9 en verde hasta que el score sea real.
+criterio 9 en verde hasta que el score sea real. Recomendación para el siguiente
+intento: acotar el scope (un solo contexto) o subir el `timeout-minutes`.
 
 ## Decisión tomada (2026-08-07)
 
