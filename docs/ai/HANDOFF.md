@@ -46,6 +46,9 @@ El plan es autocontenido: no hace falta el historial de la sesión anterior.
 - Exploración del repositorio y diagnóstico del estado actual.
 - Spec escrito, autorevisado y commiteado.
 - Plan escrito, autorevisado y commiteado.
+- Regla de elección de nivel de modelo hecha neutral al proveedor
+  (`docs/ai/ECONOMIA_TOKENS.md` secciones 1 y 2, `AGENTS.md`, `docs/ai/README.md`).
+  Trabajo independiente del plan; no altera su ejecución.
 
 ## Tarea exacta en curso
 
@@ -95,6 +98,18 @@ Ninguno pendiente. Tres riesgos conocidos, con instrucciones en el plan:
 Ejecutar el plan con `superpowers:subagent-driven-development`, una tarea por
 subagente, empezando por la Tarea 1.
 
+Nivel de modelo por tarea, según `docs/ai/ECONOMIA_TOKENS.md` §1:
+
+- **Intermedio** — tareas 1, 2, 6, 7, 8, 9, 10. El plan ya trae el código escrito.
+- **Alto** — tareas 3, 4 y 5. No por escribir los tests, sino por lo que exigen
+  cuando fallan: juzgar si una dependencia entre contextos es un acoplamiento
+  legítimo que debe pasar por `Contracts`, un error real, o una excepción a
+  documentar.
+- **No usar nivel económico en ninguna tarea.** Todas tocan configuración de build
+  o de verificación (`Directory.Build.props`, `.editorconfig`, `.csproj`,
+  workflows de CI, scripts de `quality/`), donde la propia guía prohíbe bajar de
+  nivel: un error ahí no rompe nada visible pero invalida la comprobación.
+
 Cada tarea termina con su propio commit. Al completar las 10 y con
 `verify --full` en verde, integrar según el flujo git autorizado: merge a
 `master`, push y borrado de la rama.
@@ -108,3 +123,5 @@ function que haya revelado una violación preexistente.
 - `84305e8` docs(spec): diseño de puerta de calidad determinista
 - `e882c06` docs(spec): refuerza la exencion del gate TDD y justifica la tolerancia
 - `aa847a0` docs(plan): plan de implementacion de la puerta de calidad
+- `5e6f07c` docs: handoff para ejecutar el plan de la puerta de calidad
+- `8edbc34` docs(ia): regla de nivel de modelo neutral al proveedor
