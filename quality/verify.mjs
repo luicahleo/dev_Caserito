@@ -18,6 +18,12 @@ const frontend = join(raiz, 'web');
 // Cada gate: { nombre, comando, args, cwd, soloCompleto }
 const gates = [
   {
+    nombre: 'Gate TDD',
+    comando: 'node',
+    args: ['quality/check-tdd.mjs'],
+    cwd: raiz,
+  },
+  {
     nombre: 'Formato .NET',
     comando: 'dotnet',
     args: ['format', 'CaseritoApp.sln', '--verify-no-changes'],
