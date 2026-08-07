@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { compararCobertura } from '../check-coverage.mjs';
+import { compararCobertura, combinarCobertura, resolverTolerancia, TOLERANCIA_PP } from '../check-coverage.mjs';
 
 const TOLERANCIA = 0.5;
 
@@ -68,4 +68,33 @@ test('un proyecto que desaparece del reporte hace fallar el gate', () => {
   );
   assert.equal(r.ok, false);
   assert.match(r.regresiones[0].motivo, /no aparece/);
+});
+
+test('combinarCobertura conserva un proyecto que solo aparece en un reporte', () => {
+  const actual = { 'CaseritoApp.Catalog.Domain': { linea: 84.3, rama: 70.0 } };
+  const r = combinarCobertura(actual, { 'CaseritoApp.Chat.Domain': { linea: 90.0, rama: 80.0 } });
+  assert.deepEqual(r, {
+    'CaseritoApp.Catalog.Domain': { linea: 84.3, rama: 70.0 },
+    'CaseritoApp.Chat.Domain': { linea: 90.0, rama: 80.0 },
+  });
+});
+
+test('combinarCobertura se queda con el maximo por metrica cuando el proyecto aparece en dos reportes', () => {
+  const actual = { 'CaseritoApp.Catalog.Domain': { linea: 84.3, rama: 93.1 } };
+  const r = combinarCobertura(actual, { 'CaseritoApp.Catalog.Domain': { linea: 0, rama: 100 } });
+  assert.deepEqual(r, { 'CaseritoApp.Catalog.Domain': { linea: 84.3, rama: 100 } });
+});
+
+test('combinarCobertura muta y devuelve el mismo acumulador recibido', () => {
+  const actual = {};
+  const r = combinarCobertura(actual, { 'CaseritoApp.Catalog.Domain': { linea: 50, rama: 50 } });
+  assert.equal(r, actual);
+});
+
+test('resolverTolerancia usa el valor de la baseline cuando esta presente', () => {
+  assert.equal(resolverTolerancia({ tolerancia_pp: 1.5 }), 1.5);
+});
+
+test('resolverTolerancia cae a TOLERANCIA_PP cuando la baseline no trae el campo', () => {
+  assert.equal(resolverTolerancia({}), TOLERANCIA_PP);
 });

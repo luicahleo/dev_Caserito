@@ -1,13 +1,19 @@
 #!/usr/bin/env node
-// Gate de cobertura: no-regresion contra quality/coverage-baseline.json.
-// No exige un minimo absoluto; solo prohibe empeorar.
-// Ver docs/ai/PUERTA_CALIDAD.md para actualizar la baseline legitimamente.
+// Gate de cobertura: no-regresión contra quality/coverage-baseline.json.
+// No exige un mínimo absoluto; solo prohíbe empeorar.
+// Ver docs/ai/PUERTA_CALIDAD.md para actualizar la baseline legítimamente.
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { exito, fallo } from './lib/salida.mjs';
 
 export const TOLERANCIA_PP = 0.5;
+
+// El campo tolerancia_pp de la baseline manda cuando está presente, para que
+// el archivo quede autocontenido; TOLERANCIA_PP es solo el respaldo si falta.
+export function resolverTolerancia(baseline) {
+  return baseline.tolerancia_pp ?? TOLERANCIA_PP;
+}
 
 export function compararCobertura(actual, baseline, tolerancia) {
   const regresiones = [];
@@ -20,6 +26,13 @@ export function compararCobertura(actual, baseline, tolerancia) {
     const medido = actual[proyecto];
 
     if (!medido) {
+      // Limitación deliberada: si el reporte NO viene vacío pero a este
+      // proyecto puntual le falló su suite y no llegó a emitir su propio
+      // coverage.cobertura.xml, el gate lo deja pasar en silencio en vez de
+      // marcarlo como regresión. Es consecuencia directa de exigir que un
+      // proyecto nuevo sin entrada en el baseline no rompa el gate: no hay
+      // forma de distinguir "es nuevo" de "dejó de reportar" solo con este
+      // dato, y priorizamos no bloquear por falsos positivos de renombres.
       if (reporteVacio) {
         regresiones.push({
           proyecto,
@@ -108,7 +121,7 @@ if (process.argv[1] && process.argv[1].endsWith('check-coverage.mjs')) {
     readFileSync(new URL('./coverage-baseline.json', import.meta.url), 'utf8'),
   );
 
-  const resultado = compararCobertura(actual, baseline.proyectos, TOLERANCIA_PP);
+  const resultado = compararCobertura(actual, baseline.proyectos, resolverTolerancia(baseline));
 
   if (!resultado.ok) {
     const detalle = resultado.regresiones
