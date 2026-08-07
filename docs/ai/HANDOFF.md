@@ -23,16 +23,18 @@ Commits de código esperados (los de documentación son anteriores):
 - `692f504` test(arquitectura): aislamiento entre bounded contexts
 - `4280f6d` test(arquitectura): convenciones CQRS verificadas
 - `9054d71` refactor(arquitectura): unifica el TheoryData de contextos en Ensamblados
+- `74fef30` feat(calidad): gate de cobertura con baseline de no-regresion
+- `75df219` fix(calidad): cubre combinarCobertura con tests, tolerancia autocontenida y acentos
 
 ## Tarea exacta en curso
 
-**Tareas 1 a 5: completas y revisadas.** Las dos de nivel alto (4 y 5) se
-cerraron en la sesión 3 con spec ✅ y calidad Aprobada; la 5 pasó por una ronda
-de arreglos (detalle en el ledger). No queda nada pendiente de las cinco
-primeras.
+**Tareas 1 a 6: completas y revisadas.** Las dos de nivel alto (4 y 5) se
+cerraron en la sesión 3; la 6 se cerró en la sesión 4 con spec ✅, calidad
+Aprobada y una ronda de arreglos (detalle en el ledger). No queda nada
+pendiente de las seis primeras.
 
-**Primer paso de la nueva sesión: despachar la Tarea 6**, con el brief ya
-extraído en `task-6-brief.md`. De la 6 a la 10 el nivel es intermedio.
+**Primer paso de la nueva sesión: despachar la Tarea 7**, con el brief ya
+extraído en `task-7-brief.md`. De la 7 a la 10 el nivel es intermedio.
 
 ## Spec, plan y ledger activos
 
@@ -114,8 +116,17 @@ handlers y 32 validadores de Application ya son `public sealed`.
 - `Reputation` y `Notifications` **no tienen eventos de dominio**: sus verdes en
   las reglas de Domain son accidentales. Está anotado en `CapasTests.cs`.
 - Los 76 handlers son `public sealed class …Handler`. Ninguno es `internal`.
-- `coverlet.collector` **no** está declarado: `--collect:"XPlat Code Coverage"`
-  no recolecta nada todavía. Lo añade la Tarea 6.
+- `coverlet.collector` 6.0.4 **ya está declarado** (Tarea 6) en
+  `Directory.Packages.props` y en los tres `.csproj` de test.
+- Baseline de cobertura: **23 proyectos, línea 81.10%, rama 74.07%** (promedio
+  simple), en `quality/coverage-baseline.json`. El gate es de no-regresión con
+  tolerancia de 0.5 pp, leída del propio JSON.
+- El nivel completo de `quality/verify.mjs` ya **no** ejecuta unit, arquitectura
+  e integración por separado: el gate «Tests con cobertura» los sustituye, y los
+  gates del nivel rápido llevan `soloRapido` para no duplicar suites. Tenerlo en
+  cuenta al añadir gates nuevos.
+- Los tests de integración necesitan Docker: sin Docker no se puede regenerar la
+  baseline ni correr el nivel completo.
 - `NetArchTest.Rules` 1.3.2 ya está en `Directory.Packages.props`.
 - Node disponible: **v24** (el plan dice 22; sirve igual).
 - `.github/workflows/ci.yml` ya cubre formato, build con warnings-as-errors,
