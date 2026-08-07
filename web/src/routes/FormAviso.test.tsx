@@ -4,6 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FormAviso, type ValoresAviso } from './FormAviso';
 import * as catalogo from '../api/catalogo';
+import { esMovilConCamara } from '../kyc/captura/plataforma';
+
+vi.mock('../kyc/captura/plataforma', () => ({
+  esMovilConCamara: vi.fn(() => false),
+}));
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -42,5 +47,28 @@ describe('FormAviso', () => {
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ titulo: 'Mesa', descripcion: 'De madera', monto: '300' }),
     );
+  });
+
+  it('en escritorio solo ofrece subir fotos, sin opción de cámara', async () => {
+    vi.mocked(esMovilConCamara).mockReturnValue(false);
+    montar();
+    await screen.findByRole('button', { name: /agregar fotos/i });
+    expect(screen.getByRole('button', { name: /agregar fotos/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /tomar foto/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /subir de galería/i })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/agregar fotos/i)).toHaveAttribute('accept', 'image/*');
+    expect(screen.getByLabelText(/agregar fotos/i)).not.toHaveAttribute('capture');
+  });
+
+  it('en móvil con cámara ofrece tomar foto y subir de galería', async () => {
+    vi.mocked(esMovilConCamara).mockReturnValue(true);
+    montar();
+    await screen.findByRole('button', { name: /tomar foto/i });
+    expect(screen.getByRole('button', { name: /tomar foto/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /subir de galería/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/tomar foto/i)).toHaveAttribute('capture', 'environment');
+    expect(screen.getByLabelText(/tomar foto/i)).toHaveAttribute('accept', 'image/*');
+    expect(screen.getByLabelText(/subir de galería/i)).toHaveAttribute('accept', 'image/*');
+    expect(screen.getByLabelText(/subir de galería/i)).not.toHaveAttribute('capture');
   });
 });

@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { listarCategorias, listarCiudades } from '../api/catalogo';
 import { type FotoAvisoDto, borrarFotoAviso, subirFotoAviso } from '../api/avisos';
+import { esMovilConCamara } from '../kyc/captura/plataforma';
 
 export interface ValoresAviso {
   titulo: string;
@@ -76,6 +77,10 @@ export function FormAviso({
   const [fotasLocales, setFotasLocales] = useState<{ preview: string; archivo: File }[]>([]);
   const [subiendo, setSubiendo] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
+
+  // En móvil con cámara se ofrece también capturar; en escritorio el botón de
+  // cámara no tiene sentido (capture se ignora y abriría el mismo diálogo).
+  const esDispositivoMovil = esMovilConCamara();
 
   const totalFotos = fotosGuardadas.length + fotasLocales.length;
 
@@ -299,22 +304,46 @@ export function FormAviso({
           </Stack>
         )}
 
-        <Button
-          component="label"
-          variant="outlined"
-          disabled={totalFotos >= MAX_FOTOS || subiendo}
-          size="small"
-        >
-          {subiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
-          Agregar fotos
-          <input
-            type="file"
-            accept="image/jpeg,image/png"
-            multiple
-            hidden
-            onChange={handleArchivos}
-          />
-        </Button>
+        {esDispositivoMovil ? (
+          <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+            <Button
+              component="label"
+              variant="outlined"
+              disabled={totalFotos >= MAX_FOTOS || subiendo}
+              size="small"
+            >
+              {subiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+              Tomar foto
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                onChange={handleArchivos}
+              />
+            </Button>
+            <Button
+              component="label"
+              variant="outlined"
+              disabled={totalFotos >= MAX_FOTOS || subiendo}
+              size="small"
+            >
+              Subir de galería
+              <input type="file" accept="image/*" multiple hidden onChange={handleArchivos} />
+            </Button>
+          </Stack>
+        ) : (
+          <Button
+            component="label"
+            variant="outlined"
+            disabled={totalFotos >= MAX_FOTOS || subiendo}
+            size="small"
+          >
+            {subiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+            Agregar fotos
+            <input type="file" accept="image/*" multiple hidden onChange={handleArchivos} />
+          </Button>
+        )}
 
         {errorFoto && (
           <Alert severity="error" sx={{ mt: 1 }}>
