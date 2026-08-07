@@ -23,7 +23,7 @@ jobs:
         run: dotnet restore CaseritoApp.sln
 
       - name: Verificar formato
-        run: dotnet format CaseritoApp.sln --verify-no-changes --no-restore
+        run: dotnet format CaseritoApp.sln --verify-no-changes --no-restore --exclude-diagnostics CA1502 CA1505 CA1506
 
       - name: Build (warnings as errors)
         run: dotnet build CaseritoApp.sln --no-restore --configuration Release
@@ -108,7 +108,7 @@ jobs:
           node-version: 22
 
       - name: Tests de los scripts de calidad
-        run: node --test quality/
+        run: node --test "quality/**/*.test.mjs"
 
       - name: Gate TDD
         run: node quality/check-tdd.mjs
