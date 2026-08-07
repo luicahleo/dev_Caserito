@@ -13,22 +13,12 @@ namespace CaseritoApp.ArchitectureTests;
 /// </summary>
 public sealed class ConvencionesTests
 {
-    public static TheoryData<string> ContextosDeNegocio()
-    {
-        var datos = new TheoryData<string>();
-        foreach (var contexto in Ensamblados.Contextos)
-        {
-            datos.Add(contexto);
-        }
-        return datos;
-    }
-
     /// <summary>
     /// Un handler es una unidad de comportamiento sin herencia prevista: sellarlo
     /// evita jerarquías accidentales y permite al runtime desvirtualizar llamadas.
     /// </summary>
     [Theory]
-    [MemberData(nameof(ContextosDeNegocio))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Los_handlers_son_sealed(string contexto)
     {
         var resultado = Types.InAssembly(Ensamblados.De(contexto, "Application"))
@@ -50,7 +40,7 @@ public sealed class ConvencionesTests
     /// pipeline de MediatR configurados en Application.
     /// </summary>
     [Theory]
-    [MemberData(nameof(ContextosDeNegocio))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Los_handlers_viven_en_la_capa_Application(string contexto)
     {
         var enInfraestructura = Types.InAssembly(Ensamblados.De(contexto, "Infrastructure"))
@@ -73,7 +63,7 @@ public sealed class ConvencionesTests
     /// evita que una subclase altere en silencio las reglas heredadas.
     /// </summary>
     [Theory]
-    [MemberData(nameof(ContextosDeNegocio))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Los_validadores_son_sealed(string contexto)
     {
         var resultado = Types.InAssembly(Ensamblados.De(contexto, "Application"))

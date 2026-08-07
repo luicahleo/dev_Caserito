@@ -8,16 +8,6 @@ namespace CaseritoApp.ArchitectureTests;
 /// </summary>
 public sealed class CapasTests
 {
-    public static TheoryData<string> TodosLosContextos()
-    {
-        var datos = new TheoryData<string>();
-        foreach (var contexto in Ensamblados.Contextos)
-        {
-            datos.Add(contexto);
-        }
-        return datos;
-    }
-
     /// <summary>
     /// El dominio no puede conocer a Application, Infrastructure ni al Host.
     /// Absorbe la regla del antiguo
@@ -25,7 +15,7 @@ public sealed class CapasTests
     /// añadiendo <c>CaseritoApp.Host</c> y un caso por contexto para diagnosticar mejor.
     /// </summary>
     [Theory]
-    [MemberData(nameof(TodosLosContextos))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Domain_no_depende_de_capas_externas(string contexto)
     {
         var resultado = Types.InAssembly(Ensamblados.De(contexto, "Domain"))
@@ -63,7 +53,7 @@ public sealed class CapasTests
     /// </para>
     /// </remarks>
     [Theory]
-    [MemberData(nameof(TodosLosContextos))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Domain_no_depende_de_infraestructura_tecnica(string contexto)
     {
         var resultado = Types.InAssembly(Ensamblados.De(contexto, "Domain"))
@@ -77,7 +67,7 @@ public sealed class CapasTests
     }
 
     [Theory]
-    [MemberData(nameof(TodosLosContextos))]
+    [MemberData(nameof(Ensamblados.ContextosComoDatos), MemberType = typeof(Ensamblados))]
     public void Application_no_depende_de_Infrastructure_ni_de_EF(string contexto)
     {
         var resultado = Types.InAssembly(Ensamblados.De(contexto, "Application"))
