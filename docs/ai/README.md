@@ -14,6 +14,7 @@ agentes. La información se divide por frecuencia para no pagar contexto inútil
 6. `ECONOMIA_TOKENS.md` y `CONTEXT-EFFICIENCY.md`: elección de nivel de modelo,
    tamaño de sesión y exploración eficiente. Consultar al planificar la sesión,
    no en cada tarea.
+7. `PUERTA_CALIDAD.md` — gates deterministas y reglas de baseline.
 
 ## Qué leer al iniciar
 

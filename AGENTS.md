@@ -55,6 +55,20 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 - Frontend: typecheck, lint, test y build al integrar rutas/contrato.
 - Informar pruebas no ejecutadas y el motivo; nunca afirmar verde sin evidencia.
 
+## Puerta de calidad
+
+- Ejecutar `./verify.ps1` (o `./verify.sh`) antes de cada commit, y
+  `./verify.ps1 -Full` antes de mergear. Es obligatorio y sustituye a la revisión
+  humana del código.
+- Prohibido `--no-verify` en commit o push.
+- Prohibido relajar una baseline, un umbral o una exclusión para que pase el
+  gate. Si el gate falla, se arregla el código, no el gate.
+- Las baselines de `quality/` solo se actualizan hacia mejor, en commit propio
+  que explique la mejora.
+- Un cambio en `src/` sin cambio en `tests/` requiere `[sin-test] <motivo>` en el
+  mensaje del commit; máximo 5 archivos.
+- Detalle de cada gate: `docs/ai/PUERTA_CALIDAD.md`.
+
 ## Economía de contexto
 
 - Una feature o bloque por sesión.

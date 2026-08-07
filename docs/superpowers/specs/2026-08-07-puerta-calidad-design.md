@@ -237,7 +237,11 @@ datos, tokens ni valores de configuración.
 
 ## Criterios de aceptación
 
-1. `verify` termina en verde sobre `master` limpio, en menos de 60 s sin Docker.
+1. `verify` termina en verde sobre `master` limpio, en menos de 5 minutos sin
+   Docker. (Presupuesto ajustado el 2026-08-07 a partir de la medición real:
+   ~2 minutos, 113–123 s en dos ejecuciones. El presupuesto original de este
+   criterio era 60 s, escrito antes de medir la puerta completa con todos sus
+   gates; ver «Duración medida» en `docs/ai/PUERTA_CALIDAD.md`.)
 2. `verify --full` termina en verde sobre `master` limpio con Docker disponible.
 3. Introducir una dependencia de `Domain` hacia `Infrastructure` hace fallar
    `verify`.

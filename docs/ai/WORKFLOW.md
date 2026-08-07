@@ -90,6 +90,10 @@ Revisar el diff completo contra el spec:
 
 ## 6. Cierre
 
+Antes de mergear, ejecutar `./verify.sh --full` (o `verify.ps1 -Full`) y
+confirmar que la puerta de calidad completa queda en verde, pegando la línea de
+resumen como evidencia en el resumen de cierre. Sin ese verde no hay merge.
+
 Entregar un resumen con:
 
 - resultado funcional;
