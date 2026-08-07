@@ -20,16 +20,19 @@ Commits de código esperados (los de documentación son anteriores):
 - `a1d9792` feat(calidad): gate TDD con exencion auditable
 - `d8fb9d8` fix(calidad): gate TDD no ignora errores de git ni alcances de commit
 - `4fd38e0` test(arquitectura): reglas de dependencia entre capas
+- `692f504` test(arquitectura): aislamiento entre bounded contexts
+- `4280f6d` test(arquitectura): convenciones CQRS verificadas
+- `9054d71` refactor(arquitectura): unifica el TheoryData de contextos en Ensamblados
 
 ## Tarea exacta en curso
 
-**Tareas 1, 2 y 3: completas y revisadas.** La revisión de la Tarea 3 se cerró en
-la sesión 2 con spec ✅ y calidad Aprobada, sin hallazgos Críticos ni Importantes
-(detalle en el ledger). No queda nada pendiente de las tres primeras.
+**Tareas 1 a 5: completas y revisadas.** Las dos de nivel alto (4 y 5) se
+cerraron en la sesión 3 con spec ✅ y calidad Aprobada; la 5 pasó por una ronda
+de arreglos (detalle en el ledger). No queda nada pendiente de las cinco
+primeras.
 
-**Primer paso de la nueva sesión: despachar la Tarea 4**, con el brief ya extraído
-en `task-4-brief.md` y las advertencias de la sección «Corrección importante al
-plan» más abajo (la Tarea 4 es *consolidar y ampliar*, no crear).
+**Primer paso de la nueva sesión: despachar la Tarea 6**, con el brief ya
+extraído en `task-6-brief.md`. De la 6 a la 10 el nivel es intermedio.
 
 ## Spec, plan y ledger activos
 
@@ -47,14 +50,13 @@ plan» más abajo (la Tarea 4 es *consolidar y ampliar*, no crear).
 ## Cómo continuar
 
 Ejecutar con `superpowers:subagent-driven-development`, **una tarea por
-subagente**, empezando por la **Tarea 4**. Abrir la sesión en nivel alto para la
+subagente**, empezando por la **Tarea 6**. Abrir la sesión en nivel alto para la
 orquestación.
 
-Nivel de modelo por tarea, ya decidido: **intermedio** en 6, 7, 8, 9 y 10;
-**alto** en 4 y 5 (no por escribir los tests, sino por juzgar si una dependencia
-entre contextos es acoplamiento legítimo, error real o excepción a documentar).
-**Ninguna baja a nivel económico:** todas tocan configuración de build o de
-verificación, donde `docs/ai/ECONOMIA_TOKENS.md` §1 lo prohíbe.
+Nivel de modelo por tarea, ya decidido: **intermedio** en 6, 7, 8, 9 y 10 (las de
+nivel alto, 4 y 5, ya están cerradas). **Ninguna baja a nivel económico:** todas
+tocan configuración de build o de verificación, donde
+`docs/ai/ECONOMIA_TOKENS.md` §1 lo prohíbe.
 
 Tras cada tarea: `./verify.sh`. No mergear hasta que las 10 estén completas y
 `./verify.sh --full` esté en verde. Cada tarea termina con su propio commit.
@@ -83,27 +85,28 @@ Tras cada tarea: `./verify.sh`. No mergear hasta que las 10 estén completas y
    reescribir las reglas existentes con `Ensamblados` y casos `Theory` por
    contexto, borrar los duplicados y añadir encima solo lo nuevo.
 
-## Corrección importante al plan: su premisa era falsa
+## Corrección al plan: su premisa era falsa (ya resuelta)
 
-El handoff anterior afirmaba que `CaseritoApp.ArchitectureTests` solo contenía
-`PiiRedactionTests.cs`. **Tiene 15 archivos de test** (verificado). Consecuencias:
+El handoff de la sesión 1 afirmaba que `CaseritoApp.ArchitectureTests` solo
+contenía `PiiRedactionTests.cs`. Tiene 15 archivos. El solapamiento ya está
+consolidado y **no queda nada por hacer en este frente**:
 
-- `Layering/CapasPorContextoTests.cs` duplicaba parte de la Tarea 3: **ya fue
-  absorbido y borrado** por la Tarea 3.
-- `Layering/AislamientoEntreContextosTests.cs:13` **ya implementa la Tarea 4
-  completa**, y de forma más amplia: recorre las tres capas de cada contexto
-  contra cualquier otro `CaseritoApp.{otro}`. Por tanto **la Tarea 4 no es
-  «crear» sino «consolidar y ampliar»**: reescribe esa regla con `Ensamblados` y
-  `TheoryData` de pares de contextos (mejor diagnóstico: dice qué par falla),
-  borra el archivo viejo y no pierdas ninguna comprobación que tuviera. Antes de
-  borrar, confirma que la versión nueva cubre todo lo que cubría la vieja.
-- Revisa el mismo solapamiento antes de la Tarea 5 (`ConvencionesTests.cs`):
-  puede haber ya tests de convenciones entre esos 15 archivos.
+- `Layering/CapasPorContextoTests.cs`: absorbido y borrado por la Tarea 3.
+- `Layering/AislamientoEntreContextosTests.cs`: absorbido y borrado por la
+  Tarea 4, que lo reescribió como `ContextosTests.cs` sin perder cobertura y
+  ampliándola (Infrastructure como origen; `Application → Application` ajeno
+  prohibido).
+- El solapamiento de la Tarea 5 se verificó antes de despachar: no existían
+  tests de convenciones CQRS. La carpeta `Layering/` ya no existe.
+
+**Sin violaciones arquitectónicas preexistentes.** Ni la Tarea 4 ni la 5
+activaron el punto de parada 1: los contextos ya están aislados, y los 84
+handlers y 32 validadores de Application ya son `public sealed`.
 
 ## Estado medido del repositorio (verificado, no supuesto)
 
-- Tests de arquitectura: **102 pasan** tras la consolidación de la Tarea 3
-  (eran 85 antes; la Tarea 3 sustituye 1 `Fact` por 18 casos de `Theory`).
+- Tests de arquitectura: **209 pasan** (102 tras la Tarea 3, 191 tras la Tarea 4
+  con sus 3 teorías × 30 pares, 209 tras la Tarea 5 con 3 reglas × 6 contextos).
 - Unit tests: 379 pasan en ~1 s. Tests web: 224 pasan.
 - Tests de los scripts de calidad: 13 pasan (`node --test quality/`).
 - Bounded contexts: `Identity`, `Catalog`, `Chat`, `Orders`, `Reputation`,
@@ -137,16 +140,20 @@ El handoff anterior afirmaba que `CaseritoApp.ArchitectureTests` solo contenía
 - La **Tarea 8, Paso 4** referencia `quality/check-mutation.mjs` antes de que el
   Paso 5 lo cree, y ese archivo no figura en la tabla «Crear» del plan. Es un
   desorden del plan, no un problema real: créalo.
-- **Dos trampas del entorno, descubiertas en la Tarea 3.** Las tareas 4 y 5 crean
-  archivos `.cs` nuevos con texto en español, así que muerden seguro:
+- **Trampas del entorno, ya pagadas en las tareas 3 a 5:**
   - Sonar `S1135` interpreta la palabra española **«Todo»** como marcador TODO y,
-    con `TreatWarningsAsErrors`, **rompe el build**. Evita empezar frases o
-    nombres con «Todo»/«Todos» en comentarios y en nombres de miembros (p. ej.
-    `TodosLosContextos`, que el plan usa literalmente en las tareas 3 y 5).
+    con `TreatWarningsAsErrors`, rompe el build. Precisión de la Tarea 5: se
+    dispara sobre **comentarios**, no sobre identificadores. Aun así, todos los
+    analizadores Sonar son errores aquí (`S1481`, `S1118`, `S3400`…).
   - El hook `pre-commit` exige **CRLF** en los `.cs` nuevos.
+  - `[MemberData]` exige miembro `public` aunque la clase sea `internal`
+    (`xUnit1016`). Por eso `Ensamblados.ContextosComoDatos()` es `public`.
 - NetArchTest lee **IL**, no el texto fuente: un `using` sin usar no genera
   dependencia. Para provocar un fallo de prueba hace falta un tipo real que use
   el ensamblado prohibido.
+- Interfaz compartida por los tests de arquitectura, ya estable:
+  `Ensamblados.Contextos`, `Ensamblados.De(contexto, capa)` y
+  `Ensamblados.ContextosComoDatos()`. Reutilizarla; no duplicar `TheoryData`.
 - No usar `--no-verify` en ningún commit ni push.
 - Cada tarea termina con su propio commit. No dejar la rama a medias.
 
