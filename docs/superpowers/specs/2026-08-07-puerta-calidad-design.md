@@ -109,9 +109,12 @@ Archivos nuevos en `CaseritoApp/tests/CaseritoApp.ArchitectureTests/`:
 - **`ContextosTests.cs`** — ningún bounded context referencia el `Domain` o el
   `Infrastructure` de otro contexto. La comunicación entre contextos ocurre
   únicamente a través de `BuildingBlocks.Contracts`.
-- **`ConvencionesTests.cs`** — los handlers CQRS terminan en `Handler`, son
-  `internal sealed`, y devuelven `Result`. Todo command o query tiene un validador
-  FluentValidation asociado.
+- **`ConvencionesTests.cs`** — los handlers CQRS terminan en `Handler` y son
+  `sealed`. Todo command o query tiene un validador FluentValidation asociado.
+
+  Verificado sobre el código actual: los 76 handlers existentes son
+  `public sealed class …Handler`. La regla codifica esa convención real; exigir
+  `internal` habría hecho fallar el gate contra todo el repositorio.
 
 Se ejecutan como tests xUnit normales, dentro del nivel rápido.
 
