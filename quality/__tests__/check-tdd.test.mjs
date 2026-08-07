@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluarTdd, archivosDelDiff, mensajesDelRango } from '../check-tdd.mjs';
+import { validarLimiteExencion } from '../check-exencion.mjs';
 
 test('pasa cuando el cambio en src viene con cambio en tests', () => {
   const r = evaluarTdd({
@@ -93,4 +94,23 @@ test('mensajesDelRango concatena los mensajes de todos los commits del rango, no
   const r = mensajesDelRango(ejecutarFalso);
   assert.equal(r.ok, true);
   assert.match(r.mensaje, /\[sin-test\]/);
+});
+
+test('la exencion permite hasta 5 archivos de src', () => {
+  const archivos = Array.from({ length: 5 }, (_, i) => `CaseritoApp/src/A/F${i}.cs`);
+  const r = validarLimiteExencion({ archivosCambiados: archivos, mensajeCommit: '[sin-test] refactor puro de nombres' });
+  assert.equal(r.ok, true);
+});
+
+test('la exencion falla con mas de 5 archivos de src', () => {
+  const archivos = Array.from({ length: 6 }, (_, i) => `CaseritoApp/src/A/F${i}.cs`);
+  const r = validarLimiteExencion({ archivosCambiados: archivos, mensajeCommit: '[sin-test] refactor puro de nombres' });
+  assert.equal(r.ok, false);
+  assert.match(r.motivo, /6/);
+});
+
+test('sin exencion el limite no aplica', () => {
+  const archivos = Array.from({ length: 20 }, (_, i) => `CaseritoApp/src/A/F${i}.cs`);
+  const r = validarLimiteExencion({ archivosCambiados: archivos, mensajeCommit: 'feat: cambio grande' });
+  assert.equal(r.ok, true);
 });

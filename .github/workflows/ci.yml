@@ -94,3 +94,24 @@ jobs:
 
       - name: Verificar que no hay deriva de contrato
         run: git diff --exit-code -- CaseritoApp/artifacts/openapi/CaseritoApp.Host.json web/src/api/schema.d.ts
+
+  calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0   # el gate TDD necesita el historial para el diff
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Tests de los scripts de calidad
+        run: node --test quality/
+
+      - name: Gate TDD
+        run: node quality/check-tdd.mjs
+
+      - name: Limite de archivos para la exencion [sin-test]
+        run: node quality/check-exencion.mjs
