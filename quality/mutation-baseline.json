@@ -1,0 +1,7 @@
+{
+  "generado": "2026-08-07",
+  "alcance": "Domain y Application de los 6 bounded contexts",
+  "score": 0,
+  "tolerancia_pp": 1.0,
+  "nota": "BLOQUEADO (2026-08-07): no fue posible medir un score real en tres intentos; ver task-8-report.md. Este 0 es un marcador temporal, no un baseline valido. No usar este archivo para el gate nocturno hasta reemplazar el score con una medicion real: con score=0 la comparacion nunca detecta regresiones."
+}

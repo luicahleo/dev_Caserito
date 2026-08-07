@@ -31,6 +31,9 @@ msbuild.wrn
 # Log del build usado por el gate de complejidad (quality/check-complexity.mjs)
 artifacts-build.log
 
+# Salida de Stryker (mutation testing); el reporte se publica como artefacto de CI
+CaseritoApp/StrykerOutput/
+
 # Test results
 [Tt]est[Rr]esult*/
 coverage*.json

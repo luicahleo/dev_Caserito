@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker-net/master/packages/Stryker.Core/schema.json",
+  "stryker-config": {
+    "project-info": {
+      "name": "CaseritoApp"
+    },
+    "solution": "CaseritoApp.sln",
+    "test-projects": [
+      "tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj"
+    ],
+    "mutate": [
+      "src/Identity/CaseritoApp.Identity.Domain/**/*.cs",
+      "src/Identity/CaseritoApp.Identity.Application/**/*.cs",
+      "src/Catalog/CaseritoApp.Catalog.Domain/**/*.cs",
+      "src/Catalog/CaseritoApp.Catalog.Application/**/*.cs",
+      "src/Chat/CaseritoApp.Chat.Domain/**/*.cs",
+      "src/Chat/CaseritoApp.Chat.Application/**/*.cs",
+      "src/Orders/CaseritoApp.Orders.Domain/**/*.cs",
+      "src/Orders/CaseritoApp.Orders.Application/**/*.cs",
+      "src/Reputation/CaseritoApp.Reputation.Domain/**/*.cs",
+      "src/Reputation/CaseritoApp.Reputation.Application/**/*.cs",
+      "src/Notifications/CaseritoApp.Notifications.Domain/**/*.cs",
+      "src/Notifications/CaseritoApp.Notifications.Application/**/*.cs",
+      "!**/Migrations/**"
+    ],
+    "reporters": ["json", "progress"],
+    "thresholds": { "high": 80, "low": 60, "break": 0 },
+    "concurrency": 2,
+    "coverage-analysis": "off"
+  }
+}
