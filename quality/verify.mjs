@@ -15,7 +15,7 @@ const raiz = fileURLToPath(new URL('..', import.meta.url));
 const backend = join(raiz, 'CaseritoApp');
 const frontend = join(raiz, 'web');
 
-// Cada gate: { nombre, comando, args, cwd, soloCompleto }
+// Cada gate: { nombre, comando, args, cwd, soloCompleto, soloRapido }
 const gates = [
   {
     nombre: 'Gate TDD',
@@ -36,11 +36,15 @@ const gates = [
     cwd: backend,
   },
   {
+    // Solo en el nivel rápido: el nivel completo ejecuta la suite entera
+    // (unit + arquitectura + integración) de una sola vez vía 'Tests con
+    // cobertura', más abajo. Repetirla aquí duplicaría toda la ejecución.
     nombre: 'Unit tests',
     comando: 'dotnet',
     args: ['test', 'tests/CaseritoApp.UnitTests/CaseritoApp.UnitTests.csproj',
            '--no-build', '--configuration', 'Release'],
     cwd: backend,
+    soloRapido: true,
   },
   {
     nombre: 'Tests de arquitectura',
@@ -48,16 +52,28 @@ const gates = [
     args: ['test', 'tests/CaseritoApp.ArchitectureTests/CaseritoApp.ArchitectureTests.csproj',
            '--no-build', '--configuration', 'Release'],
     cwd: backend,
+    soloRapido: true,
   },
   { nombre: 'Lint web', comando: 'npm', args: ['run', 'lint'], cwd: frontend },
   { nombre: 'Typecheck web', comando: 'npm', args: ['run', 'typecheck'], cwd: frontend },
   { nombre: 'Tests web', comando: 'npm', args: ['run', 'test'], cwd: frontend },
   {
-    nombre: 'Tests de integración (Docker)',
+    // Sustituye, en el nivel completo, a las ejecuciones de tests por
+    // separado: corre unit + arquitectura + integración de una sola vez y
+    // con recolección de cobertura, para alimentar el gate de abajo.
+    nombre: 'Tests con cobertura',
     comando: 'dotnet',
-    args: ['test', 'tests/CaseritoApp.IntegrationTests/CaseritoApp.IntegrationTests.csproj',
-           '--no-build', '--configuration', 'Release'],
+    args: ['test', 'CaseritoApp.sln', '--configuration', 'Release',
+           '--collect:XPlat Code Coverage',
+           '--results-directory', 'artifacts/coverage'],
     cwd: backend,
+    soloCompleto: true,
+  },
+  {
+    nombre: 'Cobertura contra baseline',
+    comando: 'node',
+    args: ['quality/check-coverage.mjs', 'CaseritoApp/artifacts/coverage'],
+    cwd: raiz,
     soloCompleto: true,
   },
 ];
@@ -66,6 +82,7 @@ let fallidos = 0;
 
 for (const gate of gates) {
   if (gate.soloCompleto && !completo) continue;
+  if (gate.soloRapido && completo) continue;
 
   console.log(titulo(gate.nombre));
   const { codigo, duracionMs } = ejecutar(gate.comando, gate.args, { cwd: gate.cwd });

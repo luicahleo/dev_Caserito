@@ -35,6 +35,9 @@ coverage*.xml
 coverage*.info
 *.coverage
 *.coveragexml
+CaseritoApp/artifacts/coverage/
+# Excepción: la baseline de cobertura del gate de calidad sí se versiona.
+!quality/coverage-baseline.json
 
 # Claude Code local settings (per-user, no versionar)
 .claude/settings.local.json

@@ -1,0 +1,98 @@
+{
+  "generado": "2026-08-07",
+  "tolerancia_pp": 0.5,
+  "proyectos": {
+    "CaseritoApp.BuildingBlocks.Application": {
+      "linea": 89.09,
+      "rama": 100
+    },
+    "CaseritoApp.BuildingBlocks.Contracts": {
+      "linea": 36.36,
+      "rama": 100
+    },
+    "CaseritoApp.BuildingBlocks.Domain": {
+      "linea": 96.96,
+      "rama": 100
+    },
+    "CaseritoApp.BuildingBlocks.Infrastructure": {
+      "linea": 48.88,
+      "rama": 50
+    },
+    "CaseritoApp.Catalog.Application": {
+      "linea": 81.04,
+      "rama": 60.27
+    },
+    "CaseritoApp.Catalog.Domain": {
+      "linea": 84.34,
+      "rama": 93.1
+    },
+    "CaseritoApp.Chat.Application": {
+      "linea": 88.85,
+      "rama": 68.18
+    },
+    "CaseritoApp.Chat.Domain": {
+      "linea": 89.22,
+      "rama": 82.72
+    },
+    "CaseritoApp.Identity.Application": {
+      "linea": 83.75,
+      "rama": 70
+    },
+    "CaseritoApp.Identity.Domain": {
+      "linea": 87.32,
+      "rama": 100
+    },
+    "CaseritoApp.Identity.Infrastructure": {
+      "linea": 90.19,
+      "rama": 52.74
+    },
+    "CaseritoApp.Notifications.Application": {
+      "linea": 51.28,
+      "rama": 36.66
+    },
+    "CaseritoApp.Notifications.Domain": {
+      "linea": 90.12,
+      "rama": 95.31
+    },
+    "CaseritoApp.Notifications.Infrastructure": {
+      "linea": 83.42,
+      "rama": 36.66
+    },
+    "CaseritoApp.Orders.Application": {
+      "linea": 86.17,
+      "rama": 80.55
+    },
+    "CaseritoApp.Orders.Domain": {
+      "linea": 93.46,
+      "rama": 83.33
+    },
+    "CaseritoApp.Reputation.Application": {
+      "linea": 57.03,
+      "rama": 58.33
+    },
+    "CaseritoApp.Reputation.Domain": {
+      "linea": 90.74,
+      "rama": 96.42
+    },
+    "CaseritoApp.Catalog.Infrastructure": {
+      "linea": 96.81,
+      "rama": 84.37
+    },
+    "CaseritoApp.Chat.Infrastructure": {
+      "linea": 94.67,
+      "rama": 83.33
+    },
+    "CaseritoApp.Host": {
+      "linea": 70.41,
+      "rama": 52.98
+    },
+    "CaseritoApp.Orders.Infrastructure": {
+      "linea": 91.33,
+      "rama": 68.75
+    },
+    "CaseritoApp.Reputation.Infrastructure": {
+      "linea": 83.81,
+      "rama": 50
+    }
+  }
+}
