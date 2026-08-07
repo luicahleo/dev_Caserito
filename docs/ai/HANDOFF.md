@@ -142,6 +142,16 @@ El handoff anterior afirmaba que `CaseritoApp.ArchitectureTests` solo contenía
 - La **Tarea 8, Paso 4** referencia `quality/check-mutation.mjs` antes de que el
   Paso 5 lo cree, y ese archivo no figura en la tabla «Crear» del plan. Es un
   desorden del plan, no un problema real: créalo.
+- **Dos trampas del entorno, descubiertas en la Tarea 3.** Las tareas 4 y 5 crean
+  archivos `.cs` nuevos con texto en español, así que muerden seguro:
+  - Sonar `S1135` interpreta la palabra española **«Todo»** como marcador TODO y,
+    con `TreatWarningsAsErrors`, **rompe el build**. Evita empezar frases o
+    nombres con «Todo»/«Todos» en comentarios y en nombres de miembros (p. ej.
+    `TodosLosContextos`, que el plan usa literalmente en las tareas 3 y 5).
+  - El hook `pre-commit` exige **CRLF** en los `.cs` nuevos.
+- NetArchTest lee **IL**, no el texto fuente: un `using` sin usar no genera
+  dependencia. Para provocar un fallo de prueba hace falta un tipo real que use
+  el ensamblado prohibido.
 - No usar `--no-verify` en ningún commit ni push.
 - Cada tarea termina con su propio commit. No dejar la rama a medias.
 
