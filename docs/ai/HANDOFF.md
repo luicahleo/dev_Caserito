@@ -11,8 +11,8 @@ Claude, Codex, Kimi o cualquier agente futuro.
 
 - Rama: `feature/puerta-calidad`. `master` = `origin/master` = `0f8e491`.
 - **Verificar el estado real con `git log --oneline -6` y `git status --short`
-  antes de cualquier cosa.** La sesión anterior se cortó con la Tarea 3
-  commiteada o a punto de commitear.
+  antes de cualquier cosa.** La sesión 2 dejó el árbol limpio con la Tarea 3
+  commiteada y revisada.
 
 Commits de código esperados (los de documentación son anteriores):
 
@@ -23,18 +23,13 @@ Commits de código esperados (los de documentación son anteriores):
 
 ## Tarea exacta en curso
 
-**La Tarea 3 está commiteada pero SIN revisar.** La sesión se cortó por economía
-de contexto justo antes de su revisión de tarea. Primer paso de la nueva sesión:
+**Tareas 1, 2 y 3: completas y revisadas.** La revisión de la Tarea 3 se cerró en
+la sesión 2 con spec ✅ y calidad Aprobada, sin hallazgos Críticos ni Importantes
+(detalle en el ledger). No queda nada pendiente de las tres primeras.
 
-1. Generar el paquete de revisión con `BASE=d8fb9d8`, `HEAD=4fd38e0` y despachar
-   la revisión de tarea (nivel intermedio basta: el diff es pequeño y el brief
-   traía el código). El revisor debe mirar tres cosas concretas: que borrar
-   `Layering/CapasPorContextoTests.cs` no perdiera ninguna comprobación, que la
-   exclusión de MediatR esté documentada y acotada solo a esa regla, y que la
-   evidencia del Paso 3 (provocar el fallo con EF y revertirlo) sea real y el
-   árbol quedara limpio.
-2. Cerrar los hallazgos que salgan.
-3. Recién entonces despachar la Tarea 4.
+**Primer paso de la nueva sesión: despachar la Tarea 4**, con el brief ya extraído
+en `task-4-brief.md` y las advertencias de la sección «Corrección importante al
+plan» más abajo (la Tarea 4 es *consolidar y ampliar*, no crear).
 
 ## Spec, plan y ledger activos
 
