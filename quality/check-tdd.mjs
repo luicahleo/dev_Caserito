@@ -59,21 +59,47 @@ export function evaluarTdd({ archivosCambiados, mensajeCommit }) {
   return { ok: true, exencion: true, motivo: razon };
 }
 
-function archivosDelDiff() {
-  const { salida } = ejecutar('git', ['diff', '--name-only', 'origin/master...HEAD'], { silencioso: true });
-  return salida.split('\n').map((l) => l.trim()).filter(Boolean);
+// `ejecutarFn` es inyectable para poder testear la ruta de error sin git real.
+// `ejecutar` nunca lanza (por diseño), así que hay que comprobar `codigo`
+// explícitamente: si no lo hacemos, un fallo de git (por ejemplo
+// `origin/master` inalcanzable en un checkout superficial) se interpreta
+// como "sin archivos cambiados" y el gate pasa sin haber evaluado nada.
+export function archivosDelDiff(ejecutarFn = ejecutar) {
+  const { codigo, salida } = ejecutarFn('git', ['diff', '--name-only', 'origin/master...HEAD'], { silencioso: true });
+  if (codigo !== 0) {
+    return { ok: false, motivo: 'No se pudo leer el diff de git contra origin/master.' };
+  }
+  return { ok: true, archivos: salida.split('\n').map((l) => l.trim()).filter(Boolean) };
 }
 
-function ultimoMensaje() {
-  const { salida } = ejecutar('git', ['log', '-1', '--pretty=%B'], { silencioso: true });
-  return salida.trim();
+// Lee los mensajes de todos los commits del rango (no solo el último), para
+// que la búsqueda de la etiqueta [sin-test] cubra el mismo alcance que el
+// diff de archivos usado arriba.
+export function mensajesDelRango(ejecutarFn = ejecutar) {
+  const { codigo, salida } = ejecutarFn('git', ['log', 'origin/master..HEAD', '--pretty=%B'], { silencioso: true });
+  if (codigo !== 0) {
+    return { ok: false, motivo: 'No se pudieron leer los mensajes de commit del rango contra origin/master.' };
+  }
+  return { ok: true, mensaje: salida.trim() };
 }
 
 // Punto de entrada CLI. Al importarse como módulo (tests) no se ejecuta.
 if (process.argv[1] && process.argv[1].endsWith('check-tdd.mjs')) {
+  const diff = archivosDelDiff();
+  if (!diff.ok) {
+    console.log(fallo('Gate TDD', diff.motivo));
+    process.exit(1);
+  }
+
+  const rango = mensajesDelRango();
+  if (!rango.ok) {
+    console.log(fallo('Gate TDD', rango.motivo));
+    process.exit(1);
+  }
+
   const resultado = evaluarTdd({
-    archivosCambiados: archivosDelDiff(),
-    mensajeCommit: ultimoMensaje(),
+    archivosCambiados: diff.archivos,
+    mensajeCommit: rango.mensaje,
   });
 
   if (!resultado.ok) {

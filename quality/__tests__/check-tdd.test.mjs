@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluarTdd } from '../check-tdd.mjs';
+import { evaluarTdd, archivosDelDiff, mensajesDelRango } from '../check-tdd.mjs';
 
 test('pasa cuando el cambio en src viene con cambio en tests', () => {
   const r = evaluarTdd({
@@ -59,4 +59,38 @@ test('no exige tests cuando no hay cambios en src', () => {
     mensajeCommit: 'docs: actualiza workflow',
   });
   assert.equal(r.ok, true);
+});
+
+test('archivosDelDiff falla explicitamente cuando git falla, en vez de reportar "sin cambios"', () => {
+  const ejecutarFalso = () => ({ codigo: 128, salida: 'fatal: no se pudo resolver origin/master' });
+  const r = archivosDelDiff(ejecutarFalso);
+  assert.equal(r.ok, false);
+  assert.match(r.motivo, /origin\/master/);
+  // Anti-PII: el motivo no debe filtrar la salida cruda de git.
+  assert.doesNotMatch(r.motivo, /fatal:/);
+});
+
+test('archivosDelDiff devuelve la lista de archivos cuando git responde bien', () => {
+  const ejecutarFalso = () => ({ codigo: 0, salida: 'a.cs\nb.cs\n' });
+  const r = archivosDelDiff(ejecutarFalso);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.archivos, ['a.cs', 'b.cs']);
+});
+
+test('mensajesDelRango falla explicitamente cuando git falla, en vez de dejar el mensaje vacio', () => {
+  const ejecutarFalso = () => ({ codigo: 128, salida: 'fatal: rango invalido' });
+  const r = mensajesDelRango(ejecutarFalso);
+  assert.equal(r.ok, false);
+  assert.match(r.motivo, /origin\/master/);
+  assert.doesNotMatch(r.motivo, /fatal:/);
+});
+
+test('mensajesDelRango concatena los mensajes de todos los commits del rango, no solo el ultimo', () => {
+  const ejecutarFalso = () => ({
+    codigo: 0,
+    salida: 'feat: primero sin exencion\nfix: segundo [sin-test] motivo largo suficiente aqui\n',
+  });
+  const r = mensajesDelRango(ejecutarFalso);
+  assert.equal(r.ok, true);
+  assert.match(r.mensaje, /\[sin-test\]/);
 });
