@@ -75,7 +75,7 @@ const gates = [
     nombre: 'Tests con cobertura',
     comando: 'dotnet',
     args: ['test', 'CaseritoApp.sln', '--configuration', 'Release',
-           '--collect:XPlat Code Coverage',
+           '--collect:"XPlat Code Coverage"',
            '--results-directory', 'artifacts/coverage'],
     cwd: backend,
     soloCompleto: true,
