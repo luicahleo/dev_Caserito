@@ -124,7 +124,16 @@ Se ejecutan como tests xUnit normales, dentro del nivel rápido.
 - `quality/check-coverage.mjs` — parsea los `coverage.cobertura.xml` y falla si
   algún proyecto baja más de **0,5 puntos porcentuales** respecto a su baseline.
 
-La tolerancia absorbe el ruido de instrumentación sin permitir regresiones reales.
+La tolerancia existe porque la cobertura no es estable: el denominador cambia por
+código generado por el compilador (`record`s, métodos `async`, lambdas), ramas
+defensivas inalcanzables y diferencias entre versiones de coverlet. Un gate con
+tolerancia cero fallaría ante descensos de centésimas que no señalan ningún
+problema real, y **un gate con falsos positivos entrena al agente a regenerar la
+baseline en lugar de investigar** — exactamente lo que la puerta pretende evitar.
+
+El hueco que deja la tolerancia (unas pocas líneas sin cubrir) lo cierra el gate
+TDD de C5, que exige que todo cambio en `src/` traiga cambios en `tests/`. Las dos
+redes son complementarias: ninguna basta por separado.
 
 ### C4 — Complejidad
 
@@ -145,8 +154,28 @@ bajo `CaseritoApp/tests/`.
 Exclusiones (no cuentan como código que exige test): `Migrations/`, `Program.cs`,
 `*.Designer.cs`, `*.csproj`.
 
-Exención explícita: incluir `[sin-test]` en el mensaje del commit **seguido de un
-motivo**. El script exige que haya texto tras la etiqueta.
+**Exención.** Existe porque hay cambios legítimos en `src/` que no pueden llevar
+test: refactor puro (renombrar, extraer método), corrección de textos de UI,
+atributos de logging. El refactor puro es indetectable por ruta, porque toca los
+mismos archivos que un cambio de comportamiento. Sin válvula, el agente
+bloqueado escribiría un test vacío que no asevera nada — peor que no tener gate —
+o recurriría a `--no-verify`, que **no deja rastro alguno**. La exención convierte
+un incumplimiento invisible en uno auditable.
+
+Se activa incluyendo `[sin-test]` en el mensaje del commit, seguido de un motivo.
+Tres refuerzos la hacen cara de abusar:
+
+1. El motivo debe tener **al menos 20 caracteres** de texto real tras la etiqueta.
+   Un "menor" no cuela.
+2. `verify` **imprime un aviso destacado al final** cuando detecta una exención,
+   de modo que aparezca en la salida que el agente reporta al cerrar.
+3. CI **falla** si un commit con `[sin-test]` modifica **más de 5 archivos** bajo
+   `CaseritoApp/src/`. Un refactor trivial no toca quince archivos.
+
+El uso de la exención es auditable en cualquier momento con
+`git log --grep="\[sin-test\]" --oneline`. Un puñado de exenciones con motivos
+razonables indica que el sistema funciona; una racha de motivos vagos indica que
+hay que endurecer las reglas.
 
 ### C6 — Mutation testing
 
@@ -211,9 +240,12 @@ datos, tokens ni valores de configuración.
    `verify`.
 4. Modificar un archivo de `src/` sin tocar `tests/` hace fallar `verify`.
 5. Bajar la cobertura de un proyecto más de 0,5 pp hace fallar `verify --full`.
-6. `AGENTS.md` contiene la sección "Puerta de calidad" y no supera su tamaño
+6. Un commit con `[sin-test]` y un motivo de menos de 20 caracteres hace fallar
+   `verify`; con un motivo válido pasa e imprime el aviso de exención.
+7. Un commit con `[sin-test]` que toca más de 5 archivos de `src/` hace fallar CI.
+8. `AGENTS.md` contiene la sección "Puerta de calidad" y no supera su tamaño
    razonable actual.
-7. El workflow de mutación se ejecuta manualmente al menos una vez y deja una
+9. El workflow de mutación se ejecuta manualmente al menos una vez y deja una
    baseline registrada.
 
 ## Riesgos
