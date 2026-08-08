@@ -1,4 +1,4 @@
-# Extensión opcional de docker-compose.dev.yml para levantar ARGOS en local.
+# Extensión de docker-compose.dev.yml para levantar ARGOS en local.
 # ARGOS es el microservicio Python de reconocimiento facial que consume CaseritoApp.
 # Uso: docker compose -f docker-compose.dev.yml -f docker-compose.argos.yml up
 #
@@ -37,6 +37,5 @@ services:
     environment:
       Argos__Url: "http://argos:5000"
       Argos__ApiKey: "${ARGOS_API_KEY:-}"
-    # ARGOS es un microservicio opcional para Caserito; la API debe arrancar
-    # independientemente de su estado. Si ARGOS no responde, el adaptador HTTP
-    # de KYC devuelve HTTP 503 sin dejar caer el resto de la aplicación.
+    # La API puede arrancar mientras ARGOS carga el modelo; iniciar-pc2.ps1
+    # espera después a que ambos servicios estén saludables.

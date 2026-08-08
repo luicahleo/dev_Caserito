@@ -1,6 +1,5 @@
 param(
     [string]$Ip,
-    [switch]$Argos,
     [switch]$Logs
 )
 
@@ -55,14 +54,15 @@ New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-d
 New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-config') | Out-Null
 Set-Content -Path (Join-Path $raizCaserito '.local/pc2/ip.txt') -Value $ipLan -Encoding ascii
 
-$archivosCompose = @('-f', 'docker-compose.dev.yml', '-f', 'docker-compose.pc2.yml')
-if ($Argos) {
-    $rutaArgos = Join-Path $raizCaserito '..\dev\ARGOS\Dockerfile'
-    if (-not (Test-Path $rutaArgos)) {
-        throw 'No se encontró ARGOS en ../dev/ARGOS. Corrige su ubicación o inicia sin -Argos.'
-    }
-    $archivosCompose += @('-f', 'docker-compose.argos.yml')
+$rutaArgos = Join-Path $raizCaserito '..\dev\ARGOS\Dockerfile'
+if (-not (Test-Path $rutaArgos)) {
+    throw 'Falta ARGOS en ../dev/ARGOS. Clona ese repositorio para probar Caserito de extremo a extremo.'
 }
+$archivosCompose = @(
+    '-f', 'docker-compose.dev.yml',
+    '-f', 'docker-compose.pc2.yml',
+    '-f', 'docker-compose.argos.yml'
+)
 
 & docker compose @archivosCompose up -d --build --renew-anon-volumes
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo levantar el entorno PC2.' }
@@ -93,8 +93,27 @@ if (-not $saludable) {
     throw 'El gateway HTTPS no alcanzó un estado saludable.'
 }
 
+$argosSaludable = $false
+for ($intento = 0; $intento -lt 120 -and -not $argosSaludable; $intento++) {
+    try {
+        $ErrorActionPreference = 'Continue'
+        $estadoArgos = (& docker inspect --format '{{.State.Health.Status}}' caserito-argos 2>$null).Trim()
+        $codigoEstadoArgos = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $preferenciaErrores
+    }
+    $argosSaludable = $codigoEstadoArgos -eq 0 -and $estadoArgos -eq 'healthy'
+    if (-not $argosSaludable) { Start-Sleep -Seconds 2 }
+}
+if (-not $argosSaludable) {
+    & docker compose @archivosCompose logs --tail 50 argos
+    throw 'ARGOS no alcanzó un estado saludable.'
+}
+
 Write-Host ''
 Write-Host "Caserito PC2: https://$hostLan" -ForegroundColor Green
+Write-Host 'ARGOS: saludable en la red interna de Caserito' -ForegroundColor Green
 if (Test-Path $certificado) {
     Write-Host "CA pública para instalar en el móvil: $certificado" -ForegroundColor Yellow
 } else {
