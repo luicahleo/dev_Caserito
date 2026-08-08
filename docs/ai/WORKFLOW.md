@@ -61,7 +61,8 @@ Ejecutar una tarea a la vez:
 5. Ejecutar verificaciones vecinas proporcionales al riesgo.
 6. Autorrevisar: spec, simplicidad, capas, PII, concurrencia y errores.
 7. Corregir hallazgos antes de continuar.
-8. Commit lógico y pequeño.
+8. Ejecutar `./verify.ps1 -Changed` (o `./verify.sh --changed`) y crear un
+   commit lógico y pequeño.
 
 No mezclar refactors no relacionados. Si aparece una decisión nueva que cambia
 el diseño, detenerse y pedir aprobación; actualizar spec/plan después.
@@ -90,9 +91,11 @@ Revisar el diff completo contra el spec:
 
 ## 6. Cierre
 
-Antes de mergear, ejecutar `./verify.sh --full` (o `verify.ps1 -Full`) y
-confirmar que la puerta de calidad completa queda en verde, pegando la línea de
-resumen como evidencia en el resumen de cierre. Sin ese verde no hay merge.
+Antes de integrar en `develop`, ejecutar `./verify.sh` (o `verify.ps1`) y
+confirmar que la puerta de calidad rápida general queda en verde. Antes de
+promover `develop` a `master`, ejecutar `./verify.sh --full` (o
+`verify.ps1 -Full`) y confirmar que la puerta completa queda en verde. Sin el
+verde correspondiente no hay merge.
 
 Entregar un resumen con:
 

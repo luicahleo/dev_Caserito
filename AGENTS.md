@@ -58,9 +58,10 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 
 ## Puerta de calidad
 
-- Ejecutar `./verify.ps1` (o `./verify.sh`) antes de cada commit, y
-  `./verify.ps1 -Full` antes de mergear. Es obligatorio y sustituye a la revisión
-  humana del código.
+- Ejecutar `./verify.ps1 -Changed` (o `./verify.sh --changed`) antes de cada
+  commit, `./verify.ps1` antes de integrar en `develop` y `./verify.ps1 -Full`
+  antes de promover a `master`. Es obligatorio y sustituye a la revisión humana
+  del código.
 - Prohibido `--no-verify` en commit o push.
 - Prohibido relajar una baseline, un umbral o una exclusión para que pase el
   gate. Si el gate falla, se arregla el código, no el gate.

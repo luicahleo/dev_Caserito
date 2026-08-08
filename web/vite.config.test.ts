@@ -16,3 +16,11 @@ describe('proxy de desarrollo', () => {
     expect(proxy?.['/hubs']).toMatchObject({ ws: true });
   });
 });
+
+describe('ejecución de tests', () => {
+  it('limita los workers para evitar timeouts por contención', () => {
+    const test = (configuracion as UserConfig & { test?: { maxWorkers?: number } }).test;
+
+    expect(test?.maxWorkers).toBe(2);
+  });
+});
