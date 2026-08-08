@@ -102,8 +102,14 @@ Entregar un resumen con:
 - limitaciones o pruebas pendientes;
 - siguiente acción que requiere autorización.
 
-Al terminar un cambio verificado, seguir el flujo git autorizado de forma
-permanente (2026-08-06): commit → merge a master → push → borrar la rama, sin
-pedir confirmación cada vez. Si la sesión termina antes,
-crear o reemplazar `docs/ai/HANDOFF.md` usando la plantilla; eliminarlo cuando el
-trabajo quede completamente cerrado para que no se convierta en memoria obsoleta.
+Al terminar un cambio verificado, hacer commit en la rama de trabajo, integrarlo
+en `develop`, publicar `develop` y borrar la rama de trabajo. Nunca fusionar ni
+hacer push a `master` sin un pedido explícito del usuario.
+
+La promoción a producción es `develop` → `master`. Tras el pedido explícito,
+ejecutar la puerta completa, fusionar y publicar `master`; el despliegue sigue
+siendo una acción manual en GitHub Actions y exige escribir `PRODUCCION`.
+
+Si la sesión termina antes, crear o reemplazar `docs/ai/HANDOFF.md` usando la
+plantilla; eliminarlo cuando el trabajo quede completamente cerrado para que no
+se convierta en memoria obsoleta.

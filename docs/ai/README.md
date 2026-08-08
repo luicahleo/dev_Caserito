@@ -15,6 +15,7 @@ agentes. La información se divide por frecuencia para no pagar contexto inútil
    tamaño de sesión y exploración eficiente. Consultar al planificar la sesión,
    no en cada tarea.
 7. `PUERTA_CALIDAD.md` — gates deterministas y reglas de baseline.
+8. `FLUJO_GIT.md` — ramas `develop`/`master` y despliegue manual a producción.
 
 ## Qué leer al iniciar
 
