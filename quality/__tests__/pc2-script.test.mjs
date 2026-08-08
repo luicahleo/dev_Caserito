@@ -21,6 +21,19 @@ test('los fallos transitorios de curl reintentan el sondeo HTTPS', () => {
   assert.match(script, /if \(-not \$saludable\) \{ Start-Sleep -Seconds 1 \}/);
 });
 
+test('la recreación de datos exige confirmación y elimina volúmenes antes de iniciar', () => {
+  assert.match(script, /\[switch\]\$RecrearDatos/);
+  assert.match(script, /\[switch\]\$ConfirmarBorradoDatos/);
+  assert.match(
+    script,
+    /if \(\$RecrearDatos -and -not \$ConfirmarBorradoDatos\)[\s\S]*throw/,
+  );
+  assert.match(
+    script,
+    /if \(\$RecrearDatos\)[\s\S]*docker compose @archivosCompose down --volumes[\s\S]*docker compose @archivosCompose up/,
+  );
+});
+
 test('el entorno PC2 siempre incluye y espera a ARGOS', () => {
   assert.doesNotMatch(script, /\[switch\]\$Argos/);
   assert.match(script, /'docker-compose\.argos\.yml'/);

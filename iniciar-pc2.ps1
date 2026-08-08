@@ -1,10 +1,16 @@
 param(
     [string]$Ip,
-    [switch]$Logs
+    [switch]$Logs,
+    [switch]$RecrearDatos,
+    [switch]$ConfirmarBorradoDatos
 )
 
 $ErrorActionPreference = 'Stop'
 $raizCaserito = $PSScriptRoot
+
+if ($RecrearDatos -and -not $ConfirmarBorradoDatos) {
+    throw 'La recreación elimina la base y volúmenes locales. Repite con -RecrearDatos -ConfirmarBorradoDatos.'
+}
 
 function Obtener-IpLan([string]$IpSolicitada) {
     if ($IpSolicitada) {
@@ -63,6 +69,12 @@ $archivosCompose = @(
     '-f', 'docker-compose.pc2.yml',
     '-f', 'docker-compose.argos.yml'
 )
+
+if ($RecrearDatos) {
+    & docker compose @archivosCompose down --volumes
+    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron eliminar los datos locales de PC2.' }
+    Write-Host 'Se eliminaron los volúmenes Docker locales de Caserito; se recrearán al iniciar.' -ForegroundColor Yellow
+}
 
 & docker compose @archivosCompose up -d --build --renew-anon-volumes
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo levantar el entorno PC2.' }
