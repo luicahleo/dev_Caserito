@@ -44,6 +44,63 @@ sola**.
 - API → http://localhost:8080 (health: `http://localhost:8080/health`)
 - SQL Server → `localhost:1433` (usuario `sa`, contraseña = `SA_PASSWORD` del `.env`)
 
+### Probar desde un móvil en PC2
+
+PC2 puede exponer este mismo entorno por HTTPS a cualquier móvil conectado a su
+misma Wi-Fi. No se conecta a producción y el login de Google/Facebook se simula
+localmente.
+
+1. Actualiza el repositorio, inicia Docker Desktop y copia `.env.example` como
+   `.env` si todavía no existe. Completa `SA_PASSWORD` y usa solo cuentas
+   sintéticas.
+2. Desde la raíz ejecuta:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1
+   ```
+
+   Si la detección automática elige una VPN o adaptador incorrecto:
+
+   ```powershell
+   powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1 -Ip 192.168.1.25
+   ```
+
+3. El script muestra una URL como `https://192.168.1.25.sslip.io` y la ruta de
+   `root.crt`. El dominio comodín solo resuelve el nombre hacia la IP privada y
+   permite que TLS envíe un nombre de servidor compatible; el tráfico de Caserito
+   permanece dentro de la red local. Copia **solo ese
+   certificado público** al móvil e instálalo como autoridad de confianza para
+   pruebas. Nunca copies archivos `.key` ni el resto de `.local/pc2`.
+   - Android: Ajustes → Seguridad → Cifrado y credenciales → Instalar certificado
+     de CA (la ruta puede variar por fabricante).
+   - iPhone/iPad: instala el perfil desde el archivo y activa después la confianza
+     total en Ajustes → General → Información → Ajustes de confianza.
+4. Abre la URL mostrada. La franja “Entorno de desarrollo — usa únicamente datos
+   de prueba” debe aparecer en todas las páginas.
+
+Para incluir el reconocimiento KYC local, coloca ARGOS en `../dev/ARGOS` respecto
+de este repositorio y usa `-Argos`. La primera ejecución puede tardar mientras
+descarga el modelo:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1 -Argos
+```
+
+Operación habitual:
+
+```powershell
+.\estado-pc2.ps1                 # estado
+.\estado-pc2.ps1 -Logs           # últimos 100 eventos por servicio
+.\detener-pc2.ps1                # detiene y conserva datos
+.\detener-pc2.ps1 -BorrarDatos -ConfirmarBorradoDatos  # elimina volúmenes locales
+```
+
+Si el móvil no conecta, verifica que ambos dispositivos estén en la misma Wi-Fi,
+que el router no tenga aislamiento de clientes y permite TCP 80/443 para redes
+privadas en Firewall de Windows. Si cambia la IP de PC2, vuelve a ejecutar el
+script: Caddy renovará el certificado local. El futuro subdominio de pruebas
+reemplazará esta CA local y permitirá configurar los proveedores sociales reales.
+
 ### Preparar cuentas para las pruebas manuales de fases 1–3
 
 El bootstrap es exclusivo de `Development`, está deshabilitado por defecto y no

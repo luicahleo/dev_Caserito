@@ -8,7 +8,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as chat from '../api/chat';
 import * as notificaciones from '../api/notificaciones';
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 function mockAuth(estaAutenticado: boolean, permisos: string[] = []) {
   vi.spyOn(authCtx, 'useAuth').mockReturnValue({
@@ -37,6 +40,28 @@ function montar() {
 }
 
 describe('AppLayout', () => {
+  it('advierte de forma visible cuando se ejecuta en Development', () => {
+    vi.stubEnv('VITE_CASERITO_ENVIRONMENT', 'Development');
+    mockAuth(false);
+
+    montar();
+
+    expect(
+      screen.getByRole('status', {
+        name: 'Entorno de desarrollo — usa únicamente datos de prueba',
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('no muestra la advertencia de Development fuera del entorno local', () => {
+    vi.stubEnv('VITE_CASERITO_ENVIRONMENT', 'Production');
+    mockAuth(false);
+
+    montar();
+
+    expect(screen.queryByText(/entorno de desarrollo/i)).not.toBeInTheDocument();
+  });
+
   it('muestra la identidad propia de Caserito en cabecera y pie', () => {
     mockAuth(false);
     montar();

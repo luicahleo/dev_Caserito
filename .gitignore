@@ -65,3 +65,4 @@ web/ios/
 # Docker: variables de entorno locales (secretos), nunca versionar
 .env
 payload/
+.local/

@@ -99,6 +99,77 @@ public sealed class AuthExternaConfiguracionTests(CaseritoApiFactory factory)
     }
 
     [Fact]
+    public async Task Development_anuncia_proveedores_cuando_el_simulador_esta_habilitado()
+    {
+        using var simulador = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Authentication:Google:ClientId", string.Empty);
+            builder.UseSetting("Authentication:Google:ClientSecret", string.Empty);
+            builder.UseSetting("Authentication:Facebook:AppId", string.Empty);
+            builder.UseSetting("Authentication:Facebook:AppSecret", string.Empty);
+            builder.UseSetting("Authentication:Simulador:Habilitado", "true");
+        });
+        using var cliente = simulador.CreateClient();
+
+        var proveedores = await cliente.GetFromJsonAsync<string[]>("/api/auth/external/providers");
+
+        Assert.NotNull(proveedores);
+        Assert.Equal(["facebook", "google"], proveedores);
+    }
+
+    [Fact]
+    public async Task Development_inicia_el_simulador_con_retorno_local_normalizado()
+    {
+        using var simulador = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Authentication:Google:ClientId", string.Empty);
+            builder.UseSetting("Authentication:Google:ClientSecret", string.Empty);
+            builder.UseSetting("Authentication:Simulador:Habilitado", "true");
+        });
+        using var cliente = simulador.CreateClient(new() { AllowAutoRedirect = false });
+
+        var respuesta = await cliente.GetAsync(
+            "/api/auth/external/google/start?returnUrl=https://malicioso.test");
+
+        Assert.Equal(HttpStatusCode.Redirect, respuesta.StatusCode);
+        Assert.Equal(
+            "/auth/external/simulador?provider=google&returnUrl=%2Fperfil",
+            respuesta.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
+    public async Task Development_aprueba_identidad_simulada_y_continua_por_el_callback_real()
+    {
+        using var simulador = factory.WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("Authentication:Google:ClientId", string.Empty);
+            builder.UseSetting("Authentication:Google:ClientSecret", string.Empty);
+            builder.UseSetting("Authentication:Simulador:Habilitado", "true");
+        });
+        using var cliente = simulador.CreateClient(new() { AllowAutoRedirect = false });
+        using var contenido = new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["provider"] = "google",
+            ["scenario"] = "nuevo",
+            ["action"] = "aprobar",
+            ["returnUrl"] = "/perfil",
+        });
+
+        var autorizacion = await cliente.PostAsync("/api/auth/external/simulator/authorize", contenido);
+        var callback = await cliente.GetAsync(autorizacion.Headers.Location);
+
+        Assert.Equal(HttpStatusCode.Redirect, autorizacion.StatusCode);
+        Assert.Equal(
+            "/api/auth/external/callback?returnUrl=%2Fperfil",
+            autorizacion.Headers.Location?.OriginalString);
+        Assert.Equal(HttpStatusCode.Redirect, callback.StatusCode);
+        Assert.StartsWith("/auth/external/onboarding?returnUrl=", callback.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
     public void Google_mapea_la_evidencia_de_email_verificado()
     {
         using var scope = factory.Services.CreateScope();

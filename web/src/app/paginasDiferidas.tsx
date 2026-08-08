@@ -82,6 +82,11 @@ export const AuthExternaCallbackPage = lazy(() =>
     default: modulo.AuthExternaCallbackPage,
   })),
 );
+export const AuthExternaSimuladorPage = lazy(() =>
+  import('../routes/AuthExternaSimuladorPage').then((modulo) => ({
+    default: modulo.AuthExternaSimuladorPage,
+  })),
+);
 export const CompletarRegistroExternoPage = lazy(() =>
   import('../routes/CompletarRegistroExternoPage').then((modulo) => ({
     default: modulo.CompletarRegistroExternoPage,

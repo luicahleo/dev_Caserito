@@ -7,6 +7,11 @@ import { rutasExcluidasFallbackPwa } from './src/pwa/navigation.js';
 // Target del proxy configurable por entorno (Docker/compose apunta al servicio "api");
 // fallback al puerto de dev en host.
 const apiTarget = process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:5245';
+const allowedHost = process.env.VITE_ALLOWED_HOST;
+
+export function crearHostsPermitidos(host: string | undefined): string[] {
+  return host ? [host] : [];
+}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -48,6 +53,7 @@ export default defineConfig({
   ],
   server: {
     host: true,
+    allowedHosts: crearHostsPermitidos(allowedHost),
     proxy: {
       '/health': apiTarget,
       '/api': apiTarget,

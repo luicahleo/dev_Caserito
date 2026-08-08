@@ -31,6 +31,7 @@ import { NotificacionesDropdown } from '../notificaciones/NotificacionesDropdown
 import { MarcaCaserito } from './MarcaCaserito';
 import { BotonDiagnostico } from './BotonDiagnostico';
 import { CapturaFlujoNavegacion } from './CapturaFlujoNavegacion';
+import { IndicadorEntorno } from './IndicadorEntorno';
 
 export function CargandoRuta() {
   return (
@@ -71,6 +72,7 @@ export function AppLayout() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <CapturaFlujoNavegacion />
       <BotonDiagnostico />
+      <IndicadorEntorno />
       <AppBar
         position="sticky"
         sx={{
