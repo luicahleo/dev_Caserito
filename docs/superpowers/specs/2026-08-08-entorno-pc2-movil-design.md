@@ -117,7 +117,8 @@ el entorno no ganará acceso implícito a producción.
 ## Criterios de aceptación
 
 1. En PC2, tras `git pull` y configurar `.env`, un único script levanta el
-   entorno y muestra una URL `https://<ip-wifi>` utilizable desde el móvil.
+   entorno y muestra una URL HTTPS basada en la IP Wi-Fi (mediante un nombre
+   `sslip.io` para disponer de SNI) utilizable desde el móvil.
 2. El móvil confía en la CA pública instalada y puede usar cámara/carga de fotos,
    PWA, API y SignalR sin errores de contenido mixto.
 3. Ninguna petición de la SPA local usa producción.

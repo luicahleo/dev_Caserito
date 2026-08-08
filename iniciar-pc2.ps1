@@ -38,9 +38,12 @@ docker info *> $null
 if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop no está iniciado o no responde.' }
 
 $ipLan = Obtener-IpLan $Ip
+$hostLan = "$ipLan.sslip.io"
 $env:CASERITO_LAN_IP = $ipLan
+$env:CASERITO_LAN_HOST = $hostLan
 New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-data') | Out-Null
 New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-config') | Out-Null
+Set-Content -Path (Join-Path $raizCaserito '.local/pc2/ip.txt') -Value $ipLan -Encoding ascii
 
 $archivosCompose = @('-f', 'docker-compose.dev.yml', '-f', 'docker-compose.pc2.yml')
 if ($Argos) {
@@ -59,8 +62,20 @@ for ($intento = 0; $intento -lt 30 -and -not (Test-Path $certificado); $intento+
     Start-Sleep -Seconds 1
 }
 
+$urlSalud = "https://$hostLan/health"
+$saludable = $false
+for ($intento = 0; $intento -lt 30 -and -not $saludable; $intento++) {
+    & curl.exe -k -f -sS --max-time 5 --resolve "${hostLan}:443:$ipLan" $urlSalud -o NUL 2>$null
+    $saludable = $LASTEXITCODE -eq 0
+    if (-not $saludable) { Start-Sleep -Seconds 1 }
+}
+if (-not $saludable) {
+    & docker compose @archivosCompose logs --tail 50 gateway web api
+    throw 'El gateway HTTPS no alcanzó un estado saludable.'
+}
+
 Write-Host ''
-Write-Host "Caserito PC2: https://$ipLan" -ForegroundColor Green
+Write-Host "Caserito PC2: https://$hostLan" -ForegroundColor Green
 if (Test-Path $certificado) {
     Write-Host "CA pública para instalar en el móvil: $certificado" -ForegroundColor Yellow
 } else {

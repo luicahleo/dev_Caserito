@@ -65,7 +65,10 @@ localmente.
    powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1 -Ip 192.168.1.25
    ```
 
-3. El script muestra `https://<IP-PC2>` y la ruta de `root.crt`. Copia **solo ese
+3. El script muestra una URL como `https://192.168.1.25.sslip.io` y la ruta de
+   `root.crt`. El dominio comodín solo resuelve el nombre hacia la IP privada y
+   permite que TLS envíe un nombre de servidor compatible; el tráfico de Caserito
+   permanece dentro de la red local. Copia **solo ese
    certificado público** al móvil e instálalo como autoridad de confianza para
    pruebas. Nunca copies archivos `.key` ni el resto de `.local/pc2`.
    - Android: Ajustes → Seguridad → Cifrado y credenciales → Instalar certificado

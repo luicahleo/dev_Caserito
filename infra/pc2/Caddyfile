@@ -1,9 +1,9 @@
-https://{$CASERITO_LAN_IP} {
+https://{$CASERITO_LAN_HOST} {
 	tls internal
 	encode zstd gzip
 	reverse_proxy web:5173
 }
 
-http://{$CASERITO_LAN_IP} {
-	redir https://{$CASERITO_LAN_IP}{uri} permanent
+http://{$CASERITO_LAN_HOST} {
+	redir https://{$CASERITO_LAN_HOST}{uri} permanent
 }
