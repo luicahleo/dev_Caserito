@@ -1,12 +1,15 @@
 name: Deploy
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-    branches: [master]
+  workflow_dispatch:
+    inputs:
+      confirmar:
+        description: Escribe PRODUCCION para confirmar el despliegue
+        required: true
+        type: string
 
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -14,15 +17,32 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+  RELEASE_SHA: ${{ github.sha }}
 
 jobs:
   deploy:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master'
+    if: github.ref == 'refs/heads/master' && inputs.confirmar == 'PRODUCCION'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: production
     steps:
+      - name: Verificar CI verde del commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          conclusion="$(
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "/repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${RELEASE_SHA}&branch=master&event=push&per_page=20" \
+              --jq '.workflow_runs | sort_by(.updated_at) | last | .conclusion // ""'
+          )"
+          if [ "$conclusion" != "success" ]; then
+            echo "El commit de master no tiene un CI verde."
+            exit 1
+          fi
+
       - name: Descargar código validado
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
