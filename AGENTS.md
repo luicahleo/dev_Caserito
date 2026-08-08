@@ -9,8 +9,9 @@ corto: contiene solo reglas que aplican a casi cualquier tarea.
 - Textos de UI y comentarios en español, con acentos y UTF-8; nunca mojibake.
 - Anti-PII no negociable: nunca registrar documentos, imágenes, tokens, pagos,
   credenciales, texto de reportes ni otros datos sensibles. Usar errores genéricos.
-- Integrar cada cambio verificado en la rama permanente `develop` y borrar la
-  rama de trabajo. Nunca fusionar ni hacer push a `master` sin pedido explícito del usuario.
+- Trabajar directamente en la rama permanente `develop`; no crear ramas de
+  trabajo salvo pedido explícito del usuario. Nunca fusionar ni hacer push a
+  `master` sin pedido explícito del usuario.
 - `master` representa producción; su despliegue requiere CI verde y ejecución
   manual confirmada del workflow `Deploy`.
 - Preservar cambios ajenos y evitar operaciones destructivas.
@@ -59,9 +60,8 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 ## Puerta de calidad
 
 - Ejecutar `./verify.ps1 -Changed` (o `./verify.sh --changed`) antes de cada
-  commit, `./verify.ps1` antes de integrar en `develop` y `./verify.ps1 -Full`
-  antes de promover a `master`. Es obligatorio y sustituye a la revisión humana
-  del código.
+  commit y push a `develop`, y `./verify.ps1 -Full` antes de promover a
+  `master`. Es obligatorio y sustituye a la revisión humana del código.
 - Prohibido `--no-verify` en commit o push.
 - Prohibido relajar una baseline, un umbral o una exclusión para que pase el
   gate. Si el gate falla, se arregla el código, no el gate.

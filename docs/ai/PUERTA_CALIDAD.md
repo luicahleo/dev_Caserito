@@ -12,8 +12,9 @@ del código. Neutrales al proveedor: aplican a cualquier agente.
     ./verify.ps1 -Full    # nivel completo, requiere Docker
     ./verify.sh --full
 
-Nivel por alcance antes de **cada commit**. Nivel rápido general antes de
-**integrar en `develop`**. Nivel completo antes de **promover a `master`**.
+Nivel por alcance antes de **cada commit y push a `develop`**. El nivel rápido
+general queda disponible para revisiones manuales transversales. Nivel completo
+antes de **promover a `master`**.
 
 El modo por alcance inspecciona los cambios pendientes respecto de `HEAD`,
 incluidos archivos nuevos: `web/` ejecuta los gates web, `CaseritoApp/` los

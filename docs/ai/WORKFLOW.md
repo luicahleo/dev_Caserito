@@ -7,7 +7,8 @@ pequeña y totalmente definida no necesita documentos nuevos.
 ## 0. Preparación
 
 1. Comprobar rama, worktree y últimos commits.
-2. Identificar el bloque y crear una rama dedicada.
+2. Confirmar que se trabaja en `develop` y sincronizarla con avance rápido.
+   No crear una rama de trabajo salvo pedido explícito del usuario.
 3. Localizar specs/planes relacionados por nombre; no leer históricos en masa.
 4. Registrar supuestos y detectar decisiones que cambiarían el alcance.
 
@@ -91,23 +92,22 @@ Revisar el diff completo contra el spec:
 
 ## 6. Cierre
 
-Antes de integrar en `develop`, ejecutar `./verify.sh` (o `verify.ps1`) y
-confirmar que la puerta de calidad rápida general queda en verde. Antes de
-promover `develop` a `master`, ejecutar `./verify.sh --full` (o
-`verify.ps1 -Full`) y confirmar que la puerta completa queda en verde. Sin el
-verde correspondiente no hay merge.
+Al terminar un cambio en `develop`, ejecutar `./verify.sh --changed` (o
+`verify.ps1 -Changed`), crear el commit y publicarlo directamente. CI valida el
+push. Antes de promover `develop` a `master`, comprobar CI verde y ejecutar
+`./verify.sh --full` (o `verify.ps1 -Full`). Sin ese verde no hay promoción.
 
 Entregar un resumen con:
 
 - resultado funcional;
-- commits/rama;
+- commits y estado de `develop`;
 - verificaciones y cantidades;
 - limitaciones o pruebas pendientes;
 - siguiente acción que requiere autorización.
 
-Al terminar un cambio verificado, hacer commit en la rama de trabajo, integrarlo
-en `develop`, publicar `develop` y borrar la rama de trabajo. Nunca fusionar ni
-hacer push a `master` sin un pedido explícito del usuario.
+Al terminar un cambio verificado, hacer commit y publicar directamente
+`develop`. Nunca fusionar ni hacer push a `master` sin un pedido explícito del
+usuario.
 
 La promoción a producción es `develop` → `master`. Tras el pedido explícito,
 ejecutar la puerta completa, fusionar y publicar `master`; el despliegue sigue
