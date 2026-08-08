@@ -34,8 +34,18 @@ if (-not (Test-Path (Join-Path $raizCaserito '.env'))) {
     throw 'Falta .env. Copia .env.example como .env y completa SA_PASSWORD con un valor local fuerte.'
 }
 
-docker info *> $null
-if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop no está iniciado o no responde.' }
+$preferenciaErrores = $ErrorActionPreference
+try {
+    # Windows PowerShell convierte las advertencias de stderr de Docker en
+    # NativeCommandError cuando la preferencia global es Stop.
+    $ErrorActionPreference = 'Continue'
+    docker info *> $null
+    $codigoDocker = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $preferenciaErrores
+}
+if ($codigoDocker -ne 0) { throw 'Docker Desktop no está iniciado o no responde.' }
 
 $ipLan = Obtener-IpLan $Ip
 $hostLan = "$ipLan.sslip.io"
