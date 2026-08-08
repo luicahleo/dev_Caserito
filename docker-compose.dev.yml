@@ -64,6 +64,7 @@ services:
     environment:
       # El dev server de Vite proxya las llamadas de la API hacia el contenedor api.
       VITE_API_PROXY_TARGET: "http://api:8080"
+      VITE_CASERITO_ENVIRONMENT: "${VITE_CASERITO_ENVIRONMENT:-Development}"
     ports:
       - "5173:5173"
     volumes:

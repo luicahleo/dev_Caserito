@@ -9,6 +9,8 @@ public sealed class OpcionesAutenticacionExterna
 
     public OpcionesFacebook Facebook { get; init; } = new();
 
+    public OpcionesSimulador Simulador { get; init; } = new();
+
     public sealed class OpcionesGoogle
     {
         public string ClientId { get; init; } = string.Empty;
@@ -25,5 +27,12 @@ public sealed class OpcionesAutenticacionExterna
         public string AppSecret { get; init; } = string.Empty;
 
         public bool Habilitado => !string.IsNullOrWhiteSpace(AppId) && !string.IsNullOrWhiteSpace(AppSecret);
+    }
+
+    public sealed class OpcionesSimulador
+    {
+        public bool Habilitado { get; init; }
+
+        public string CorreoExistente { get; init; } = "comprador@caserito.test";
     }
 }

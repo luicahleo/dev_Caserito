@@ -18,6 +18,14 @@ public static class AuthExternaEndpoints
 
     public static IEndpointRouteBuilder MapAuthExternaEndpoints(this IEndpointRouteBuilder app)
     {
+        var entorno = app.ServiceProvider.GetRequiredService<IHostEnvironment>();
+        var opciones = app.ServiceProvider.GetRequiredService<OpcionesAutenticacionExterna>();
+        if (opciones.Simulador.Habilitado && !entorno.IsDevelopment())
+        {
+            throw new InvalidOperationException(
+                "El simulador de autenticación externa solo puede habilitarse en Development.");
+        }
+
         var grupo = app.MapGroup("/api/auth/external");
         grupo.MapGet("/providers", ObtenerProveedores)
             .WithName("ObtenerProveedoresExternos")
@@ -25,6 +33,9 @@ public static class AuthExternaEndpoints
         grupo.MapGet("/{provider}/start", IniciarAsync)
             .ExcludeFromDescription();
         grupo.MapGet("/callback", CallbackAsync)
+            .ExcludeFromDescription();
+        grupo.MapPost("/simulator/authorize", AutorizarSimuladorAsync)
+            .DisableAntiforgery()
             .ExcludeFromDescription();
         grupo.MapGet("/pending", ObtenerPendienteAsync)
             .WithName("ObtenerLoginExternoPendiente")
@@ -47,27 +58,106 @@ public static class AuthExternaEndpoints
         return app;
     }
 
-    private static IResult ObtenerProveedores(OpcionesAutenticacionExterna opciones)
+    private static async Task<IResult> AutorizarSimuladorAsync(
+        HttpContext contexto,
+        OpcionesAutenticacionExterna opciones,
+        IHostEnvironment entorno)
+    {
+        if (!entorno.IsDevelopment() || !opciones.Simulador.Habilitado)
+        {
+            return Results.NotFound();
+        }
+
+        var formulario = await contexto.Request.ReadFormAsync(contexto.RequestAborted);
+        var proveedor = formulario["provider"].ToString().ToLowerInvariant();
+        var escenario = formulario["scenario"].ToString().ToLowerInvariant();
+        var retorno = NormalizarRetorno(formulario["returnUrl"].ToString());
+        if (proveedor is not ("google" or "facebook") ||
+            escenario is not ("nuevo" or "reutilizable" or "vinculacion"))
+        {
+            return Results.BadRequest();
+        }
+
+        if (string.Equals(formulario["action"], "cancelar", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.Redirect("/login?authExterna=cancelado");
+        }
+
+        var perfil = CrearPerfilSimulado(proveedor, escenario, opciones);
+        var identidad = new ClaimsIdentity(
+            [
+                new Claim(ClaimTypes.NameIdentifier, perfil.Clave),
+                new Claim(ClaimTypes.Email, perfil.Email),
+                new Claim(ClaimTypes.Name, perfil.Nombre),
+                new Claim("email_verified", perfil.EmailVerificado ? "true" : "false"),
+            ],
+            IdentityConstants.ExternalScheme);
+        var propiedades = new AuthenticationProperties();
+        propiedades.Items["LoginProvider"] = proveedor;
+        await contexto.SignInAsync(
+            IdentityConstants.ExternalScheme,
+            new ClaimsPrincipal(identidad),
+            propiedades);
+
+        return Results.Redirect(
+            $"/api/auth/external/callback?returnUrl={Uri.EscapeDataString(retorno)}");
+    }
+
+    private static PerfilSimulado CrearPerfilSimulado(
+        string proveedor,
+        string escenario,
+        OpcionesAutenticacionExterna opciones)
+    {
+        var email = escenario == "vinculacion"
+            ? opciones.Simulador.CorreoExistente
+            : $"{escenario}.{proveedor}@caserito.test";
+        return new(
+            $"simulador:{proveedor}:{escenario}",
+            email,
+            $"Usuario de prueba {proveedor}",
+            proveedor == "google");
+    }
+
+    private static IResult ObtenerProveedores(
+        OpcionesAutenticacionExterna opciones,
+        IHostEnvironment entorno)
     {
         var proveedores = new List<string>(2);
-        if (opciones.Facebook.Habilitado)
+        var simulador = entorno.IsDevelopment() && opciones.Simulador.Habilitado;
+        if (simulador || opciones.Facebook.Habilitado)
         {
             proveedores.Add("facebook");
         }
 
-        if (opciones.Google.Habilitado)
+        if (simulador || opciones.Google.Habilitado)
         {
             proveedores.Add("google");
         }
         return Results.Ok(proveedores);
     }
 
+    private sealed record PerfilSimulado(
+        string Clave,
+        string Email,
+        string Nombre,
+        bool EmailVerificado);
+
     private static IResult IniciarAsync(
         string provider,
         string? returnUrl,
         SignInManager<ApplicationUser> signInManager,
-        OpcionesAutenticacionExterna opciones)
+        OpcionesAutenticacionExterna opciones,
+        IHostEnvironment entorno)
     {
+        var proveedor = provider.ToLowerInvariant();
+        if (entorno.IsDevelopment() && opciones.Simulador.Habilitado &&
+            proveedor is "google" or "facebook")
+        {
+            var retornoSimulado = Uri.EscapeDataString(NormalizarRetorno(returnUrl));
+            return Results.Redirect(
+                $"/auth/external/simulador?provider={proveedor}&returnUrl={retornoSimulado}");
+        }
+
         var esquema = ObtenerEsquema(provider, opciones);
         if (esquema is null)
         {
