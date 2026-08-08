@@ -341,15 +341,16 @@ if (ejecutarMigraciones && !string.IsNullOrWhiteSpace(cadenaConexion))
         await seedAdmin.EjecutarAsync(opcionesSeed);
     }
 
-    using (var scopeBootstrap = app.Services.CreateScope())
+    using (var scopeSeedDesarrollo = app.Services.CreateScope())
     {
-        var opcionesBootstrap = app.Configuration
-            .GetSection("BootstrapPruebas")
-            .Get<OpcionesBootstrapUsuariosPrueba>() ?? new OpcionesBootstrapUsuariosPrueba();
-        var bootstrap = new BootstrapUsuariosPrueba(
-            scopeBootstrap.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>(),
-            scopeBootstrap.ServiceProvider.GetRequiredService<ILogger<BootstrapUsuariosPrueba>>());
-        await bootstrap.EjecutarAsync(opcionesBootstrap, app.Environment.IsDevelopment());
+        var opcionesSeedDesarrollo = app.Configuration
+            .GetSection(OpcionesSeedUsuariosDesarrollo.Seccion)
+            .Get<OpcionesSeedUsuariosDesarrollo>() ?? new OpcionesSeedUsuariosDesarrollo();
+        var seedDesarrollo = new SeederUsuariosDesarrollo(
+            scopeSeedDesarrollo.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>(),
+            scopeSeedDesarrollo.ServiceProvider.GetRequiredService<IdentityDbContext>(),
+            scopeSeedDesarrollo.ServiceProvider.GetRequiredService<ILogger<SeederUsuariosDesarrollo>>());
+        await seedDesarrollo.EjecutarAsync(opcionesSeedDesarrollo, app.Environment.IsDevelopment());
     }
 
     using (var scopeCatalog = app.Services.CreateScope())

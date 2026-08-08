@@ -103,20 +103,30 @@ reemplazará esta CA local y permitirá configurar los proveedores sociales real
 
 ### Preparar cuentas para las pruebas manuales de fases 1–3
 
-El bootstrap es exclusivo de `Development`, está deshabilitado por defecto y no
-modifica usuarios existentes. No funciona en Production ni Testing.
+El seeder es exclusivo de `Development`, está deshabilitado por defecto y solo
+repara las cuentas reconocidas por sus IDs deterministas. No funciona en
+Production ni Testing.
 
 1. Copiá `.env.example` como `.env`.
 2. Definí una contraseña local fuerte para `SA_PASSWORD`.
-3. Cambiá `CASERITO_BOOTSTRAP_ENABLED=true`.
-4. Completá las cuatro variables de cada cuenta con datos sintéticos:
-   administrador, vendedor y comprador.
+3. Cambiá `CASERITO_SEED_USERS_ENABLED=true`.
+4. Definí `CASERITO_SEED_USERS_PASSWORD` y los doce correos sintéticos de la
+   sección `CASERITO_SEED_EMAIL_*`.
 5. Usá correos reservados para pruebas y contraseñas diferentes de cualquier
    cuenta real. No pegues esos valores en Git, logs, capturas ni reportes.
 
-El administrador recibe únicamente `AdminPlataforma`; vendedor y comprador
-reciben únicamente `Cliente`. El vendedor empieza sin verificar para ejercitar
-el flujo KYC real. Si falta una variable, no se crea ninguna cuenta.
+Los alias y estados son:
+
+- `admin-plataforma`, `revisor-kyc`, `moderador` y `soporte`: rol homónimo,
+  email confirmado y KYC no iniciado;
+- `vendedor-1`, `vendedor-2`, `comprador-1` y `comprador-2`: rol `Cliente`,
+  email confirmado y KYC aprobado;
+- `cliente-email-pendiente`: email sin confirmar y KYC no iniciado;
+- `cliente-kyc-no-iniciado`, `cliente-kyc-pendiente` y
+  `cliente-kyc-rechazado`: email confirmado y el estado KYC indicado.
+
+Si falta una variable no se crea ninguna cuenta. Los correos y la contraseña
+solo se consultan en el `.env` local y nunca deben copiarse a logs o documentación.
 
 Prepará también tres imágenes sintéticas JPG o PNG menores de 5 MiB:
 
