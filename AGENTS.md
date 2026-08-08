@@ -9,9 +9,10 @@ corto: contiene solo reglas que aplican a casi cualquier tarea.
 - Textos de UI y comentarios en español, con acentos y UTF-8; nunca mojibake.
 - Anti-PII no negociable: nunca registrar documentos, imágenes, tokens, pagos,
   credenciales, texto de reportes ni otros datos sensibles. Usar errores genéricos.
-- Flujo git autorizado de forma permanente (aprobado 2026-08-06): al terminar
-  un cambio verificado, hacer commit → merge a master → push → borrar la rama,
-  sin pedir confirmación cada vez. No dejar ramas pendientes.
+- Integrar cada cambio verificado en la rama permanente `develop` y borrar la
+  rama de trabajo. Nunca fusionar ni hacer push a `master` sin pedido explícito del usuario.
+- `master` representa producción; su despliegue requiere CI verde y ejecución
+  manual confirmada del workflow `Deploy`.
 - Preservar cambios ajenos y evitar operaciones destructivas.
 
 ## Descubrimiento eficiente
