@@ -78,12 +78,12 @@ localmente.
 4. Abre la URL mostrada. La franja “Entorno de desarrollo — usa únicamente datos
    de prueba” debe aparecer en todas las páginas.
 
-Para incluir el reconocimiento KYC local, coloca ARGOS en `../dev/ARGOS` respecto
-de este repositorio y usa `-Argos`. La primera ejecución puede tardar mientras
-descarga el modelo:
+El entorno incluye siempre el reconocimiento KYC. Coloca ARGOS en `../dev/ARGOS`
+respecto de este repositorio; si falta, el inicio se detiene con un mensaje claro.
+La primera ejecución puede tardar mientras construye la imagen y descarga el modelo:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1 -Argos
+powershell -NoProfile -ExecutionPolicy Bypass -File .\iniciar-pc2.ps1
 ```
 
 Operación habitual:

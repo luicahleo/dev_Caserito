@@ -20,3 +20,11 @@ test('los fallos transitorios de curl reintentan el sondeo HTTPS', () => {
   assert.match(script, /\$saludable = \$codigoSalud -eq 0/);
   assert.match(script, /if \(-not \$saludable\) \{ Start-Sleep -Seconds 1 \}/);
 });
+
+test('el entorno PC2 siempre incluye y espera a ARGOS', () => {
+  assert.doesNotMatch(script, /\[switch\]\$Argos/);
+  assert.match(script, /'docker-compose\.argos\.yml'/);
+  assert.match(script, /Falta ARGOS en \.\.\/dev\/ARGOS/);
+  assert.match(script, /docker inspect --format '\{\{\.State\.Health\.Status\}\}' caserito-argos/);
+  assert.match(script, /ARGOS no alcanzó un estado saludable/);
+});
