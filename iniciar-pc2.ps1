@@ -75,8 +75,17 @@ for ($intento = 0; $intento -lt 30 -and -not (Test-Path $certificado); $intento+
 $urlSalud = "https://$hostLan/health"
 $saludable = $false
 for ($intento = 0; $intento -lt 30 -and -not $saludable; $intento++) {
-    & curl.exe -k -f -sS --max-time 5 --resolve "${hostLan}:443:$ipLan" $urlSalud -o NUL 2>$null
-    $saludable = $LASTEXITCODE -eq 0
+    try {
+        # Un handshake puede fallar mientras Caddy arranca. curl lo informa por
+        # stderr, pero aquí debe provocar un reintento, no detener el script.
+        $ErrorActionPreference = 'Continue'
+        & curl.exe -k -f -sS --max-time 5 --resolve "${hostLan}:443:$ipLan" $urlSalud -o NUL 2>$null
+        $codigoSalud = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $preferenciaErrores
+    }
+    $saludable = $codigoSalud -eq 0
     if (-not $saludable) { Start-Sleep -Seconds 1 }
 }
 if (-not $saludable) {
