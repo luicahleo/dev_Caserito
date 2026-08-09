@@ -96,6 +96,7 @@ builder.Services.AddSingleton<EstadoSuscripcionesChat>();
 builder.Services.AddSingleton<RegistroConexionesChat>();
 builder.Services.AddScoped<IRevocadorTiempoRealChat, RevocadorTiempoRealChat>();
 builder.Services.AddScoped<IPublicadorMensajesTiempoReal, PublicadorSignalRMensajes>();
+builder.Services.AddScoped<IPublicadorEventosGlobalesChat, PublicadorEventosGlobalesChat>();
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddHostedService<DespachadorEntregasTiempoReal>();

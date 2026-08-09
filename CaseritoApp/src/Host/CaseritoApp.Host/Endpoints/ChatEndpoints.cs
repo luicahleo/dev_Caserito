@@ -320,6 +320,7 @@ public static class ChatEndpoints
         MarcarLecturaRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublicadorEventosGlobalesChat publicador,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -336,9 +337,15 @@ public static class ChatEndpoints
                 return ConflictoPersistencia();
             }
 
-            return ejecucion.Valor!.EsExito
-                ? Results.NoContent()
-                : DesdeError(ejecucion.Valor.Error);
+            var resultado = ejecucion.Valor!;
+            if (!resultado.EsExito)
+            {
+                return DesdeError(resultado.Error);
+            }
+
+            await PublicarRecibosAsync(id, resultado.Valor, publicador, ct);
+            await publicador.PublicarContadorAsync(usuarioId, ct);
+            return Results.NoContent();
         }
         catch (ValidationException ex)
         {
@@ -351,6 +358,7 @@ public static class ChatEndpoints
         MarcarEntregaRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublicadorEventosGlobalesChat publicador,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -367,15 +375,33 @@ public static class ChatEndpoints
                 return ConflictoPersistencia();
             }
 
-            return ejecucion.Valor!.EsExito
-                ? Results.NoContent()
-                : DesdeError(ejecucion.Valor.Error);
+            var resultado = ejecucion.Valor!;
+            if (!resultado.EsExito)
+            {
+                return DesdeError(resultado.Error);
+            }
+
+            await PublicarRecibosAsync(id, resultado.Valor, publicador, ct);
+            return Results.NoContent();
         }
         catch (ValidationException ex)
         {
             return ProblemaDeValidacion(ex);
         }
     }
+
+    private static Task PublicarRecibosAsync(
+        Guid conversacionId,
+        ActualizacionRecibosDto recibos,
+        IPublicadorEventosGlobalesChat publicador,
+        CancellationToken ct) =>
+        publicador.PublicarEstadoAsync(
+            recibos.DestinatarioEstadoId,
+            new EstadoMensajesActualizadoDto(
+                conversacionId,
+                recibos.UltimaSecuenciaEntregada,
+                recibos.UltimaSecuenciaLeida),
+            ct);
 
     private static async Task<IResult> ReportarAsync(
         Guid id,

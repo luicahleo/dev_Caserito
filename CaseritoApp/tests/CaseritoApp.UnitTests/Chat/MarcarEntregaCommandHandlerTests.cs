@@ -36,6 +36,9 @@ public sealed class MarcarEntregaCommandHandlerTests
             new MarcarEntregaCommand(conversacion.Id, compradorId, 4), CancellationToken.None);
 
         Assert.True(resultado.EsExito);
+        Assert.Equal(conversacion.VendedorId, resultado.Valor.DestinatarioEstadoId);
+        Assert.Equal(4, resultado.Valor.UltimaSecuenciaEntregada);
+        Assert.Equal(0, resultado.Valor.UltimaSecuenciaLeida);
         Assert.Equal(4, conversacion.UltimaSecuenciaEntregadaComprador);
         var evento = Assert.IsType<EntregaAvanzada>(Assert.Single(conversacion.EventosDeDominio));
         Assert.Equal(_ahora.AddMinutes(1), evento.OcurridoEn);

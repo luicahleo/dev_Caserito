@@ -10,6 +10,8 @@ public sealed class ChatTiempoRealArchitectureTests
 {
     private static readonly string[] _camposMensaje =
         ["ConversacionId", "EnviadoEn", "Id", "RemitenteId", "Secuencia", "Texto"];
+    private static readonly string[] _camposEstado =
+        ["ConversacionId", "UltimaSecuenciaEntregada", "UltimaSecuenciaLeida"];
 
     [Fact]
     public void EventosDeRevocacion_NoTransportanParticipantesNiContenido()
@@ -91,6 +93,21 @@ public sealed class ChatTiempoRealArchitectureTests
             .ToArray();
 
         Assert.Equal(_camposMensaje, nombres);
+    }
+
+    [Fact]
+    public void Eventos_globales_son_minimos_y_no_transportan_contenido_ni_usuario()
+    {
+        var nombres = typeof(EstadoMensajesActualizadoDto).GetProperties()
+            .Select(x => x.Name)
+            .Order()
+            .ToArray();
+
+        Assert.Equal(_camposEstado, nombres);
+        Assert.DoesNotContain(nombres, nombre =>
+            nombre.Contains("Usuario", StringComparison.OrdinalIgnoreCase)
+            || nombre.Contains("Texto", StringComparison.OrdinalIgnoreCase)
+            || nombre.Contains("Contenido", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

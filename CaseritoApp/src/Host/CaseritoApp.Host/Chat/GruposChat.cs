@@ -8,4 +8,9 @@ public static class GruposChat
         string.Create(
             CultureInfo.InvariantCulture,
             $"chat:conversacion:{conversacionId:N}");
+
+    public static string ParaUsuario(Guid usuarioId) =>
+        string.Create(
+            CultureInfo.InvariantCulture,
+            $"chat:usuario:{usuarioId:N}");
 }

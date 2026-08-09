@@ -8,25 +8,45 @@ namespace CaseritoApp.Chat.Application.Conversaciones;
 public sealed record MarcarEntregaCommand(
     Guid ConversacionId,
     Guid UsuarioId,
-    long HastaSecuencia) : ICommand;
+    long HastaSecuencia) : ICommand<ActualizacionRecibosDto>;
+
+public sealed record ActualizacionRecibosDto(
+    Guid DestinatarioEstadoId,
+    long UltimaSecuenciaEntregada,
+    long UltimaSecuenciaLeida);
 
 public sealed class MarcarEntregaCommandHandler(
     IRepositorioConversaciones repositorio,
-    TimeProvider reloj) : ICommandHandler<MarcarEntregaCommand>
+    TimeProvider reloj) : ICommandHandler<MarcarEntregaCommand, ActualizacionRecibosDto>
 {
-    public async Task<Result> Handle(
+    public async Task<Result<ActualizacionRecibosDto>> Handle(
         MarcarEntregaCommand request,
         CancellationToken cancellationToken)
     {
         var conversacion = await repositorio.ObtenerAsync(request.ConversacionId, cancellationToken);
         if (conversacion is null || !conversacion.EsParticipante(request.UsuarioId))
         {
-            return Result.Fallo(new Error(
+            return Result.Fallo<ActualizacionRecibosDto>(new Error(
                 ErroresConversacion.NoEncontrada,
                 "La conversación no está disponible."));
         }
 
-        return conversacion.MarcarEntrega(request.UsuarioId, request.HastaSecuencia, reloj.GetUtcNow());
+        var resultado = conversacion.MarcarEntrega(
+            request.UsuarioId, request.HastaSecuencia, reloj.GetUtcNow());
+        if (!resultado.EsExito)
+        {
+            return Result.Fallo<ActualizacionRecibosDto>(resultado.Error);
+        }
+
+        var esComprador = request.UsuarioId == conversacion.CompradorId;
+        return Result.Exito(new ActualizacionRecibosDto(
+            esComprador ? conversacion.VendedorId : conversacion.CompradorId,
+            esComprador
+                ? conversacion.UltimaSecuenciaEntregadaComprador
+                : conversacion.UltimaSecuenciaEntregadaVendedor,
+            esComprador
+                ? conversacion.UltimaSecuenciaLeidaComprador
+                : conversacion.UltimaSecuenciaLeidaVendedor));
     }
 }
 

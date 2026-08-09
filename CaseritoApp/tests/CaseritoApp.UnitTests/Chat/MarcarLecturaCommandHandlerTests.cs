@@ -36,6 +36,9 @@ public sealed class MarcarLecturaCommandHandlerTests
             new MarcarLecturaCommand(conversacion.Id, compradorId, 8), CancellationToken.None);
 
         Assert.True(resultado.EsExito);
+        Assert.Equal(vendedorId, resultado.Valor.DestinatarioEstadoId);
+        Assert.Equal(8, resultado.Valor.UltimaSecuenciaEntregada);
+        Assert.Equal(8, resultado.Valor.UltimaSecuenciaLeida);
         Assert.Equal(8, conversacion.UltimaSecuenciaLeidaComprador);
         var evento = Assert.IsType<LecturaAvanzada>(Assert.Single(conversacion.EventosDeDominio));
         Assert.Equal(_ahora.AddMinutes(2), evento.OcurridoEn);
