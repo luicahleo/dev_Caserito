@@ -272,11 +272,15 @@ public sealed class Conversacion : AggregateRoot
     {
         if (usuarioId == CompradorId)
         {
-            UltimaSecuenciaEntregadaComprador = hastaSecuencia;
+            UltimaSecuenciaEntregadaComprador = Math.Max(
+                UltimaSecuenciaEntregadaComprador,
+                hastaSecuencia);
         }
         else
         {
-            UltimaSecuenciaEntregadaVendedor = hastaSecuencia;
+            UltimaSecuenciaEntregadaVendedor = Math.Max(
+                UltimaSecuenciaEntregadaVendedor,
+                hastaSecuencia);
         }
     }
 

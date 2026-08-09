@@ -22,15 +22,25 @@ export type ConversacionResumen = Omit<
 export type PaginaConversaciones = Omit<PaginaConversacionesDto, 'items'> & {
   items: ConversacionResumen[];
 };
-export type Conversacion = Omit<ConversacionDto, 'ultimaSecuencia'> & {
+export type Conversacion = Omit<
+  ConversacionDto,
+  'ultimaSecuencia' | 'ultimaSecuenciaEntregadaContraparte' | 'ultimaSecuenciaLeidaContraparte'
+> & {
   ultimaSecuencia: number;
+  ultimaSecuenciaEntregadaContraparte: number;
+  ultimaSecuenciaLeidaContraparte: number;
 };
 export type PaginaMensajes = Omit<PaginaMensajesDto, 'items'> & {
   items: MensajeChat[];
 };
 
 function convertirConversacion(conversacion: ConversacionDto): Conversacion {
-  return { ...conversacion, ultimaSecuencia: Number(conversacion.ultimaSecuencia) };
+  return {
+    ...conversacion,
+    ultimaSecuencia: Number(conversacion.ultimaSecuencia),
+    ultimaSecuenciaEntregadaContraparte: Number(conversacion.ultimaSecuenciaEntregadaContraparte),
+    ultimaSecuenciaLeidaContraparte: Number(conversacion.ultimaSecuenciaLeidaContraparte),
+  };
 }
 
 export async function iniciarConversacion(avisoId: string): Promise<Conversacion> {

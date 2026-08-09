@@ -143,6 +143,8 @@ describe('DetalleAvisoPage', () => {
       creadaEn: '',
       ultimaActividadEn: '',
       ultimaSecuencia: 0,
+      ultimaSecuenciaEntregadaContraparte: 0,
+      ultimaSecuenciaLeidaContraparte: 0,
       estado: 0,
       origenCierre: null,
       puedeEnviar: true,

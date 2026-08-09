@@ -5001,6 +5001,16 @@ export interface components {
             estado: components["schemas"]["EstadoConversacion"];
             origenCierre: null | string;
             puedeEnviar: boolean;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            ultimaSecuenciaEntregadaContraparte: number | string;
+            /**
+             * Format: int64
+             * @default 0
+             */
+            ultimaSecuenciaLeidaContraparte: number | string;
         };
         ConversacionResumenDto: {
             /** Format: uuid */

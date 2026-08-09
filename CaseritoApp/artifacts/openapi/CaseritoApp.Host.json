@@ -4997,6 +4997,24 @@
           },
           "puedeEnviar": {
             "type": "boolean"
+          },
+          "ultimaSecuenciaEntregadaContraparte": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64",
+            "default": 0
+          },
+          "ultimaSecuenciaLeidaContraparte": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64",
+            "default": 0
           }
         }
       },
