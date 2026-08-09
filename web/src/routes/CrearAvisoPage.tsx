@@ -7,6 +7,8 @@ import { crearAviso, subirFotoAviso } from '../api/avisos';
 import { useAuth } from '../auth/AuthContext';
 import { HttpError } from '../api/http';
 
+class ErrorSubidaFotos extends Error {}
+
 export function CrearAvisoPage() {
   const { identidadHabilitada } = useAuth();
   const navigate = useNavigate();
@@ -22,11 +24,12 @@ export function CrearAvisoPage() {
         categoriaId: v.categoriaId,
         ciudadId: v.ciudadId,
       });
-      // Subir las fotos locales seleccionadas (best-effort).
-      for (const archivo of fotasLocalesRef.current) {
-        await subirFotoAviso(id, archivo).catch(() => {
-          /* best-effort: la foto queda pendiente */
-        });
+      try {
+        for (const archivo of fotasLocalesRef.current) {
+          await subirFotoAviso(id, archivo);
+        }
+      } catch {
+        throw new ErrorSubidaFotos();
       }
       return id;
     },
@@ -34,6 +37,7 @@ export function CrearAvisoPage() {
   });
 
   const es403 = mutacion.error instanceof HttpError && mutacion.error.status === 403;
+  const falloFotos = mutacion.error instanceof ErrorSubidaFotos;
 
   if (!identidadHabilitada) {
     return (
@@ -61,7 +65,13 @@ export function CrearAvisoPage() {
           Necesitas verificar tu identidad. <RouterLink to="/kyc">Verificar ahora</RouterLink>
         </Alert>
       )}
-      {mutacion.isError && !es403 && (
+      {falloFotos && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          El aviso se creó, pero no se pudieron subir todas las fotos. Puedes agregarlas desde “Mis
+          avisos”.
+        </Alert>
+      )}
+      {mutacion.isError && !es403 && !falloFotos && (
         <Alert severity="error" sx={{ mb: 2 }}>
           No se pudo publicar el aviso. Revisa los datos e inténtalo de nuevo.
         </Alert>
