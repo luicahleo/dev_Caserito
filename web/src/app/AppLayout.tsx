@@ -14,6 +14,7 @@ import {
   Stack,
   Toolbar,
   Typography,
+  Badge,
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
@@ -26,6 +27,7 @@ import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ContadorChat } from '../chat/ContadorChat';
+import { useContadorChat } from '../chat/useContadorChat';
 import { NotificacionesBadge } from '../notificaciones/NotificacionesBadge';
 import { NotificacionesDropdown } from '../notificaciones/NotificacionesDropdown';
 import { MarcaCaserito } from './MarcaCaserito';
@@ -59,6 +61,7 @@ export function AppLayout() {
   const navigate = useNavigate();
   const [anchorNotificaciones, setAnchorNotificaciones] = useState<HTMLElement | null>(null);
   const [anchorCuenta, setAnchorCuenta] = useState<HTMLElement | null>(null);
+  const mensajesNoLeidos = useContadorChat(estaAutenticado);
 
   const cerrarMenuCuenta = () => setAnchorCuenta(null);
 
@@ -139,30 +142,32 @@ export function AppLayout() {
                 </Button>
 
                 <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
-                  <ContadorChat />
+                  <ContadorChat noLeidos={mensajesNoLeidos} />
                 </Box>
 
                 <NotificacionesBadge
                   onClick={(evento) => setAnchorNotificaciones(evento.currentTarget)}
                 />
 
-                <Button
-                  aria-controls={anchorCuenta ? 'menu-cuenta' : undefined}
-                  aria-expanded={anchorCuenta ? 'true' : undefined}
-                  aria-haspopup="menu"
-                  color="inherit"
-                  onClick={(evento) => setAnchorCuenta(evento.currentTarget)}
-                  startIcon={<PersonOutlineRoundedIcon sx={{ color: 'inherit' }} />}
-                  sx={{
-                    minWidth: { xs: 42, sm: 'auto' },
-                    px: { xs: 1, sm: 1.5 },
-                    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 } },
-                  }}
-                >
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-                    Mi cuenta
-                  </Box>
-                </Button>
+                <Badge badgeContent={mensajesNoLeidos} color="error" max={99}>
+                  <Button
+                    aria-controls={anchorCuenta ? 'menu-cuenta' : undefined}
+                    aria-expanded={anchorCuenta ? 'true' : undefined}
+                    aria-haspopup="menu"
+                    color="inherit"
+                    onClick={(evento) => setAnchorCuenta(evento.currentTarget)}
+                    startIcon={<PersonOutlineRoundedIcon sx={{ color: 'inherit' }} />}
+                    sx={{
+                      minWidth: { xs: 42, sm: 'auto' },
+                      px: { xs: 1, sm: 1.5 },
+                      '& .MuiButton-startIcon': { mr: { xs: 0, sm: 1 } },
+                    }}
+                  >
+                    <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+                      Mi cuenta
+                    </Box>
+                  </Button>
+                </Badge>
               </>
             ) : (
               <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
@@ -232,6 +237,14 @@ export function AppLayout() {
                 <ForumOutlinedIcon sx={{ color: 'text.secondary' }} />
               </ListItemIcon>
               <ListItemText>Mensajes</ListItemText>
+              {mensajesNoLeidos > 0 && (
+                <Badge
+                  badgeContent={mensajesNoLeidos}
+                  color="error"
+                  max={99}
+                  aria-label={`${mensajesNoLeidos} mensajes no leídos`}
+                />
+              )}
             </MenuItem>
 
             {(tienePermiso('publicaciones.moderar') || tienePermiso('chat.moderar')) && <Divider />}

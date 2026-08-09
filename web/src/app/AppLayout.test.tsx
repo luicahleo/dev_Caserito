@@ -140,26 +140,12 @@ describe('AppLayout', () => {
 
   it('muestra el contador global básico de mensajes no leídos', async () => {
     mockAuth(true);
-    vi.spyOn(chat, 'listarConversaciones').mockResolvedValue({
-      siguienteCursor: null,
-      items: [
-        {
-          id: 'c1',
-          avisoId: 'a1',
-          contraparteId: 'u2',
-          rol: 'Comprador',
-          creadaEn: '',
-          ultimaActividadEn: '',
-          ultimaSecuencia: 3,
-          noLeidos: 3,
-          estado: 0,
-          origenCierre: null,
-          puedeEnviar: true,
-        },
-      ],
-    });
+    vi.spyOn(chat, 'contarMensajesNoLeidos').mockResolvedValue(3);
     montar();
     expect(await screen.findByRole('link', { name: 'Mensajes, 3 no leídos' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /mi cuenta/i }).parentElement).toHaveTextContent('3');
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
+    expect(screen.getByRole('menuitem', { name: /mensajes/i })).toHaveTextContent('3');
   });
 
   it('muestra el badge de notificaciones con el conteo', async () => {

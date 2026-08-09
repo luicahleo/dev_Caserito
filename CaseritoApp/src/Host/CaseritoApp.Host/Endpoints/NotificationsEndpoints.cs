@@ -15,7 +15,6 @@ public static class NotificationsEndpoints
 {
     public sealed record SuscripcionPushRequest(
         string DispositivoId, string Endpoint, string P256dh, string Auth);
-    public sealed record RevocarSuscripcionPushRequest(string DispositivoId);
     public sealed record ConfirmarEntregaPushRequest(string Comprobante);
     public sealed record ConfiguracionPushResponse(string ClavePublica);
 
@@ -50,7 +49,7 @@ public static class NotificationsEndpoints
             .RequireRateLimiting("notifications-acciones")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
-        grupo.MapDelete("/push/suscripcion", RevocarPushAsync)
+        grupo.MapDelete("/push/suscripcion/{dispositivoId}", RevocarPushAsync)
             .RequireRateLimiting("notifications-acciones")
             .Produces(StatusCodes.Status204NoContent);
         grupo.MapPost("/push/confirmar-entrega", ConfirmarEntregaPushAsync)
@@ -87,7 +86,7 @@ public static class NotificationsEndpoints
     }
 
     private static async Task<IResult> RevocarPushAsync(
-        RevocarSuscripcionPushRequest request,
+        string dispositivoId,
         ClaimsPrincipal usuario,
         ISender sender,
         CancellationToken ct)
@@ -97,7 +96,7 @@ public static class NotificationsEndpoints
             return Results.Unauthorized();
         }
 
-        await sender.Send(new RevocarSuscripcionPushCommand(userId, request.DispositivoId), ct);
+        await sender.Send(new RevocarSuscripcionPushCommand(userId, dispositivoId), ct);
         return Results.NoContent();
     }
 

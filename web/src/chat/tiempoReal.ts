@@ -18,6 +18,7 @@ export interface ConexionSignalR {
 interface OpcionesClienteTiempoReal {
   getAccessToken: () => string | null;
   alReconectar?: (conversacionId: string) => Promise<void>;
+  alReconectarGlobal?: () => Promise<void>;
   crearConexion?: () => ConexionSignalR;
 }
 
@@ -33,7 +34,9 @@ class PoliticaReconexion implements IRetryPolicy {
 
 function conexionOficial(getAccessToken: () => string | null): ConexionSignalR {
   const conexion = new HubConnectionBuilder()
-    .withUrl('/hubs/chat', { accessTokenFactory: () => getAccessToken() ?? '' })
+    .withUrl(new URL('/hubs/chat', window.location.origin).toString(), {
+      accessTokenFactory: () => getAccessToken() ?? '',
+    })
     .withAutomaticReconnect(new PoliticaReconexion())
     .build();
   return {
@@ -56,6 +59,7 @@ export function crearClienteTiempoReal(opciones: OpcionesClienteTiempoReal) {
       await conexion.invoke('SuscribirConversacion', id);
       await opciones.alReconectar?.(id);
     }
+    await opciones.alReconectarGlobal?.();
   });
 
   async function ejecutar(accion: () => Promise<void>): Promise<void> {
@@ -98,6 +102,22 @@ export function crearClienteTiempoReal(opciones: OpcionesClienteTiempoReal) {
     alRecibirMensaje(handler: (mensaje: MensajeChat) => void): void {
       conexion.off('MensajeCreado');
       conexion.on('MensajeCreado', (payload) => handler(payload as MensajeChat));
+    },
+    alActualizarContador(handler: () => void): void {
+      conexion.off('ContadorChatActualizado');
+      conexion.on('ContadorChatActualizado', handler);
+    },
+    alActualizarEstado(
+      handler: (estado: {
+        conversacionId: string;
+        ultimaSecuenciaEntregada: number;
+        ultimaSecuenciaLeida: number;
+      }) => void,
+    ): void {
+      conexion.off('EstadoMensajesActualizado');
+      conexion.on('EstadoMensajesActualizado', (payload) =>
+        handler(payload as Parameters<typeof handler>[0]),
+      );
     },
     estado: () => (conectado ? HubConnectionState.Connected : HubConnectionState.Disconnected),
   };

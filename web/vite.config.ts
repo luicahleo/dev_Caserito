@@ -2,7 +2,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import { rutasExcluidasFallbackPwa } from './src/pwa/navigation.js';
 
 // Target del proxy configurable por entorno (Docker/compose apunta al servicio "api");
 // fallback al puerto de dev en host.
@@ -19,9 +18,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      workbox: {
-        navigateFallback: '/index.html',
-        navigateFallbackDenylist: rutasExcluidasFallbackPwa,
+      strategies: 'injectManifest',
+      srcDir: 'src/pwa',
+      filename: 'service-worker.ts',
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
       manifest: {
         name: 'Caserito',
