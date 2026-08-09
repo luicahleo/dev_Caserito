@@ -6,7 +6,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { MisAvisosPage } from './MisAvisosPage';
 import * as avisos from '../api/avisos';
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 const activo: avisos.AvisoResumen = {
   id: 'a1',
@@ -22,7 +25,20 @@ const activo: avisos.AvisoResumen = {
   fotos: [],
 };
 
-function montar() {
+function montar({ movil = false }: { movil?: boolean } = {}) {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((consulta: string) => ({
+      matches: movil && consulta.includes('max-width'),
+      media: consulta,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  );
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
     <QueryClientProvider client={qc}>
@@ -43,6 +59,34 @@ describe('MisAvisosPage', () => {
     });
     montar();
     expect(await screen.findByText('Mesa')).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Mis avisos' })).toBeInTheDocument();
+  });
+
+  it('muestra tarjetas sin tabla en móvil', async () => {
+    vi.spyOn(avisos, 'listarMisAvisos').mockResolvedValue({
+      items: [
+        {
+          ...activo,
+          titulo: 'Mesa extensible de madera para comedor familiar',
+          estadoModeracion: 'Oculto',
+          fotos: [{ id: 'f1', url: '/mesa.jpg', orden: 0 }],
+        },
+      ],
+      pagina: 1,
+      tamano: 20,
+      total: 1,
+    });
+
+    montar({ movil: true });
+
+    expect(await screen.findByRole('list', { name: 'Mis avisos' })).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /mesa extensible/i })).toHaveAttribute(
+      'src',
+      '/mesa.jpg',
+    );
+    expect(screen.getByText('Oculto por moderación')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pausar' })).toBeInTheDocument();
   });
 
   it('pausar un aviso activo llama al endpoint', async () => {
@@ -86,7 +130,8 @@ describe('MisAvisosPage', () => {
     montar();
 
     expect(await screen.findByText('Vendido')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /editar|pausar|reactivar|eliminar/i }))
-      .not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /editar|pausar|reactivar|eliminar/i }),
+    ).not.toBeInTheDocument();
   });
 });
