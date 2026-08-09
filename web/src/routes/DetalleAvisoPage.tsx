@@ -12,11 +12,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   MenuItem,
   TextField,
   Stack,
   Typography,
 } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { obtenerAvisoPublico, obtenerMiAviso, reportarAviso } from '../api/avisos';
 import { iniciarConversacion } from '../api/chat';
 import { useAuth } from '../auth/AuthContext';
@@ -91,12 +94,56 @@ export function DetalleAvisoPage() {
       {/* Galería de fotos */}
       {data.fotos && data.fotos.length > 0 ? (
         <Box sx={{ mb: 3 }}>
-          <Box
-            component="img"
-            src={data.fotos[selectedIdx]?.url ?? data.fotos[0].url}
-            alt={data.titulo}
-            sx={{ width: '100%', maxHeight: 320, objectFit: 'cover', borderRadius: 1 }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component="img"
+              src={data.fotos[selectedIdx]?.url ?? data.fotos[0].url}
+              alt={data.titulo}
+              sx={{
+                display: 'block',
+                width: '100%',
+                maxHeight: 320,
+                objectFit: 'cover',
+                borderRadius: 1,
+              }}
+            />
+            {data.fotos.length > 1 && (
+              <>
+                <IconButton
+                  aria-label="Imagen anterior"
+                  onClick={() =>
+                    setSelectedIdx((indice) => (indice - 1 + data.fotos.length) % data.fotos.length)
+                  }
+                  sx={{
+                    position: 'absolute',
+                    left: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: 'background.paper',
+                    boxShadow: 2,
+                    '&:hover': { bgcolor: 'background.paper' },
+                  }}
+                >
+                  <ChevronLeftIcon />
+                </IconButton>
+                <IconButton
+                  aria-label="Imagen siguiente"
+                  onClick={() => setSelectedIdx((indice) => (indice + 1) % data.fotos.length)}
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    bgcolor: 'background.paper',
+                    boxShadow: 2,
+                    '&:hover': { bgcolor: 'background.paper' },
+                  }}
+                >
+                  <ChevronRightIcon />
+                </IconButton>
+              </>
+            )}
+          </Box>
           {data.fotos.length > 1 && (
             <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap' }}>
               {data.fotos.map((f, i) => (
