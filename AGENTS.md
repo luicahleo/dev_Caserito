@@ -41,6 +41,9 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 
 ## Proyecto
 
+- CaseritoApp es un marketplace de compraventa entre particulares inspirado en
+  la experiencia de Wallapop: priorizar confianza, inmediatez, claridad y una UX
+  mobile-first, sin copiar su identidad visual ni elementos propietarios.
 - Backend: .NET, Clean Architecture por bounded context, CQRS-lite con
   MediatR + Result + FluentValidation, versiones centralizadas y
   warnings-as-errors. Ejecutar comandos desde `CaseritoApp/`.
