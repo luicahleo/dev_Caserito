@@ -22,9 +22,9 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
     private static readonly Guid _categoria = new("11111111-1111-1111-1111-000000000001");
     private static readonly Guid _ciudad = new("22222222-2222-2222-2222-000000000001");
 
-    // PNG mínimo válido (magic bytes correctos).
-    private static readonly byte[] _pngValido =
-        [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x01, 0x02, 0x03];
+    // PNG 1x1 válido y completamente decodificable.
+    private static readonly byte[] _pngValido = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=");
 
     private static string Email(string prefijo) => $"{prefijo}-{Guid.NewGuid():N}@caserito.test";
 
@@ -194,7 +194,7 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
         // Descargar la foto por la URL del DTO.
         var fotoResp = await cliente.GetAsync(detalle.Fotos[0].Url);
         Assert.Equal(HttpStatusCode.OK, fotoResp.StatusCode);
-        Assert.Equal("image/png", fotoResp.Content.Headers.ContentType?.MediaType);
+        Assert.Equal("image/jpeg", fotoResp.Content.Headers.ContentType?.MediaType);
     }
 
     [Fact]

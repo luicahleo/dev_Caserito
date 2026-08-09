@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
 import { listarCategorias, listarCiudades } from '../api/catalogo';
 import { type FotoAvisoDto, borrarFotoAviso, subirFotoAviso } from '../api/avisos';
 import { esMovilConCamara } from '../kyc/captura/plataforma';
+import { procesarFotoAviso } from '../avisos/fotos/procesarFotoAviso';
 
 export interface ValoresAviso {
   titulo: string;
@@ -25,7 +26,6 @@ export interface ValoresAviso {
 
 const CONDICIONES = ['Nuevo', 'Usado'];
 const MAX_FOTOS = 5;
-const MAX_BYTES = 5 * 1024 * 1024;
 
 const VACIO: ValoresAviso = {
   titulo: '',
@@ -75,6 +75,8 @@ export function FormAviso({
 
   const [fotosGuardadas, setFotosGuardadas] = useState<FotoAvisoDto[]>(fotosIniciales);
   const [fotasLocales, setFotasLocales] = useState<{ preview: string; archivo: File }[]>([]);
+  const previewsCreados = useRef(new Set<string>());
+  const [procesando, setProcesando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
 
@@ -83,6 +85,15 @@ export function FormAviso({
   const esDispositivoMovil = esMovilConCamara();
 
   const totalFotos = fotosGuardadas.length + fotasLocales.length;
+  const preparandoOSubiendo = procesando || subiendo;
+
+  useEffect(
+    () => () => {
+      previewsCreados.current.forEach((url) => URL.revokeObjectURL(url));
+      previewsCreados.current.clear();
+    },
+    [],
+  );
 
   const categorias = useQuery({ queryKey: ['categorias'], queryFn: listarCategorias });
   const ciudades = useQuery({ queryKey: ['ciudades'], queryFn: listarCiudades });
@@ -108,19 +119,30 @@ export function FormAviso({
       );
       return;
     }
-    for (const archivo of archivos) {
-      if (archivo.size > MAX_BYTES) {
-        setErrorFoto('Cada foto debe pesar menos de 5 MiB.');
-        return;
+    setProcesando(true);
+    const preparados: File[] = [];
+    let huboError = false;
+    try {
+      for (const archivo of archivos) {
+        try {
+          preparados.push(await procesarFotoAviso(archivo));
+        } catch {
+          huboError = true;
+        }
       }
+    } finally {
+      setProcesando(false);
     }
+    if (huboError) setErrorFoto('Una o más fotos no se pudieron preparar. Inténtalo de nuevo.');
+    if (preparados.length === 0) return;
 
     if (avisoId) {
       setSubiendo(true);
       try {
-        for (const archivo of archivos) {
+        for (const archivo of preparados) {
           const { id } = await subirFotoAviso(avisoId, archivo);
           const url = URL.createObjectURL(archivo);
+          previewsCreados.current.add(url);
           setFotosGuardadas((prev) => [
             ...prev,
             {
@@ -136,7 +158,11 @@ export function FormAviso({
         setSubiendo(false);
       }
     } else {
-      const nuevas = archivos.map((a) => ({ preview: URL.createObjectURL(a), archivo: a }));
+      const nuevas = preparados.map((archivo) => {
+        const preview = URL.createObjectURL(archivo);
+        previewsCreados.current.add(preview);
+        return { preview, archivo };
+      });
       setFotasLocales((prev) => {
         const actualizadas = [...prev, ...nuevas];
         onFotasLocalesChange?.(actualizadas.map((f) => f.archivo));
@@ -159,6 +185,7 @@ export function FormAviso({
   const handleBorrarLocal = (idx: number) => {
     setFotasLocales((prev) => {
       URL.revokeObjectURL(prev[idx].preview);
+      previewsCreados.current.delete(prev[idx].preview);
       const actualizadas = prev.filter((_, i) => i !== idx);
       onFotasLocalesChange?.(actualizadas.map((f) => f.archivo));
       return actualizadas;
@@ -309,10 +336,10 @@ export function FormAviso({
             <Button
               component="label"
               variant="outlined"
-              disabled={totalFotos >= MAX_FOTOS || subiendo}
+              disabled={totalFotos >= MAX_FOTOS || preparandoOSubiendo}
               size="small"
             >
-              {subiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+              {preparandoOSubiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
               Tomar foto
               <input
                 type="file"
@@ -325,7 +352,7 @@ export function FormAviso({
             <Button
               component="label"
               variant="outlined"
-              disabled={totalFotos >= MAX_FOTOS || subiendo}
+              disabled={totalFotos >= MAX_FOTOS || preparandoOSubiendo}
               size="small"
             >
               Subir de galería
@@ -336,13 +363,19 @@ export function FormAviso({
           <Button
             component="label"
             variant="outlined"
-            disabled={totalFotos >= MAX_FOTOS || subiendo}
+            disabled={totalFotos >= MAX_FOTOS || preparandoOSubiendo}
             size="small"
           >
-            {subiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
+            {preparandoOSubiendo ? <CircularProgress size={16} sx={{ mr: 1 }} /> : null}
             Agregar fotos
             <input type="file" accept="image/*" multiple hidden onChange={handleArchivos} />
           </Button>
+        )}
+
+        {procesando && (
+          <Typography role="status" variant="body2" sx={{ mt: 1 }}>
+            Preparando fotos…
+          </Typography>
         )}
 
         {errorFoto && (
@@ -353,7 +386,7 @@ export function FormAviso({
       </Box>
 
       <Box>
-        <Button variant="contained" onClick={enviar} disabled={enviando || subiendo}>
+        <Button variant="contained" onClick={enviar} disabled={enviando || preparandoOSubiendo}>
           {textoBoton}
         </Button>
       </Box>

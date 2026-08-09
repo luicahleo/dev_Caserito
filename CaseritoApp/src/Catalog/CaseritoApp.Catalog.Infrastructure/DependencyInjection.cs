@@ -34,6 +34,7 @@ public static class DependencyInjection
 
         servicios.Configure<OpcionesAlmacenFotos>(config.GetSection("AlmacenFotos"));
         servicios.AddScoped<IAlmacenFotosAviso, AlmacenFotoAvisoDisco>();
+        servicios.AddScoped<IProcesadorFotoAviso, ProcesadorFotoAvisoSkia>();
         servicios.AddScoped<IConsultaFotoPublica, ConsultaFotoPublicaEfCore>();
         servicios.AddScoped<IRepositorioReportesAviso, RepositorioReportesAvisoEfCore>();
         servicios.AddScoped<IRepositorioRegistrosModeracion, RepositorioRegistrosModeracionEfCore>();

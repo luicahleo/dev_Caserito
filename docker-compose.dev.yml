@@ -52,6 +52,8 @@ services:
       SeedUsuariosDesarrollo__Correos__cliente-kyc-rechazado: "${CASERITO_SEED_EMAIL_KYC_RECHAZADO:-}"
     ports:
       - "8080:8080"
+    volumes:
+      - caserito-fotos-avisos:/data/fotos-avisos
     depends_on:
       sqlserver:
         # Espera a que sqlserver pase el healthcheck antes de arrancar la API.
@@ -79,3 +81,4 @@ services:
 
 volumes:
   caserito-sqlserver-data:
+  caserito-fotos-avisos:

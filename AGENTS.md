@@ -56,6 +56,11 @@ No releer todos los specs históricos. `docs/superpowers/specs/` y
 - Backend: build, test y `dotnet format --verify-no-changes` según el riesgo.
 - Frontend: typecheck, lint, test y build al integrar rutas/contrato.
 - Informar pruebas no ejecutadas y el motivo; nunca afirmar verde sin evidencia.
+- Si pruebas previamente verdes fallan solo por timeouts variables bajo presión
+  de recursos, confirmar primero la causa con pruebas dirigidas y métricas. Con
+  autorización del usuario, detener temporalmente los contenedores locales,
+  ejecutar el gate y restaurar el mismo stack al terminar. No ampliar timeouts,
+  relajar el gate ni eliminar volúmenes para ocultar el problema.
 
 ## Puerta de calidad
 
