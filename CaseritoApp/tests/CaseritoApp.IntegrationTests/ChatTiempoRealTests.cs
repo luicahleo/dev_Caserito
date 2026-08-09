@@ -52,6 +52,7 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
             DateTimeOffset.UtcNow,
             Guid.NewGuid(),
             Guid.NewGuid(),
+            1,
             Guid.NewGuid(),
             destinatarioId));
 

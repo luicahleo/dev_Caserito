@@ -1,13 +1,24 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Domain;
+using CaseritoApp.Chat.Application.Conversaciones;
+using CaseritoApp.Host.Chat;
 using CaseritoApp.Notifications.Application.Notificaciones;
+using CaseritoApp.Notifications.Application.Push;
+using CaseritoApp.Notifications.Infrastructure.Push;
 using MediatR;
+using Microsoft.Extensions.Options;
 
 namespace CaseritoApp.Host.Endpoints;
 
 public static class NotificationsEndpoints
 {
+    public sealed record SuscripcionPushRequest(
+        string DispositivoId, string Endpoint, string P256dh, string Auth);
+    public sealed record RevocarSuscripcionPushRequest(string DispositivoId);
+    public sealed record ConfirmarEntregaPushRequest(string Comprobante);
+    public sealed record ConfiguracionPushResponse(string ClavePublica);
+
     public static IEndpointRouteBuilder MapNotificationsEndpoints(this IEndpointRouteBuilder app)
     {
         var grupo = app.MapGroup("/api/notificaciones").RequireAuthorization();
@@ -33,7 +44,89 @@ public static class NotificationsEndpoints
             .Produces<int>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status401Unauthorized);
 
+        grupo.MapGet("/push/configuracion", ObtenerConfiguracionPush)
+            .Produces<ConfiguracionPushResponse>(StatusCodes.Status200OK);
+        grupo.MapPut("/push/suscripcion", RegistrarPushAsync)
+            .RequireRateLimiting("notifications-acciones")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+        grupo.MapDelete("/push/suscripcion", RevocarPushAsync)
+            .RequireRateLimiting("notifications-acciones")
+            .Produces(StatusCodes.Status204NoContent);
+        grupo.MapPost("/push/confirmar-entrega", ConfirmarEntregaPushAsync)
+            .AllowAnonymous()
+            .RequireRateLimiting("notifications-acciones")
+            .Produces(StatusCodes.Status204NoContent);
+
         return app;
+    }
+
+    private static IResult ObtenerConfiguracionPush(IOptions<OpcionesWebPush> opciones) =>
+        Results.Ok(new ConfiguracionPushResponse(
+            opciones.Value.Habilitado ? opciones.Value.ClavePublica : string.Empty));
+
+    private static async Task<IResult> RegistrarPushAsync(
+        SuscripcionPushRequest request,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryObtenerUserId(usuario, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await sender.Send(new RegistrarSuscripcionPushCommand(
+            userId, request.DispositivoId, request.Endpoint, request.P256dh, request.Auth), ct);
+        return resultado.EsExito
+            ? Results.NoContent()
+            : Results.Problem(
+                title: "suscripcion_no_valida",
+                detail: "La suscripción no es válida.",
+                statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> RevocarPushAsync(
+        RevocarSuscripcionPushRequest request,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryObtenerUserId(usuario, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        await sender.Send(new RevocarSuscripcionPushCommand(userId, request.DispositivoId), ct);
+        return Results.NoContent();
+    }
+
+    private static async Task<IResult> ConfirmarEntregaPushAsync(
+        ConfirmarEntregaPushRequest request,
+        IProtectorComprobantesEntrega protector,
+        ISender sender,
+        IPublicadorEventosGlobalesChat publicador,
+        CancellationToken ct)
+    {
+        if (!protector.TryValidar(request.Comprobante, out var datos))
+        {
+            return Results.NoContent();
+        }
+
+        var resultado = await sender.Send(new MarcarEntregaCommand(
+            datos.ConversacionId, datos.DestinatarioId, datos.Secuencia), ct);
+        if (resultado.EsExito)
+        {
+            await publicador.PublicarEstadoAsync(
+                resultado.Valor.DestinatarioEstadoId,
+                new EstadoMensajesActualizadoDto(
+                    datos.ConversacionId,
+                    resultado.Valor.UltimaSecuenciaEntregada,
+                    resultado.Valor.UltimaSecuenciaLeida),
+                ct);
+        }
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> ListarAsync(

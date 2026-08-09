@@ -59,7 +59,8 @@ public sealed class EnviarMensajeCommandHandler(
                     "La solicitud de mensaje entra en conflicto con una anterior."));
             }
 
-            return Result.Exito(new EnviarMensajeResultadoDto(MensajeDto.Desde(existente), false));
+            return Result.Exito(new EnviarMensajeResultadoDto(
+                MensajeDto.Desde(existente), contraparteId, false));
         }
 
         var secuencia = await mensajes.ReservarSecuenciaAsync(cancellationToken);
@@ -75,7 +76,8 @@ public sealed class EnviarMensajeCommandHandler(
         }
 
         mensajes.Agregar(creacion.Valor);
-        return Result.Exito(new EnviarMensajeResultadoDto(MensajeDto.Desde(creacion.Valor), true));
+        return Result.Exito(new EnviarMensajeResultadoDto(
+            MensajeDto.Desde(creacion.Valor), contraparteId, true));
     }
 
     private static Result<EnviarMensajeResultadoDto> NoEncontrada() =>

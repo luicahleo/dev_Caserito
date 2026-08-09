@@ -114,6 +114,7 @@ public sealed class ChatPiiTests
             DateTimeOffset.UtcNow,
             Guid.NewGuid(),
             Guid.NewGuid(),
+            1,
             Guid.NewGuid(),
             Guid.NewGuid()));
 

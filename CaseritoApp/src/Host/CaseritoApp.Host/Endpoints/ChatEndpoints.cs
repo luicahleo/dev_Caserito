@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
+using CaseritoApp.BuildingBlocks.Contracts.Chat;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
@@ -217,6 +218,7 @@ public static class ChatEndpoints
         EnviarMensajeRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublisher publisher,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -238,6 +240,19 @@ public static class ChatEndpoints
             if (!resultado.EsExito)
             {
                 return DesdeError(resultado.Error);
+            }
+
+            if (resultado.Valor.FueCreado)
+            {
+                var mensaje = resultado.Valor.Mensaje;
+                await publisher.Publish(new ChatMessageSent(
+                    Guid.NewGuid(),
+                    mensaje.EnviadoEn,
+                    id,
+                    mensaje.Id,
+                    mensaje.Secuencia,
+                    usuarioId,
+                    resultado.Valor.DestinatarioId), ct);
             }
 
             return resultado.Valor.FueCreado
