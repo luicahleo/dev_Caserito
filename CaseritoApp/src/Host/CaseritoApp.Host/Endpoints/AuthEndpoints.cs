@@ -352,5 +352,6 @@ public static class AuthEndpoints
         SameSite = SameSiteMode.Strict,
         Secure = !(entorno.IsDevelopment() || entorno.IsEnvironment("Testing")),
         Path = "/api/auth",
+        MaxAge = ServicioRefreshTokens.VigenciaSesion,
     };
 }

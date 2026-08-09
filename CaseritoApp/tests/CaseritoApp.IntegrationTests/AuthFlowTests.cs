@@ -75,6 +75,11 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         var cookieTrasRefresh = ExtraerCookie(refreshRespuesta, NombreCookie);
         Assert.False(string.IsNullOrWhiteSpace(cookieTrasRefresh));
         Assert.NotEqual(cookieTrasLogin, cookieTrasRefresh);
+        Assert.True(refreshRespuesta.Headers.TryGetValues("Set-Cookie", out var cookiesRefresh));
+        Assert.Contains(
+            cookiesRefresh!,
+            valor => valor.StartsWith($"{NombreCookie}=", StringComparison.Ordinal) &&
+                valor.Contains("Max-Age=2592000", StringComparison.OrdinalIgnoreCase));
 
         using (var scope = factory.Services.CreateScope())
         {
@@ -149,6 +154,7 @@ public sealed class AuthFlowTests(CaseritoApiFactory factory) : IClassFixture<Ca
         Assert.Contains("HttpOnly", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("SameSite=Strict", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Path=/api/auth", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Max-Age=2592000", setCookieRefresh, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -49,6 +49,7 @@ public sealed class RefreshTokensTests(CaseritoApiFactory factory) : IClassFixtu
         var persistido = await db.RefreshTokens.AsNoTracking().SingleAsync(t => t.UserId == userId);
         Assert.NotEqual(tokenPlano, persistido.TokenHash); // el token plano nunca se persiste
         Assert.True(persistido.EsActivo(tiempo.GetUtcNow()));
+        Assert.Equal(TimeSpan.FromDays(30), persistido.ExpiraEn - persistido.CreadoEn);
     }
 
     [Fact]
@@ -78,6 +79,7 @@ public sealed class RefreshTokensTests(CaseritoApiFactory factory) : IClassFixtu
         Assert.Single(revocados);
         Assert.Single(activos);
         Assert.NotNull(revocados[0].ReemplazadoPorHash);
+        Assert.Equal(TimeSpan.FromDays(30), activos[0].ExpiraEn - activos[0].CreadoEn);
     }
 
     [Fact]
