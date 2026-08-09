@@ -96,6 +96,9 @@ public sealed class ChatDespachadorTiempoRealTests
             int limite,
             CancellationToken ct) =>
             throw new NotSupportedException();
+
+        public Task<int> ContarNoLeidosAsync(Guid usuarioId, CancellationToken ct) =>
+            throw new NotSupportedException();
     }
 
     private static EntregaTiempoRealReclamada Trabajo() => new(

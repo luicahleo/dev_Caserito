@@ -16,6 +16,8 @@ public sealed class ConsultasChatHandlerTests
 
         public int Limite { get; private set; }
 
+        public int NoLeidos { get; init; }
+
         public Task<PaginaCursor<ConversacionResumenDto, FronteraConversaciones>> ListarAsync(
             Guid usuarioId, FronteraConversaciones? frontera, int limite, CancellationToken ct)
         {
@@ -32,6 +34,12 @@ public sealed class ConsultasChatHandlerTests
         public Task<bool> PuedeRecibirTiempoRealAsync(
             Guid conversacionId, Guid usuarioId, CancellationToken ct) =>
             Task.FromResult(PuedeAcceder);
+
+        public Task<int> ContarNoLeidosAsync(Guid usuarioId, CancellationToken ct)
+        {
+            UsuarioId = usuarioId;
+            return Task.FromResult(NoLeidos);
+        }
     }
 
     [Fact]
@@ -45,6 +53,20 @@ public sealed class ConsultasChatHandlerTests
             CancellationToken.None);
 
         Assert.True(resultado);
+    }
+
+    [Fact]
+    public async Task ContarMensajesNoLeidos_devuelve_el_conteo_autoritativo()
+    {
+        var consulta = new ConversacionesFake { NoLeidos = 7 };
+        var usuarioId = Guid.NewGuid();
+        var handler = new ContarMensajesNoLeidosQueryHandler(consulta);
+
+        var resultado = await handler.Handle(
+            new ContarMensajesNoLeidosQuery(usuarioId), CancellationToken.None);
+
+        Assert.Equal(7, resultado);
+        Assert.Equal(usuarioId, consulta.UsuarioId);
     }
 
     private sealed class MensajesFake(
