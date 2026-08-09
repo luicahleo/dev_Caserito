@@ -23,6 +23,10 @@ public sealed record EnviarMensajeRequest(Guid ClaveIdempotencia, string Texto);
 
 public sealed record MarcarLecturaRequest(long HastaSecuencia);
 
+public sealed record MarcarEntregaRequest(long HastaSecuencia);
+
+public sealed record ContadorMensajesNoLeidosResponse(int Cantidad);
+
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ReportarChatRequest(
     TipoObjetivoReporteChat TipoObjetivo,
@@ -55,6 +59,12 @@ public static class ChatEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status429TooManyRequests);
 
+        grupo.MapGet("/no-leidos", ContarNoLeidosAsync)
+            .RequireRateLimiting("chat-consultas")
+            .Produces<ContadorMensajesNoLeidosResponse>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
         grupo.MapPost("/conversaciones/{id:guid}/mensajes", EnviarAsync)
             .RequireRateLimiting("chat-enviar")
             .Produces<MensajeDto>(StatusCodes.Status200OK)
@@ -74,6 +84,15 @@ public static class ChatEndpoints
             .Produces(StatusCodes.Status429TooManyRequests);
 
         grupo.MapPut("/conversaciones/{id:guid}/lectura", MarcarLecturaAsync)
+            .RequireRateLimiting("chat-consultas")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
+        grupo.MapPut("/conversaciones/{id:guid}/entrega", MarcarEntregaAsync)
             .RequireRateLimiting("chat-consultas")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -233,6 +252,20 @@ public static class ChatEndpoints
         }
     }
 
+    private static async Task<IResult> ContarNoLeidosAsync(
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var cantidad = await sender.Send(new ContarMensajesNoLeidosQuery(usuarioId), ct);
+        return Results.Ok(new ContadorMensajesNoLeidosResponse(cantidad));
+    }
+
     private static async Task<IResult> ObtenerMensajesAsync(
         Guid id,
         ClaimsPrincipal usuario,
@@ -298,6 +331,37 @@ public static class ChatEndpoints
         {
             var ejecucion = await EjecutarConReintentoAsync(
                 () => sender.Send(new MarcarLecturaCommand(id, usuarioId, request.HastaSecuencia), ct));
+            if (ejecucion.Conflicto)
+            {
+                return ConflictoPersistencia();
+            }
+
+            return ejecucion.Valor!.EsExito
+                ? Results.NoContent()
+                : DesdeError(ejecucion.Valor.Error);
+        }
+        catch (ValidationException ex)
+        {
+            return ProblemaDeValidacion(ex);
+        }
+    }
+
+    private static async Task<IResult> MarcarEntregaAsync(
+        Guid id,
+        MarcarEntregaRequest request,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var ejecucion = await EjecutarConReintentoAsync(
+                () => sender.Send(new MarcarEntregaCommand(id, usuarioId, request.HastaSecuencia), ct));
             if (ejecucion.Conflicto)
             {
                 return ConflictoPersistencia();
