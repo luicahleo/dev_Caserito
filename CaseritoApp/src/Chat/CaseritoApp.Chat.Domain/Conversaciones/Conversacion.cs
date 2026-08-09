@@ -34,6 +34,10 @@ public sealed class Conversacion : AggregateRoot
 
     public long UltimaSecuencia { get; private set; }
 
+    public long UltimaSecuenciaEntregadaComprador { get; private set; }
+
+    public long UltimaSecuenciaEntregadaVendedor { get; private set; }
+
     public long UltimaSecuenciaLeidaComprador { get; private set; }
 
     public long UltimaSecuenciaLeidaVendedor { get; private set; }
@@ -221,6 +225,7 @@ public sealed class Conversacion : AggregateRoot
             return Result.Exito();
         }
 
+        AvanzarEntrega(usuarioId, hastaSecuencia);
         if (usuarioId == CompradorId)
         {
             UltimaSecuenciaLeidaComprador = hastaSecuencia;
@@ -232,6 +237,47 @@ public sealed class Conversacion : AggregateRoot
 
         AgregarEvento(new LecturaAvanzada(Id, hastaSecuencia, ocurrioEn.ToUniversalTime()));
         return Result.Exito();
+    }
+
+    public Result MarcarEntrega(Guid usuarioId, long hastaSecuencia, DateTimeOffset ocurrioEn)
+    {
+        if (!EsParticipante(usuarioId))
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.NoEncontrada,
+                "La conversación no está disponible."));
+        }
+
+        if (hastaSecuencia < 0 || hastaSecuencia > UltimaSecuencia)
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.SecuenciaInvalida,
+                "La secuencia de entrega no es válida."));
+        }
+
+        var secuenciaActual = usuarioId == CompradorId
+            ? UltimaSecuenciaEntregadaComprador
+            : UltimaSecuenciaEntregadaVendedor;
+        if (hastaSecuencia <= secuenciaActual)
+        {
+            return Result.Exito();
+        }
+
+        AvanzarEntrega(usuarioId, hastaSecuencia);
+        AgregarEvento(new EntregaAvanzada(Id, hastaSecuencia, ocurrioEn.ToUniversalTime()));
+        return Result.Exito();
+    }
+
+    private void AvanzarEntrega(Guid usuarioId, long hastaSecuencia)
+    {
+        if (usuarioId == CompradorId)
+        {
+            UltimaSecuenciaEntregadaComprador = hastaSecuencia;
+        }
+        else
+        {
+            UltimaSecuenciaEntregadaVendedor = hastaSecuencia;
+        }
     }
 
     private Result CambiarEstado(
