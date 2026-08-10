@@ -2,11 +2,14 @@ param(
     [string]$Ip,
     [switch]$Logs,
     [switch]$RecrearDatos,
-    [switch]$ConfirmarBorradoDatos
+    [switch]$ConfirmarBorradoDatos,
+    [ValidateSet('pc1', 'pc2')]
+    [string]$Perfil = 'pc2'
 )
 
 $ErrorActionPreference = 'Stop'
 $raizCaserito = $PSScriptRoot
+$nombreEquipo = $Perfil.ToUpperInvariant()
 
 if ($RecrearDatos -and -not $ConfirmarBorradoDatos) {
     throw 'La recreación elimina la base y volúmenes locales. Repite con -RecrearDatos -ConfirmarBorradoDatos.'
@@ -56,9 +59,9 @@ $ipLan = Obtener-IpLan $Ip
 $hostLan = "$ipLan.sslip.io"
 $env:CASERITO_LAN_IP = $ipLan
 $env:CASERITO_LAN_HOST = $hostLan
-New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-data') | Out-Null
-New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-config') | Out-Null
-Set-Content -Path (Join-Path $raizCaserito '.local/pc2/ip.txt') -Value $ipLan -Encoding ascii
+New-Item -ItemType Directory -Force (Join-Path $raizCaserito ".local/$Perfil/caddy-data") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $raizCaserito ".local/$Perfil/caddy-config") | Out-Null
+Set-Content -Path (Join-Path $raizCaserito ".local/$Perfil/ip.txt") -Value $ipLan -Encoding ascii
 
 $rutaArgos = Join-Path $raizCaserito '..\dev\ARGOS\Dockerfile'
 if (-not (Test-Path $rutaArgos)) {
@@ -66,20 +69,20 @@ if (-not (Test-Path $rutaArgos)) {
 }
 $archivosCompose = @(
     '-f', 'docker-compose.dev.yml',
-    '-f', 'docker-compose.pc2.yml',
+    '-f', "docker-compose.$Perfil.yml",
     '-f', 'docker-compose.argos.yml'
 )
 
 if ($RecrearDatos) {
     & docker compose @archivosCompose down --volumes
-    if ($LASTEXITCODE -ne 0) { throw 'No se pudieron eliminar los datos locales de PC2.' }
+    if ($LASTEXITCODE -ne 0) { throw "No se pudieron eliminar los datos locales de $nombreEquipo." }
     Write-Host 'Se eliminaron los volúmenes Docker locales de Caserito; se recrearán al iniciar.' -ForegroundColor Yellow
 }
 
 & docker compose @archivosCompose up -d --build --renew-anon-volumes
-if ($LASTEXITCODE -ne 0) { throw 'No se pudo levantar el entorno PC2.' }
+if ($LASTEXITCODE -ne 0) { throw "No se pudo levantar el entorno $nombreEquipo." }
 
-$certificado = Join-Path $raizCaserito '.local/pc2/caddy-data/caddy/pki/authorities/local/root.crt'
+$certificado = Join-Path $raizCaserito ".local/$Perfil/caddy-data/caddy/pki/authorities/local/root.crt"
 for ($intento = 0; $intento -lt 30 -and -not (Test-Path $certificado); $intento++) {
     Start-Sleep -Seconds 1
 }
@@ -124,7 +127,7 @@ if (-not $argosSaludable) {
 }
 
 Write-Host ''
-Write-Host "Caserito PC2: https://$hostLan" -ForegroundColor Green
+Write-Host "Caserito ${nombreEquipo}: https://$hostLan" -ForegroundColor Green
 Write-Host 'ARGOS: saludable en la red interna de Caserito' -ForegroundColor Green
 if (Test-Path $certificado) {
     Write-Host "CA pública para instalar en el móvil: $certificado" -ForegroundColor Yellow

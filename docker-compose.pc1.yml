@@ -1,0 +1,30 @@
+# Extensión de desarrollo para probar Caserito desde móviles en la red de PC1.
+# Usar mediante iniciar-pc1.ps1; CASERITO_LAN_IP es obligatoria.
+services:
+  api:
+    environment:
+      Authentication__Simulador__Habilitado: "true"
+      Authentication__Simulador__CorreoExistente: "${CASERITO_SIMULADOR_CORREO_EXISTENTE:-comprador@caserito.test}"
+      App__UrlPublica: "https://${CASERITO_LAN_HOST}"
+
+  web:
+    environment:
+      VITE_CASERITO_ENVIRONMENT: "Development"
+      VITE_ALLOWED_HOST: "${CASERITO_LAN_HOST}"
+
+  gateway:
+    image: caddy:2.10.2-alpine
+    container_name: caserito-gateway
+    environment:
+      CASERITO_LAN_IP: "${CASERITO_LAN_IP}"
+      CASERITO_LAN_HOST: "${CASERITO_LAN_HOST}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/pc1/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./.local/pc1/caddy-data:/data
+      - ./.local/pc1/caddy-config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
