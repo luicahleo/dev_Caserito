@@ -44,6 +44,19 @@ sola**.
 - API → http://localhost:8080 (health: `http://localhost:8080/health`)
 - SQL Server → `localhost:1433` (usuario `sa`, contraseña = `SA_PASSWORD` del `.env`)
 
+### Probar desde móviles conectados a PC1
+
+En PC1, los dispositivos de prueba deben estar en la red `aseprodaAC`. Desde la
+raíz ejecuta:
+
+```powershell
+.\iniciar-pc1.ps1
+```
+
+El script detecta la IP LAN de PC1, levanta Caserito y ARGOS, y muestra la URL
+HTTPS `https://<IP-PC1>.sslip.io` que debes abrir desde el móvil. Si el adaptador
+detectado no corresponde a esa red, indica la IPv4 correcta con `-Ip`.
+
 ### Probar desde un móvil en PC2
 
 PC2 puede exponer este mismo entorno por HTTPS a cualquier móvil conectado a su

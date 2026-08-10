@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const script = readFileSync(new URL('../../iniciar-pc2.ps1', import.meta.url), 'utf8');
+const scriptPc1 = readFileSync(new URL('../../iniciar-pc1.ps1', import.meta.url), 'utf8');
 
 test('las advertencias de docker info no detienen el inicio de PC2', () => {
   assert.match(script, /\$ErrorActionPreference = 'Continue'[\s\S]*docker info \*> \$null/);
@@ -40,4 +41,12 @@ test('el entorno PC2 siempre incluye y espera a ARGOS', () => {
   assert.match(script, /Falta ARGOS en \.\.\/dev\/ARGOS/);
   assert.match(script, /docker inspect --format '\{\{\.State\.Health\.Status\}\}' caserito-argos/);
   assert.match(script, /ARGOS no alcanzó un estado saludable/);
+});
+
+test('PC1 reutiliza el inicio completo con un perfil y almacenamiento propios', () => {
+  assert.match(scriptPc1, /Perfil = 'pc1'/);
+  assert.match(scriptPc1, /iniciar-pc2\.ps1/);
+  assert.match(script, /\[ValidateSet\('pc1', 'pc2'\)\]/);
+  assert.match(script, /"docker-compose\.\$Perfil\.yml"/);
+  assert.match(script, /"\.local\/\$Perfil\/caddy-data"/);
 });
