@@ -18,7 +18,9 @@ public sealed record ConversacionResumenDto(
     int NoLeidos,
     EstadoConversacion Estado,
     string? OrigenCierre,
-    bool PuedeEnviar);
+    bool PuedeEnviar,
+    long UltimaSecuenciaEntregadaContraparte = 0,
+    long UltimaSecuenciaLeidaContraparte = 0);
 
 public interface IConsultaConversaciones
 {
@@ -37,4 +39,6 @@ public interface IConsultaConversaciones
         FronteraConversaciones? frontera,
         int limite,
         CancellationToken ct);
+
+    public Task<int> ContarNoLeidosAsync(Guid usuarioId, CancellationToken ct);
 }

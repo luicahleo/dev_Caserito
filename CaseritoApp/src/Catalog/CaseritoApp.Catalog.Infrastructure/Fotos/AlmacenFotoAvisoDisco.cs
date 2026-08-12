@@ -14,27 +14,71 @@ public sealed class AlmacenFotoAvisoDisco(IOptions<OpcionesAlmacenFotos> opcione
 
     public async Task<string> GuardarAsync(byte[] contenido, string contentType, CancellationToken ct)
     {
-        Directory.CreateDirectory(_rutaBase);
+        if (!string.Equals(contentType, "image/jpeg", StringComparison.Ordinal))
+        {
+            throw new ArgumentException("Solo se almacenan fotos normalizadas.", nameof(contentType));
+        }
+
         var clave = Guid.NewGuid().ToString("N");
-        await File.WriteAllBytesAsync(RutaBlob(clave), contenido, ct);
-        await File.WriteAllTextAsync(RutaMeta(clave), contentType, ct);
-        return clave;
+        var rutaFinal = RutaJpeg(clave);
+        var directorio = Path.GetDirectoryName(rutaFinal)!;
+        Directory.CreateDirectory(directorio);
+        var rutaTemporal = Path.Combine(directorio, $"{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await File.WriteAllBytesAsync(rutaTemporal, contenido, ct);
+            File.Move(rutaTemporal, rutaFinal);
+            return clave;
+        }
+        finally
+        {
+            File.Delete(rutaTemporal);
+        }
     }
 
     public async Task<(byte[] Contenido, string ContentType)> ObtenerAsync(string clave, CancellationToken ct)
     {
-        var contenido = await File.ReadAllBytesAsync(RutaBlob(clave), ct);
-        var contentType = await File.ReadAllTextAsync(RutaMeta(clave), ct);
+        ValidarClave(clave);
+        var rutaJpeg = RutaJpeg(clave);
+        if (File.Exists(rutaJpeg))
+        {
+            return (await File.ReadAllBytesAsync(rutaJpeg, ct), "image/jpeg");
+        }
+
+        var contenido = await File.ReadAllBytesAsync(RutaBlobLegado(clave), ct);
+        var contentType = await File.ReadAllTextAsync(RutaMetaLegado(clave), ct);
         return (contenido, contentType);
     }
 
     public Task EliminarAsync(string clave, CancellationToken ct)
     {
-        File.Delete(RutaBlob(clave));
-        File.Delete(RutaMeta(clave));
+        ValidarClave(clave);
+        ct.ThrowIfCancellationRequested();
+        EliminarSiExiste(RutaJpeg(clave));
+        EliminarSiExiste(RutaBlobLegado(clave));
+        EliminarSiExiste(RutaMetaLegado(clave));
         return Task.CompletedTask;
     }
 
-    private string RutaBlob(string clave) => Path.Combine(_rutaBase, $"{clave}.bin");
-    private string RutaMeta(string clave) => Path.Combine(_rutaBase, $"{clave}.meta");
+    private string RutaJpeg(string clave) =>
+        Path.Combine(_rutaBase, clave[..2], clave[2..4], $"{clave}.jpg");
+
+    private string RutaBlobLegado(string clave) => Path.Combine(_rutaBase, $"{clave}.bin");
+    private string RutaMetaLegado(string clave) => Path.Combine(_rutaBase, $"{clave}.meta");
+
+    private static void ValidarClave(string clave)
+    {
+        if (!Guid.TryParseExact(clave, "N", out _))
+        {
+            throw new FileNotFoundException("La foto no existe.");
+        }
+    }
+
+    private static void EliminarSiExiste(string ruta)
+    {
+        if (File.Exists(ruta))
+        {
+            File.Delete(ruta);
+        }
+    }
 }

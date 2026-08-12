@@ -36,21 +36,24 @@ services:
       Authentication__Facebook__AppId: "${Authentication__Facebook__AppId:-}"
       Authentication__Facebook__AppSecret: "${Authentication__Facebook__AppSecret:-}"
       # Bootstrap local opt-in para las pruebas manuales de fases 1–3.
-      BootstrapPruebas__Habilitado: "${CASERITO_BOOTSTRAP_ENABLED:-false}"
-      BootstrapPruebas__Administrador__Email: "${CASERITO_BOOTSTRAP_ADMIN_EMAIL:-}"
-      BootstrapPruebas__Administrador__Password: "${CASERITO_BOOTSTRAP_ADMIN_PASSWORD:-}"
-      BootstrapPruebas__Administrador__Nombre: "${CASERITO_BOOTSTRAP_ADMIN_NAME:-}"
-      BootstrapPruebas__Administrador__Ciudad: "${CASERITO_BOOTSTRAP_ADMIN_CITY:-}"
-      BootstrapPruebas__Vendedor__Email: "${CASERITO_BOOTSTRAP_SELLER_EMAIL:-}"
-      BootstrapPruebas__Vendedor__Password: "${CASERITO_BOOTSTRAP_SELLER_PASSWORD:-}"
-      BootstrapPruebas__Vendedor__Nombre: "${CASERITO_BOOTSTRAP_SELLER_NAME:-}"
-      BootstrapPruebas__Vendedor__Ciudad: "${CASERITO_BOOTSTRAP_SELLER_CITY:-}"
-      BootstrapPruebas__Comprador__Email: "${CASERITO_BOOTSTRAP_BUYER_EMAIL:-}"
-      BootstrapPruebas__Comprador__Password: "${CASERITO_BOOTSTRAP_BUYER_PASSWORD:-}"
-      BootstrapPruebas__Comprador__Nombre: "${CASERITO_BOOTSTRAP_BUYER_NAME:-}"
-      BootstrapPruebas__Comprador__Ciudad: "${CASERITO_BOOTSTRAP_BUYER_CITY:-}"
+      SeedUsuariosDesarrollo__Habilitado: "${CASERITO_SEED_USERS_ENABLED:-false}"
+      SeedUsuariosDesarrollo__Password: "${CASERITO_SEED_USERS_PASSWORD:-}"
+      SeedUsuariosDesarrollo__Correos__admin-plataforma: "${CASERITO_SEED_EMAIL_ADMIN_PLATAFORMA:-}"
+      SeedUsuariosDesarrollo__Correos__revisor-kyc: "${CASERITO_SEED_EMAIL_REVISOR_KYC:-}"
+      SeedUsuariosDesarrollo__Correos__moderador: "${CASERITO_SEED_EMAIL_MODERADOR:-}"
+      SeedUsuariosDesarrollo__Correos__soporte: "${CASERITO_SEED_EMAIL_SOPORTE:-}"
+      SeedUsuariosDesarrollo__Correos__vendedor-1: "${CASERITO_SEED_EMAIL_VENDEDOR_1:-}"
+      SeedUsuariosDesarrollo__Correos__vendedor-2: "${CASERITO_SEED_EMAIL_VENDEDOR_2:-}"
+      SeedUsuariosDesarrollo__Correos__comprador-1: "${CASERITO_SEED_EMAIL_COMPRADOR_1:-}"
+      SeedUsuariosDesarrollo__Correos__comprador-2: "${CASERITO_SEED_EMAIL_COMPRADOR_2:-}"
+      SeedUsuariosDesarrollo__Correos__cliente-email-pendiente: "${CASERITO_SEED_EMAIL_PENDIENTE:-}"
+      SeedUsuariosDesarrollo__Correos__cliente-kyc-no-iniciado: "${CASERITO_SEED_EMAIL_KYC_NO_INICIADO:-}"
+      SeedUsuariosDesarrollo__Correos__cliente-kyc-pendiente: "${CASERITO_SEED_EMAIL_KYC_PENDIENTE:-}"
+      SeedUsuariosDesarrollo__Correos__cliente-kyc-rechazado: "${CASERITO_SEED_EMAIL_KYC_RECHAZADO:-}"
     ports:
       - "8080:8080"
+    volumes:
+      - caserito-fotos-avisos:/data/fotos-avisos
     depends_on:
       sqlserver:
         # Espera a que sqlserver pase el healthcheck antes de arrancar la API.
@@ -78,3 +81,4 @@ services:
 
 volumes:
   caserito-sqlserver-data:
+  caserito-fotos-avisos:

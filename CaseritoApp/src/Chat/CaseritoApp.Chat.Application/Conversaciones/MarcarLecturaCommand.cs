@@ -8,25 +8,40 @@ namespace CaseritoApp.Chat.Application.Conversaciones;
 public sealed record MarcarLecturaCommand(
     Guid ConversacionId,
     Guid UsuarioId,
-    long HastaSecuencia) : ICommand;
+    long HastaSecuencia) : ICommand<ActualizacionRecibosDto>;
 
 public sealed class MarcarLecturaCommandHandler(
     IRepositorioConversaciones repositorio,
-    TimeProvider reloj) : ICommandHandler<MarcarLecturaCommand>
+    TimeProvider reloj) : ICommandHandler<MarcarLecturaCommand, ActualizacionRecibosDto>
 {
-    public async Task<Result> Handle(
+    public async Task<Result<ActualizacionRecibosDto>> Handle(
         MarcarLecturaCommand request,
         CancellationToken cancellationToken)
     {
         var conversacion = await repositorio.ObtenerAsync(request.ConversacionId, cancellationToken);
         if (conversacion is null || !conversacion.EsParticipante(request.UsuarioId))
         {
-            return Result.Fallo(new Error(
+            return Result.Fallo<ActualizacionRecibosDto>(new Error(
                 ErroresConversacion.NoEncontrada,
                 "La conversación no está disponible."));
         }
 
-        return conversacion.MarcarLectura(request.UsuarioId, request.HastaSecuencia, reloj.GetUtcNow());
+        var resultado = conversacion.MarcarLectura(
+            request.UsuarioId, request.HastaSecuencia, reloj.GetUtcNow());
+        if (!resultado.EsExito)
+        {
+            return Result.Fallo<ActualizacionRecibosDto>(resultado.Error);
+        }
+
+        var esComprador = request.UsuarioId == conversacion.CompradorId;
+        return Result.Exito(new ActualizacionRecibosDto(
+            esComprador ? conversacion.VendedorId : conversacion.CompradorId,
+            esComprador
+                ? conversacion.UltimaSecuenciaEntregadaComprador
+                : conversacion.UltimaSecuenciaEntregadaVendedor,
+            esComprador
+                ? conversacion.UltimaSecuenciaLeidaComprador
+                : conversacion.UltimaSecuenciaLeidaVendedor));
     }
 }
 

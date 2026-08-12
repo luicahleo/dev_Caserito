@@ -18,6 +18,16 @@ public sealed class ChatHub(
     private const string ErrorGenerico = "No fue posible completar la operación.";
     private readonly OpcionesTiempoRealChat _opciones = opciones.Value;
 
+    public override async Task OnConnectedAsync()
+    {
+        var usuarioId = ObtenerUsuarioId();
+        await Groups.AddToGroupAsync(
+            Context.ConnectionId,
+            GruposChat.ParaUsuario(usuarioId),
+            Context.ConnectionAborted);
+        await base.OnConnectedAsync();
+    }
+
     public async Task SuscribirConversacion(Guid conversacionId)
     {
         var usuarioId = ObtenerUsuarioId();

@@ -25,6 +25,8 @@ public static class ConfiguracionChat
             e.Property(c => c.CreadaEn).IsRequired();
             e.Property(c => c.UltimaActividadEn).IsRequired();
             e.Property(c => c.UltimaSecuencia).IsRequired();
+            e.Property(c => c.UltimaSecuenciaEntregadaComprador).IsRequired();
+            e.Property(c => c.UltimaSecuenciaEntregadaVendedor).IsRequired();
             e.Property(c => c.UltimaSecuenciaLeidaComprador).IsRequired();
             e.Property(c => c.UltimaSecuenciaLeidaVendedor).IsRequired();
             e.Property<byte[]>("Version").IsRowVersion();

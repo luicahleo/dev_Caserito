@@ -18,6 +18,7 @@ public sealed record SubirFotoAvisoCommand(
 public sealed partial class SubirFotoAvisoCommandHandler(
     IRepositorioAvisos repositorio,
     IAlmacenFotosAviso almacen,
+    IProcesadorFotoAviso procesador,
     ILogger<SubirFotoAvisoCommandHandler> logger)
     : ICommandHandler<SubirFotoAvisoCommand, Guid>
 {
@@ -38,28 +39,52 @@ public sealed partial class SubirFotoAvisoCommandHandler(
         {
             return Result.Fallo<Guid>(new Error(
                 ErroresAviso.ImagenInvalida,
-                "La imagen no es v&#xe1;lida. Se aceptan jpeg/png de hasta 5 MiB."));
+                "La imagen no es válida. Se aceptan JPEG/PNG de hasta 25 MiB."));
         }
 
-        // Guardar blob antes de persistir la entidad.
+        FotoAvisoProcesada? fotoProcesada;
+        try
+        {
+            fotoProcesada = await procesador.ProcesarAsync(
+                request.Contenido,
+                request.ContentType,
+                cancellationToken);
+        }
+        catch (Exception)
+        {
+            LogErrorProcesarFoto(logger);
+            fotoProcesada = null;
+        }
+
+        if (fotoProcesada is null)
+        {
+            return Result.Fallo<Guid>(new Error(
+                ErroresAviso.ImagenInvalida,
+                "No se pudo procesar la imagen."));
+        }
+
+        // Guardar únicamente el resultado normalizado antes de persistir la entidad.
         string clave;
         try
         {
-            clave = await almacen.GuardarAsync(request.Contenido, request.ContentType, cancellationToken);
+            clave = await almacen.GuardarAsync(
+                fotoProcesada.Contenido,
+                fotoProcesada.ContentType,
+                cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            LogErrorGuardarBlob(logger, ex, request.AvisoId);
+            LogErrorGuardarBlob(logger);
             return Result.Fallo<Guid>(new Error(
                 ErroresAviso.ErrorAlmacenamiento,
                 "No se pudo almacenar la imagen. Int&#xe9;ntalo de nuevo."));
         }
 
-        var resultado = aviso.AgregarFoto(clave, request.ContentType);
+        var resultado = aviso.AgregarFoto(clave, fotoProcesada.ContentType);
         if (!resultado.EsExito)
         {
             // La colecci&#xf3;n est&#xe1; llena: borrar el blob reci&#xe9;n guardado (best-effort).
-            await BorrarBlobBestEffortAsync(clave, request.AvisoId, cancellationToken);
+            await BorrarBlobBestEffortAsync(clave, cancellationToken);
             return Result.Fallo<Guid>(resultado.Error);
         }
 
@@ -67,23 +92,26 @@ public sealed partial class SubirFotoAvisoCommandHandler(
         return Result.Exito(aviso.Fotos[^1].Id);
     }
 
-    private async Task BorrarBlobBestEffortAsync(string clave, Guid avisoId, CancellationToken ct)
+    private async Task BorrarBlobBestEffortAsync(string clave, CancellationToken ct)
     {
         try
         {
             await almacen.EliminarAsync(clave, ct);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            LogWarningBlobHuerfano(logger, ex, clave, avisoId);
+            LogWarningBlobHuerfano(logger);
         }
     }
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Error al guardar el blob de foto para aviso {AvisoId}")]
-    private static partial void LogErrorGuardarBlob(ILogger logger, Exception ex, Guid avisoId);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "No se pudo procesar una foto de aviso")]
+    private static partial void LogErrorProcesarFoto(ILogger logger);
 
-    [LoggerMessage(Level = LogLevel.Warning, Message = "No se pudo borrar el blob huérfano {Clave} del aviso {AvisoId}")]
-    private static partial void LogWarningBlobHuerfano(ILogger logger, Exception ex, string clave, Guid avisoId);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Error al guardar una foto de aviso")]
+    private static partial void LogErrorGuardarBlob(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "No se pudo borrar una foto huérfana")]
+    private static partial void LogWarningBlobHuerfano(ILogger logger);
 }
 
 /// <summary>Valida <see cref="SubirFotoAvisoCommand"/>.</summary>

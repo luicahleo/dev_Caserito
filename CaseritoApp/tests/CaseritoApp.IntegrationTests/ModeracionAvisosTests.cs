@@ -174,10 +174,10 @@ public sealed class ModeracionAvisosTests(CaseritoApiFactory factory) : IClassFi
         using var scope = factory.Services.CreateScope();
         var almacen = scope.ServiceProvider.GetRequiredService<IAlmacenFotosAviso>();
         var clave = await almacen.GuardarAsync(
-            [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A], "image/png", CancellationToken.None);
+            [0xFF, 0xD8, 0xFF, 0x00], "image/jpeg", CancellationToken.None);
         var db = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
         var aviso = (await db.Avisos.FindAsync(avisoId))!;
-        Assert.True(aviso.AgregarFoto(clave, "image/png").EsExito);
+        Assert.True(aviso.AgregarFoto(clave, "image/jpeg").EsExito);
         await db.SaveChangesAsync();
         return clave;
     }

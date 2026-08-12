@@ -57,6 +57,30 @@ public sealed class IniciarConversacionCommandHandlerTests
     }
 
     [Fact]
+    public async Task Devuelve_cursores_de_la_contraparte_en_conversacion_existente()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var existente = Conversacion.Crear(avisoId, compradorId, vendedorId, _ahora).Valor;
+        existente.CrearMensaje(compradorId, Guid.NewGuid(), 2, "Hola", _ahora.AddMinutes(1));
+        existente.MarcarEntrega(vendedorId, 2, _ahora.AddMinutes(2));
+        existente.MarcarLectura(vendedorId, 1, _ahora.AddMinutes(3));
+        var handler = new IniciarConversacionCommandHandler(
+            new RepositorioFake { Existente = existente },
+            new ConsultaAvisoFake(null),
+            TimeProvider.System,
+            new BloqueosFake());
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(2, resultado.Valor.Conversacion.UltimaSecuenciaEntregadaContraparte);
+        Assert.Equal(1, resultado.Valor.Conversacion.UltimaSecuenciaLeidaContraparte);
+    }
+
+    [Fact]
     public async Task Aviso_no_contactable_devuelve_no_encontrado()
     {
         var handler = new IniciarConversacionCommandHandler(

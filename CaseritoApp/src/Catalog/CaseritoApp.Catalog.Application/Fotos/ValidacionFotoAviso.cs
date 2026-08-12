@@ -6,8 +6,8 @@ namespace CaseritoApp.Catalog.Application.Fotos;
 /// </summary>
 public static class ValidacionFotoAviso
 {
-    /// <summary>Tama&#xf1;o m&#xe1;ximo por foto (5 MiB).</summary>
-    public const long LimiteBytes = 5 * 1024 * 1024;
+    /// <summary>Límite absoluto de entrada por foto (25 MiB); la salida normalizada no supera 1 MiB.</summary>
+    public const long LimiteBytes = 25 * 1024 * 1024;
 
     /// <summary>Tipos MIME aceptados.</summary>
     public static readonly string[] ContentTypesPermitidos = ["image/jpeg", "image/png"];

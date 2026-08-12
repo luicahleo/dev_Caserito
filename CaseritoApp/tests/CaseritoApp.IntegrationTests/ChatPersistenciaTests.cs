@@ -266,14 +266,19 @@ public sealed class ChatPersistenciaTests(CaseritoApiFactory factory) : IClassFi
             propia.VendedorId, Guid.NewGuid(), 1, "Respuesta", _ahora.AddMinutes(1)).Valor);
         db.Mensajes.Add(propia.CrearMensaje(
             propia.CompradorId, Guid.NewGuid(), 2, "Gracias", _ahora.AddMinutes(2)).Valor);
+        propia.MarcarEntrega(propia.VendedorId, 2, _ahora.AddMinutes(3));
         await db.SaveChangesAsync();
         var consulta = new ConsultaConversacionesEfCore(db);
 
         var pagina = await consulta.ListarAsync(compradorId, null, 20, CancellationToken.None);
+        var noLeidos = await consulta.ContarNoLeidosAsync(compradorId, CancellationToken.None);
 
         var item = Assert.Single(pagina.Items);
         Assert.Equal(propia.Id, item.Id);
         Assert.Equal(1, item.NoLeidos);
+        Assert.Equal(2, item.UltimaSecuenciaEntregadaContraparte);
+        Assert.Equal(0, item.UltimaSecuenciaLeidaContraparte);
+        Assert.Equal(1, noLeidos);
         Assert.Equal(propia.VendedorId, item.ContraparteId);
         Assert.Equal("Comprador", item.Rol);
         Assert.Equal(EstadoConversacion.Activa, item.Estado);

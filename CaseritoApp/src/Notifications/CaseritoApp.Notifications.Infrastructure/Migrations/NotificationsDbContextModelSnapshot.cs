@@ -167,6 +167,100 @@ namespace CaseritoApp.Notifications.Infrastructure.Migrations
 
                     b.ToTable("SafeMeetingPoints", "notifications");
                 });
+
+            modelBuilder.Entity("CaseritoApp.Notifications.Domain.Push.IntencionPush", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConversacionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("DestinatarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DisponibleEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Intentos")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("LeaseHasta")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ProcesadaEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("Secuencia")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventoId")
+                        .IsUnique();
+
+                    b.HasIndex("ProcesadaEn", "DisponibleEn", "LeaseHasta");
+
+                    b.ToTable("PushIntents", "notifications");
+                });
+
+            modelBuilder.Entity("CaseritoApp.Notifications.Domain.Push.SuscripcionPush", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("ActualizadaEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTimeOffset>("CreadaEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DispositivoId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<DateTimeOffset?>("RevocadaEn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "Activa");
+
+                    b.HasIndex("UsuarioId", "DispositivoId")
+                        .IsUnique();
+
+                    b.ToTable("PushSubscriptions", "notifications");
+                });
 #pragma warning restore 612, 618
         }
     }

@@ -5,5 +5,6 @@ public sealed record ChatMessageSent(
     DateTimeOffset OcurridoEn,
     Guid ConversacionId,
     Guid MensajeId,
+    long Secuencia,
     Guid RemitenteId,
     Guid DestinatarioId) : IIntegrationEvent;

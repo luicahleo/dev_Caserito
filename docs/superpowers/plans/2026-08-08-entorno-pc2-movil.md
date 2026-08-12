@@ -155,7 +155,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/pc2/Test-Pc2.ps1
 **Salidas:**
 
 - `iniciar-pc2.ps1`: valida Docker/`.env`, selecciona IPv4 de ruta por defecto o
-  `-Ip`, genera TLS, levanta base + PC2 y opcionalmente ARGOS con `-Argos`, espera
+  `-Ip`, genera TLS, levanta base + PC2 + ARGOS obligatoriamente, espera
   salud y muestra URL/certificado público.
 - `detener-pc2.ps1`: detiene sin borrar volúmenes; `-BorrarDatos` exige una
   confirmación explícita o flag inequívoco y enumera el alcance local.

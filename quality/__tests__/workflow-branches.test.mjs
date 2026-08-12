@@ -24,6 +24,19 @@ test('producción requiere despacho manual desde master y CI verde del SHA', () 
 test('las reglas reservan master para una promoción pedida por el usuario', () => {
   const reglas = leer('AGENTS.md');
 
-  assert.match(reglas, /Nunca fusionar ni hacer push a `master` sin pedido explícito del usuario/);
+  assert.match(
+    reglas,
+    /Nunca fusionar ni hacer push a\s+`master` sin pedido explícito del usuario/,
+  );
   assert.match(reglas, /rama permanente `develop`/);
+});
+
+test('el trabajo cotidiano se realiza directamente en develop sin ramas obligatorias', () => {
+  const reglas = leer('AGENTS.md');
+  const workflow = leer('docs/ai/WORKFLOW.md');
+
+  assert.match(reglas, /Trabajar directamente en la rama permanente `develop`/);
+  assert.match(workflow, /No crear una rama de trabajo salvo pedido explícito/);
+  assert.doesNotMatch(workflow, /crear una rama dedicada/);
+  assert.doesNotMatch(workflow, /borrar la rama de trabajo/);
 });

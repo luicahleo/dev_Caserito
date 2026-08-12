@@ -27,7 +27,8 @@ public interface IServicioRefreshTokens
 public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tiempo)
     : IServicioRefreshTokens, IRevocadorSesionesUsuario
 {
-    private const int DiasVida = 7;
+    /// <summary>Ventana deslizante durante la que puede restaurarse una sesión.</summary>
+    public static TimeSpan VigenciaSesion { get; } = TimeSpan.FromDays(30);
 
     /// <inheritdoc/>
     public async Task<string> EmitirAsync(Guid userId, CancellationToken ct)
@@ -40,7 +41,7 @@ public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tie
             UserId = userId,
             TokenHash = hash,
             CreadoEn = ahora,
-            ExpiraEn = ahora.AddDays(DiasVida),
+            ExpiraEn = ahora.Add(VigenciaSesion),
         });
         await db.SaveChangesAsync(ct);
         return plano;
@@ -76,7 +77,7 @@ public sealed class ServicioRefreshTokens(IdentityDbContext db, TimeProvider tie
             UserId = actual.UserId,
             TokenHash = nuevoHash,
             CreadoEn = ahora,
-            ExpiraEn = ahora.AddDays(DiasVida),
+            ExpiraEn = ahora.Add(VigenciaSesion),
         });
         await db.SaveChangesAsync(ct);
         return (nuevoPlano, actual.UserId);

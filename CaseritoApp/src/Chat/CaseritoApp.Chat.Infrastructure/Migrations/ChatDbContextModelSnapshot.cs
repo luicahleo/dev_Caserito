@@ -51,6 +51,12 @@ namespace CaseritoApp.Chat.Infrastructure.Migrations
                     b.Property<long>("UltimaSecuencia")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("UltimaSecuenciaEntregadaComprador")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UltimaSecuenciaEntregadaVendedor")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("UltimaSecuenciaLeidaComprador")
                         .HasColumnType("bigint");
 

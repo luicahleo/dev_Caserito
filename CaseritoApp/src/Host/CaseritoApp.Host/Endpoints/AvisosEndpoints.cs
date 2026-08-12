@@ -2,11 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Catalog.Application.Avisos;
+using CaseritoApp.Catalog.Application.Fotos;
 using CaseritoApp.Catalog.Domain.Avisos;
 using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CaseritoApp.Host.Endpoints;
 
@@ -82,6 +84,10 @@ public static class AvisosEndpoints
 
         grupo.MapPost("/{id:guid}/fotos", SubirFotoAsync)
             .Accepts<IFormFile>("multipart/form-data")
+            .WithMetadata(new RequestFormLimitsAttribute
+            {
+                MultipartBodyLengthLimit = 26 * 1024 * 1024,
+            })
             .DisableAntiforgery()
             .Produces<FotoCreadaResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status401Unauthorized)
@@ -202,6 +208,14 @@ public static class AvisosEndpoints
             return Results.Problem(
                 title: "archivo_requerido",
                 detail: "Se debe adjuntar un archivo de imagen.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        if (file.Length > ValidacionFotoAviso.LimiteBytes)
+        {
+            return Results.Problem(
+                title: "imagen_invalida",
+                detail: "No se pudo procesar la imagen.",
                 statusCode: StatusCodes.Status400BadRequest);
         }
 

@@ -173,7 +173,50 @@ public sealed class ConversacionTests
         Assert.True(retroceso.EsExito);
         Assert.Equal(5, conversacion.UltimaSecuenciaLeidaComprador);
         Assert.Equal(0, conversacion.UltimaSecuenciaLeidaVendedor);
+        Assert.Equal(5, conversacion.UltimaSecuenciaEntregadaComprador);
+        Assert.Equal(0, conversacion.UltimaSecuenciaEntregadaVendedor);
         Assert.IsType<LecturaAvanzada>(Assert.Single(conversacion.EventosDeDominio));
+    }
+
+    [Fact]
+    public void MarcarEntrega_avanza_sin_retroceder_y_es_idempotente()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, _ahora).Valor;
+        conversacion.CrearMensaje(vendedorId, Guid.NewGuid(), 5, "Hola", _ahora.AddMinutes(1));
+        conversacion.LimpiarEventos();
+
+        var avance = conversacion.MarcarEntrega(compradorId, 5, _ahora.AddMinutes(2));
+        var repeticion = conversacion.MarcarEntrega(compradorId, 5, _ahora.AddMinutes(3));
+        var retroceso = conversacion.MarcarEntrega(compradorId, 3, _ahora.AddMinutes(4));
+
+        Assert.True(avance.EsExito);
+        Assert.True(repeticion.EsExito);
+        Assert.True(retroceso.EsExito);
+        Assert.Equal(5, conversacion.UltimaSecuenciaEntregadaComprador);
+        Assert.Equal(0, conversacion.UltimaSecuenciaEntregadaVendedor);
+        var evento = Assert.IsType<EntregaAvanzada>(Assert.Single(conversacion.EventosDeDominio));
+        Assert.Equal(conversacion.Id, evento.ConversacionId);
+        Assert.Equal(5, evento.HastaSecuencia);
+    }
+
+    [Fact]
+    public void MarcarEntrega_rechaza_tercero_y_secuencias_invalidas()
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+        conversacion.CrearMensaje(compradorId, Guid.NewGuid(), 2, "Hola", _ahora.AddMinutes(1));
+
+        var tercero = conversacion.MarcarEntrega(Guid.NewGuid(), 1, _ahora.AddMinutes(2));
+        var negativa = conversacion.MarcarEntrega(compradorId, -1, _ahora.AddMinutes(2));
+        var inexistente = conversacion.MarcarEntrega(compradorId, 3, _ahora.AddMinutes(2));
+
+        Assert.Equal(ErroresConversacion.NoEncontrada, tercero.Error.Code);
+        Assert.Equal(ErroresConversacion.SecuenciaInvalida, negativa.Error.Code);
+        Assert.Equal(ErroresConversacion.SecuenciaInvalida, inexistente.Error.Code);
     }
 
     [Fact]

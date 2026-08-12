@@ -33,6 +33,62 @@ function montar(id: string) {
 }
 
 describe('DetalleAvisoPage', () => {
+  it('recorre las fotos en ambos sentidos con navegación circular', async () => {
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'a1',
+      vendedorId: 'vendedor',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [
+        { id: 'f1', url: '/foto-1.jpg', orden: 0 },
+        { id: 'f2', url: '/foto-2.jpg', orden: 1 },
+        { id: 'f3', url: '/foto-3.jpg', orden: 2 },
+      ],
+    });
+
+    montar('a1');
+
+    const imagenAmpliada = await screen.findByRole('img', { name: 'Bicicleta' });
+    fireEvent.click(screen.getByRole('button', { name: 'Imagen anterior' }));
+    expect(imagenAmpliada).toHaveAttribute('src', '/foto-3.jpg');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Imagen siguiente' }));
+    expect(imagenAmpliada).toHaveAttribute('src', '/foto-1.jpg');
+    fireEvent.click(screen.getByRole('button', { name: 'Imagen siguiente' }));
+    expect(imagenAmpliada).toHaveAttribute('src', '/foto-2.jpg');
+
+    fireEvent.click(screen.getByRole('img', { name: 'Foto 3' }));
+    expect(imagenAmpliada).toHaveAttribute('src', '/foto-3.jpg');
+  });
+
+  it('no muestra controles de carrusel cuando solo hay una foto', async () => {
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'a1',
+      vendedorId: 'vendedor',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [{ id: 'f1', url: '/foto-1.jpg', orden: 0 }],
+    });
+
+    montar('a1');
+
+    expect(await screen.findByRole('img', { name: 'Bicicleta' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Imagen anterior' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Imagen siguiente' })).not.toBeInTheDocument();
+  });
+
   it('muestra el detalle de un aviso', async () => {
     vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
       id: 'a1',
@@ -87,6 +143,8 @@ describe('DetalleAvisoPage', () => {
       creadaEn: '',
       ultimaActividadEn: '',
       ultimaSecuencia: 0,
+      ultimaSecuenciaEntregadaContraparte: 0,
+      ultimaSecuenciaLeidaContraparte: 0,
       estado: 0,
       origenCierre: null,
       puedeEnviar: true,

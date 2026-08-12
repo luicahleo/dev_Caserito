@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
+using CaseritoApp.BuildingBlocks.Contracts.Chat;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Chat.Application.Conversaciones;
 using CaseritoApp.Chat.Application.Mensajes;
@@ -22,6 +23,10 @@ public sealed record IniciarConversacionRequest(Guid AvisoId);
 public sealed record EnviarMensajeRequest(Guid ClaveIdempotencia, string Texto);
 
 public sealed record MarcarLecturaRequest(long HastaSecuencia);
+
+public sealed record MarcarEntregaRequest(long HastaSecuencia);
+
+public sealed record ContadorMensajesNoLeidosResponse(int Cantidad);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ReportarChatRequest(
@@ -55,6 +60,12 @@ public static class ChatEndpoints
             .Produces(StatusCodes.Status401Unauthorized)
             .Produces(StatusCodes.Status429TooManyRequests);
 
+        grupo.MapGet("/no-leidos", ContarNoLeidosAsync)
+            .RequireRateLimiting("chat-consultas")
+            .Produces<ContadorMensajesNoLeidosResponse>()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
         grupo.MapPost("/conversaciones/{id:guid}/mensajes", EnviarAsync)
             .RequireRateLimiting("chat-enviar")
             .Produces<MensajeDto>(StatusCodes.Status200OK)
@@ -74,6 +85,15 @@ public static class ChatEndpoints
             .Produces(StatusCodes.Status429TooManyRequests);
 
         grupo.MapPut("/conversaciones/{id:guid}/lectura", MarcarLecturaAsync)
+            .RequireRateLimiting("chat-consultas")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem()
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status429TooManyRequests);
+
+        grupo.MapPut("/conversaciones/{id:guid}/entrega", MarcarEntregaAsync)
             .RequireRateLimiting("chat-consultas")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -198,6 +218,7 @@ public static class ChatEndpoints
         EnviarMensajeRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublisher publisher,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -221,6 +242,19 @@ public static class ChatEndpoints
                 return DesdeError(resultado.Error);
             }
 
+            if (resultado.Valor.FueCreado)
+            {
+                var mensaje = resultado.Valor.Mensaje;
+                await publisher.Publish(new ChatMessageSent(
+                    Guid.NewGuid(),
+                    mensaje.EnviadoEn,
+                    id,
+                    mensaje.Id,
+                    mensaje.Secuencia,
+                    usuarioId,
+                    resultado.Valor.DestinatarioId), ct);
+            }
+
             return resultado.Valor.FueCreado
                 ? Results.Created(
                     $"/api/chat/conversaciones/{id}/mensajes/{resultado.Valor.Mensaje.Id}",
@@ -231,6 +265,20 @@ public static class ChatEndpoints
         {
             return ProblemaDeValidacion(ex);
         }
+    }
+
+    private static async Task<IResult> ContarNoLeidosAsync(
+        ClaimsPrincipal usuario,
+        ISender sender,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var cantidad = await sender.Send(new ContarMensajesNoLeidosQuery(usuarioId), ct);
+        return Results.Ok(new ContadorMensajesNoLeidosResponse(cantidad));
     }
 
     private static async Task<IResult> ObtenerMensajesAsync(
@@ -287,6 +335,7 @@ public static class ChatEndpoints
         MarcarLecturaRequest request,
         ClaimsPrincipal usuario,
         ISender sender,
+        IPublicadorEventosGlobalesChat publicador,
         CancellationToken ct)
     {
         if (!TryUserId(usuario, out var usuarioId))
@@ -303,15 +352,71 @@ public static class ChatEndpoints
                 return ConflictoPersistencia();
             }
 
-            return ejecucion.Valor!.EsExito
-                ? Results.NoContent()
-                : DesdeError(ejecucion.Valor.Error);
+            var resultado = ejecucion.Valor!;
+            if (!resultado.EsExito)
+            {
+                return DesdeError(resultado.Error);
+            }
+
+            await PublicarRecibosAsync(id, resultado.Valor, publicador, ct);
+            await publicador.PublicarContadorAsync(usuarioId, ct);
+            return Results.NoContent();
         }
         catch (ValidationException ex)
         {
             return ProblemaDeValidacion(ex);
         }
     }
+
+    private static async Task<IResult> MarcarEntregaAsync(
+        Guid id,
+        MarcarEntregaRequest request,
+        ClaimsPrincipal usuario,
+        ISender sender,
+        IPublicadorEventosGlobalesChat publicador,
+        CancellationToken ct)
+    {
+        if (!TryUserId(usuario, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        try
+        {
+            var ejecucion = await EjecutarConReintentoAsync(
+                () => sender.Send(new MarcarEntregaCommand(id, usuarioId, request.HastaSecuencia), ct));
+            if (ejecucion.Conflicto)
+            {
+                return ConflictoPersistencia();
+            }
+
+            var resultado = ejecucion.Valor!;
+            if (!resultado.EsExito)
+            {
+                return DesdeError(resultado.Error);
+            }
+
+            await PublicarRecibosAsync(id, resultado.Valor, publicador, ct);
+            return Results.NoContent();
+        }
+        catch (ValidationException ex)
+        {
+            return ProblemaDeValidacion(ex);
+        }
+    }
+
+    private static Task PublicarRecibosAsync(
+        Guid conversacionId,
+        ActualizacionRecibosDto recibos,
+        IPublicadorEventosGlobalesChat publicador,
+        CancellationToken ct) =>
+        publicador.PublicarEstadoAsync(
+            recibos.DestinatarioEstadoId,
+            new EstadoMensajesActualizadoDto(
+                conversacionId,
+                recibos.UltimaSecuenciaEntregada,
+                recibos.UltimaSecuenciaLeida),
+            ct);
 
     private static async Task<IResult> ReportarAsync(
         Guid id,

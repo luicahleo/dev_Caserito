@@ -19,4 +19,7 @@ public sealed record MensajeDto(
         mensaje.EnviadoEn);
 }
 
-public sealed record EnviarMensajeResultadoDto(MensajeDto Mensaje, bool FueCreado);
+public sealed record EnviarMensajeResultadoDto(
+    MensajeDto Mensaje,
+    Guid DestinatarioId,
+    bool FueCreado);

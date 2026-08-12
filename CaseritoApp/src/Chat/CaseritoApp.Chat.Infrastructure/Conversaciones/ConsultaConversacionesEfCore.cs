@@ -73,7 +73,13 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                 c.Estado == EstadoConversacion.Activa
                     && !db.BloqueosUsuario.Any(b =>
                         (b.BloqueadorId == c.CompradorId && b.BloqueadoId == c.VendedorId)
-                        || (b.BloqueadorId == c.VendedorId && b.BloqueadoId == c.CompradorId))))
+                        || (b.BloqueadorId == c.VendedorId && b.BloqueadoId == c.CompradorId)),
+                c.CompradorId == usuarioId
+                    ? c.UltimaSecuenciaEntregadaVendedor
+                    : c.UltimaSecuenciaEntregadaComprador,
+                c.CompradorId == usuarioId
+                    ? c.UltimaSecuenciaLeidaVendedor
+                    : c.UltimaSecuenciaLeidaComprador))
             .Take(limite + 1)
             .ToListAsync(ct);
 
@@ -84,4 +90,15 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
             : null;
         return new PaginaCursor<ConversacionResumenDto, FronteraConversaciones>(items, siguiente);
     }
+
+    public Task<int> ContarNoLeidosAsync(Guid usuarioId, CancellationToken ct) =>
+        db.Mensajes.AsNoTracking().CountAsync(
+            m => m.RemitenteId != usuarioId
+                && db.Conversaciones.Any(c =>
+                    c.Id == m.ConversacionId
+                    && (c.CompradorId == usuarioId || c.VendedorId == usuarioId)
+                    && m.Secuencia > (c.CompradorId == usuarioId
+                        ? c.UltimaSecuenciaLeidaComprador
+                        : c.UltimaSecuenciaLeidaVendedor)),
+            ct);
 }

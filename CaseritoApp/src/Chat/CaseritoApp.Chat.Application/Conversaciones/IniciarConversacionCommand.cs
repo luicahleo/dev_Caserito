@@ -38,7 +38,10 @@ public sealed class IniciarConversacionCommandHandler(
             }
 
             return Result.Exito(new IniciarConversacionResultadoDto(
-                ConversacionDto.Desde(existente),
+                ConversacionDto.Desde(
+                    existente,
+                    puedeEnviar: true,
+                    participanteId: request.CompradorId),
                 false));
         }
 
@@ -72,7 +75,10 @@ public sealed class IniciarConversacionCommandHandler(
 
         repositorio.Agregar(resultadoCreacion.Valor);
         return Result.Exito(new IniciarConversacionResultadoDto(
-            ConversacionDto.Desde(resultadoCreacion.Valor),
+            ConversacionDto.Desde(
+                resultadoCreacion.Valor,
+                puedeEnviar: true,
+                participanteId: request.CompradorId),
             true));
     }
 }

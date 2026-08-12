@@ -34,6 +34,20 @@ function montar(iniciarSesion = vi.fn(), proveedores: Promise<authApi.ProveedorE
 }
 
 describe('LoginPage', () => {
+  it('permite mostrar y ocultar la contraseña', async () => {
+    const usuario = userEvent.setup();
+    montar();
+    const password = screen.getByLabelText(/^contraseña$/i);
+
+    expect(password).toHaveAttribute('type', 'password');
+
+    await usuario.click(screen.getByRole('button', { name: 'Mostrar contraseña' }));
+    expect(password).toHaveAttribute('type', 'text');
+
+    await usuario.click(screen.getByRole('button', { name: 'Ocultar contraseña' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
+
   it('muestra Facebook y Google, en ese orden, antes del formulario tradicional', async () => {
     montar();
 
@@ -78,7 +92,7 @@ describe('LoginPage', () => {
     const { iniciarSesion } = montar(vi.fn().mockResolvedValue(undefined));
 
     await usuarioEvento.type(screen.getByLabelText(/email/i), 'ana@example.com');
-    await usuarioEvento.type(screen.getByLabelText(/contraseña/i), 'secreta123');
+    await usuarioEvento.type(screen.getByLabelText(/^contraseña$/i), 'secreta123');
     await usuarioEvento.click(screen.getByRole('button', { name: /entrar/i }));
 
     expect(iniciarSesion).toHaveBeenCalledWith({
@@ -92,7 +106,7 @@ describe('LoginPage', () => {
     montar(vi.fn().mockRejectedValue(new Error('401')));
 
     await usuarioEvento.type(screen.getByLabelText(/email/i), 'ana@example.com');
-    await usuarioEvento.type(screen.getByLabelText(/contraseña/i), 'secreta123');
+    await usuarioEvento.type(screen.getByLabelText(/^contraseña$/i), 'secreta123');
     await usuarioEvento.click(screen.getByRole('button', { name: /entrar/i }));
 
     expect(await screen.findByText('Credenciales inválidas')).toBeInTheDocument();
@@ -103,7 +117,7 @@ describe('LoginPage', () => {
     const { iniciarSesion } = montar();
 
     await usuarioEvento.type(screen.getByLabelText(/email/i), 'no-es-un-email');
-    await usuarioEvento.type(screen.getByLabelText(/contraseña/i), 'secreta123');
+    await usuarioEvento.type(screen.getByLabelText(/^contraseña$/i), 'secreta123');
     await usuarioEvento.click(screen.getByRole('button', { name: /entrar/i }));
 
     expect(await screen.findByText('Email inválido')).toBeInTheDocument();

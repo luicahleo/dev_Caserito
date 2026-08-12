@@ -20,8 +20,12 @@ export type LoginExternoPendiente = components['schemas']['LoginExternoPendiente
 export type CompletarLoginExterno = components['schemas']['CompletarRegistroExternoRequest'];
 
 export function normalizarRetorno(retorno: unknown): string {
-  return typeof retorno === 'string' && retorno.startsWith('/') &&
-    !retorno.startsWith('//') && !retorno.startsWith('/\\') ? retorno : '/perfil';
+  return typeof retorno === 'string' &&
+    retorno.startsWith('/') &&
+    !retorno.startsWith('//') &&
+    !retorno.startsWith('/\\')
+    ? retorno
+    : '/perfil';
 }
 
 export async function obtenerProveedores(): Promise<ProveedorExterno[]> {
@@ -51,11 +55,20 @@ export async function iniciarSesion(cred: Credenciales): Promise<void> {
   setAccessToken((data as { accessToken: string }).accessToken);
 }
 
-export async function refrescar(): Promise<boolean> {
+let renovacionEnCurso: Promise<boolean> | null = null;
+
+async function ejecutarRenovacion(): Promise<boolean> {
   const r = await api.POST('/api/auth/refresh');
   if (r.error !== undefined || !r.response.ok) return false;
   setAccessToken((r.data as { accessToken: string }).accessToken);
   return true;
+}
+
+export function refrescar(): Promise<boolean> {
+  renovacionEnCurso ??= ejecutarRenovacion().finally(() => {
+    renovacionEnCurso = null;
+  });
+  return renovacionEnCurso;
 }
 
 export async function cerrarSesion(): Promise<void> {

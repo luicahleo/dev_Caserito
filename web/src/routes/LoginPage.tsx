@@ -3,7 +3,19 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLocation, useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { Button, Container, Stack, TextField, Typography, Alert, Link } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import {
+  Alert,
+  Button,
+  Container,
+  IconButton,
+  InputAdornment,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useAuth } from '../auth/AuthContext';
 import * as authApi from '../api/auth';
 
@@ -20,6 +32,7 @@ export function LoginPage() {
   const [params] = useSearchParams();
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [proveedores, setProveedores] = useState<authApi.ProveedorExterno[]>([]);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   useEffect(() => {
     authApi
       .obtenerProveedores()
@@ -87,10 +100,25 @@ export function LoginPage() {
           />
           <TextField
             label="Contraseña"
-            type="password"
+            type={mostrarPassword ? 'text' : 'password'}
             {...register('password')}
             error={!!errors.password}
             helperText={errors.password?.message}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      edge="end"
+                      onClick={() => setMostrarPassword((visible) => !visible)}
+                    >
+                      {mostrarPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Entrar

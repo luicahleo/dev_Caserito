@@ -29,6 +29,8 @@ public sealed class SubirBorrarFotoCommandHandlerTests
     {
         public List<string> ClavesGuardadas { get; } = [];
         public List<string> ClavesEliminadas { get; } = [];
+        public byte[]? UltimoContenido { get; private set; }
+        public string? UltimoContentType { get; private set; }
 
         public Task<string> GuardarAsync(byte[] contenido, string contentType, CancellationToken ct)
         {
@@ -36,6 +38,8 @@ public sealed class SubirBorrarFotoCommandHandlerTests
             {
                 throw new IOException("disco lleno");
             }
+            UltimoContenido = contenido;
+            UltimoContentType = contentType;
             var clave = Guid.NewGuid().ToString("N");
             ClavesGuardadas.Add(clave);
             return Task.FromResult(clave);
@@ -51,6 +55,19 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         }
     }
 
+    private sealed class ProcesadorFake(byte[]? salida = null) : IProcesadorFotoAviso
+    {
+        public int Invocaciones { get; private set; }
+
+        public Task<FotoAvisoProcesada?> ProcesarAsync(
+            byte[] contenido, string contentType, CancellationToken ct)
+        {
+            Invocaciones++;
+            var normalizada = salida ?? [0xFF, 0xD8, 0xFF, 0x10];
+            return Task.FromResult<FotoAvisoProcesada?>(new(normalizada, "image/jpeg"));
+        }
+    }
+
     private static Aviso AvisoActivo(Guid vendedorId) => Aviso.Crear(
         vendedorId, "Titulo", "Descripcion larga para el test.",
         Dinero.Crear(100m, Moneda.BOB).Valor,
@@ -63,7 +80,7 @@ public sealed class SubirBorrarFotoCommandHandlerTests
     {
         var almacen = new AlmacenFake();
         var handler = new SubirFotoAvisoCommandHandler(
-            new RepositorioFake(null), almacen,
+            new RepositorioFake(null), almacen, new ProcesadorFake(),
             NullLogger<SubirFotoAvisoCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -81,7 +98,7 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         var aviso = AvisoActivo(Guid.NewGuid());
         var almacen = new AlmacenFake();
         var handler = new SubirFotoAvisoCommandHandler(
-            new RepositorioFake(aviso), almacen,
+            new RepositorioFake(aviso), almacen, new ProcesadorFake(),
             NullLogger<SubirFotoAvisoCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -99,8 +116,9 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         var vendedorId = Guid.NewGuid();
         var aviso = AvisoActivo(vendedorId);
         var almacen = new AlmacenFake();
+        var procesador = new ProcesadorFake();
         var handler = new SubirFotoAvisoCommandHandler(
-            new RepositorioFake(aviso), almacen,
+            new RepositorioFake(aviso), almacen, procesador,
             NullLogger<SubirFotoAvisoCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -110,6 +128,7 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         Assert.False(result.EsExito);
         Assert.Equal(ErroresAviso.ImagenInvalida, result.Error.Code);
         Assert.Empty(almacen.ClavesGuardadas);
+        Assert.Equal(0, procesador.Invocaciones);
     }
 
     [Fact]
@@ -119,7 +138,7 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         var aviso = AvisoActivo(vendedorId);
         var almacen = new AlmacenFake(fallaGuardar: true);
         var handler = new SubirFotoAvisoCommandHandler(
-            new RepositorioFake(aviso), almacen,
+            new RepositorioFake(aviso), almacen, new ProcesadorFake(),
             NullLogger<SubirFotoAvisoCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -136,8 +155,9 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         var vendedorId = Guid.NewGuid();
         var aviso = AvisoActivo(vendedorId);
         var almacen = new AlmacenFake();
+        byte[] normalizada = [0xFF, 0xD8, 0xFF, 0x20];
         var handler = new SubirFotoAvisoCommandHandler(
-            new RepositorioFake(aviso), almacen,
+            new RepositorioFake(aviso), almacen, new ProcesadorFake(normalizada),
             NullLogger<SubirFotoAvisoCommandHandler>.Instance);
 
         var result = await handler.Handle(
@@ -148,6 +168,9 @@ public sealed class SubirBorrarFotoCommandHandlerTests
         Assert.NotEqual(Guid.Empty, result.Valor);
         Assert.Single(aviso.Fotos);
         Assert.Single(almacen.ClavesGuardadas);
+        Assert.Same(normalizada, almacen.UltimoContenido);
+        Assert.Equal("image/jpeg", almacen.UltimoContentType);
+        Assert.Equal("image/jpeg", aviso.Fotos[0].ContentType);
     }
 
     // ── BorrarFotoAvisoCommand ───────────────────────────────────────────

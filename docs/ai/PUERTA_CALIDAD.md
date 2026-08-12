@@ -7,10 +7,20 @@ del código. Neutrales al proveedor: aplican a cualquier agente.
 
     ./verify.ps1          # Windows, nivel rápido, sin Docker
     ./verify.sh           # POSIX, nivel rápido
+    ./verify.ps1 -Changed # Windows, nivel rápido según cambios pendientes
+    ./verify.sh --changed # POSIX, nivel rápido según cambios pendientes
     ./verify.ps1 -Full    # nivel completo, requiere Docker
     ./verify.sh --full
 
-Nivel rápido antes de **cada commit**. Nivel completo antes de **mergear**.
+Nivel por alcance antes de **cada commit y push a `develop`**. El nivel rápido
+general queda disponible para revisiones manuales transversales. Nivel completo
+antes de **promover a `master`**.
+
+El modo por alcance inspecciona los cambios pendientes respecto de `HEAD`,
+incluidos archivos nuevos: `web/` ejecuta los gates web, `CaseritoApp/` los
+gates .NET y la infraestructura transversal ejecuta ambos. Los cambios solo
+documentales ejecutan los controles comunes. Sin cambios pendientes, el comando
+falla explícitamente; `Changed` y `Full` no se pueden combinar.
 
 ## Duración medida
 
@@ -21,6 +31,7 @@ Medida el 2026-08-07 al cerrar la implementación de la puerta (rama
   Desglose por gate, en segundos aproximados: Gate TDD 0,3 · Formato .NET 34 ·
   Build Release 4 (incremental) · Complejidad 0,1 · Unit tests 3 · Tests de
   arquitectura 3 · Lint web 8 · Typecheck web 6 · Tests web 55.
+- **Nivel por alcance:** depende del stack afectado y evita ejecutar el otro.
 - Nivel completo: bastante más largo, porque añade la suite de integración con
   Testcontainers.MsSql y la recolección de cobertura.
 

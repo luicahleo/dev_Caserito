@@ -1,11 +1,19 @@
 param(
     [string]$Ip,
-    [switch]$Argos,
-    [switch]$Logs
+    [switch]$Logs,
+    [switch]$RecrearDatos,
+    [switch]$ConfirmarBorradoDatos,
+    [ValidateSet('pc1', 'pc2')]
+    [string]$Perfil = 'pc2'
 )
 
 $ErrorActionPreference = 'Stop'
 $raizCaserito = $PSScriptRoot
+$nombreEquipo = $Perfil.ToUpperInvariant()
+
+if ($RecrearDatos -and -not $ConfirmarBorradoDatos) {
+    throw 'La recreación elimina la base y volúmenes locales. Repite con -RecrearDatos -ConfirmarBorradoDatos.'
+}
 
 function Obtener-IpLan([string]$IpSolicitada) {
     if ($IpSolicitada) {
@@ -34,30 +42,47 @@ if (-not (Test-Path (Join-Path $raizCaserito '.env'))) {
     throw 'Falta .env. Copia .env.example como .env y completa SA_PASSWORD con un valor local fuerte.'
 }
 
-docker info *> $null
-if ($LASTEXITCODE -ne 0) { throw 'Docker Desktop no está iniciado o no responde.' }
+$preferenciaErrores = $ErrorActionPreference
+try {
+    # Windows PowerShell convierte las advertencias de stderr de Docker en
+    # NativeCommandError cuando la preferencia global es Stop.
+    $ErrorActionPreference = 'Continue'
+    docker info *> $null
+    $codigoDocker = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $preferenciaErrores
+}
+if ($codigoDocker -ne 0) { throw 'Docker Desktop no está iniciado o no responde.' }
 
 $ipLan = Obtener-IpLan $Ip
 $hostLan = "$ipLan.sslip.io"
 $env:CASERITO_LAN_IP = $ipLan
 $env:CASERITO_LAN_HOST = $hostLan
-New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-data') | Out-Null
-New-Item -ItemType Directory -Force (Join-Path $raizCaserito '.local/pc2/caddy-config') | Out-Null
-Set-Content -Path (Join-Path $raizCaserito '.local/pc2/ip.txt') -Value $ipLan -Encoding ascii
+New-Item -ItemType Directory -Force (Join-Path $raizCaserito ".local/$Perfil/caddy-data") | Out-Null
+New-Item -ItemType Directory -Force (Join-Path $raizCaserito ".local/$Perfil/caddy-config") | Out-Null
+Set-Content -Path (Join-Path $raizCaserito ".local/$Perfil/ip.txt") -Value $ipLan -Encoding ascii
 
-$archivosCompose = @('-f', 'docker-compose.dev.yml', '-f', 'docker-compose.pc2.yml')
-if ($Argos) {
-    $rutaArgos = Join-Path $raizCaserito '..\dev\ARGOS\Dockerfile'
-    if (-not (Test-Path $rutaArgos)) {
-        throw 'No se encontró ARGOS en ../dev/ARGOS. Corrige su ubicación o inicia sin -Argos.'
-    }
-    $archivosCompose += @('-f', 'docker-compose.argos.yml')
+$rutaArgos = Join-Path $raizCaserito '..\dev\ARGOS\Dockerfile'
+if (-not (Test-Path $rutaArgos)) {
+    throw 'Falta ARGOS en ../dev/ARGOS. Clona ese repositorio para probar Caserito de extremo a extremo.'
+}
+$archivosCompose = @(
+    '-f', 'docker-compose.dev.yml',
+    '-f', "docker-compose.$Perfil.yml",
+    '-f', 'docker-compose.argos.yml'
+)
+
+if ($RecrearDatos) {
+    & docker compose @archivosCompose down --volumes
+    if ($LASTEXITCODE -ne 0) { throw "No se pudieron eliminar los datos locales de $nombreEquipo." }
+    Write-Host 'Se eliminaron los volúmenes Docker locales de Caserito; se recrearán al iniciar.' -ForegroundColor Yellow
 }
 
 & docker compose @archivosCompose up -d --build --renew-anon-volumes
-if ($LASTEXITCODE -ne 0) { throw 'No se pudo levantar el entorno PC2.' }
+if ($LASTEXITCODE -ne 0) { throw "No se pudo levantar el entorno $nombreEquipo." }
 
-$certificado = Join-Path $raizCaserito '.local/pc2/caddy-data/caddy/pki/authorities/local/root.crt'
+$certificado = Join-Path $raizCaserito ".local/$Perfil/caddy-data/caddy/pki/authorities/local/root.crt"
 for ($intento = 0; $intento -lt 30 -and -not (Test-Path $certificado); $intento++) {
     Start-Sleep -Seconds 1
 }
@@ -65,8 +90,17 @@ for ($intento = 0; $intento -lt 30 -and -not (Test-Path $certificado); $intento+
 $urlSalud = "https://$hostLan/health"
 $saludable = $false
 for ($intento = 0; $intento -lt 30 -and -not $saludable; $intento++) {
-    & curl.exe -k -f -sS --max-time 5 --resolve "${hostLan}:443:$ipLan" $urlSalud -o NUL 2>$null
-    $saludable = $LASTEXITCODE -eq 0
+    try {
+        # Un handshake puede fallar mientras Caddy arranca. curl lo informa por
+        # stderr, pero aquí debe provocar un reintento, no detener el script.
+        $ErrorActionPreference = 'Continue'
+        & curl.exe -k -f -sS --max-time 5 --resolve "${hostLan}:443:$ipLan" $urlSalud -o NUL 2>$null
+        $codigoSalud = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $preferenciaErrores
+    }
+    $saludable = $codigoSalud -eq 0
     if (-not $saludable) { Start-Sleep -Seconds 1 }
 }
 if (-not $saludable) {
@@ -74,8 +108,27 @@ if (-not $saludable) {
     throw 'El gateway HTTPS no alcanzó un estado saludable.'
 }
 
+$argosSaludable = $false
+for ($intento = 0; $intento -lt 120 -and -not $argosSaludable; $intento++) {
+    try {
+        $ErrorActionPreference = 'Continue'
+        $estadoArgos = (& docker inspect --format '{{.State.Health.Status}}' caserito-argos 2>$null).Trim()
+        $codigoEstadoArgos = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $preferenciaErrores
+    }
+    $argosSaludable = $codigoEstadoArgos -eq 0 -and $estadoArgos -eq 'healthy'
+    if (-not $argosSaludable) { Start-Sleep -Seconds 2 }
+}
+if (-not $argosSaludable) {
+    & docker compose @archivosCompose logs --tail 50 argos
+    throw 'ARGOS no alcanzó un estado saludable.'
+}
+
 Write-Host ''
-Write-Host "Caserito PC2: https://$hostLan" -ForegroundColor Green
+Write-Host "Caserito ${nombreEquipo}: https://$hostLan" -ForegroundColor Green
+Write-Host 'ARGOS: saludable en la red interna de Caserito' -ForegroundColor Green
 if (Test-Path $certificado) {
     Write-Host "CA pública para instalar en el móvil: $certificado" -ForegroundColor Yellow
 } else {

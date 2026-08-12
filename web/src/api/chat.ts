@@ -7,22 +7,40 @@ type ConversacionDto = components['schemas']['ConversacionDto'];
 type PaginaMensajesDto = components['schemas']['PaginaChatResponseOfMensajeDto'];
 type ConversacionResumenDto = components['schemas']['ConversacionResumenDto'];
 type PaginaConversacionesDto = components['schemas']['PaginaChatResponseOfConversacionResumenDto'];
-export type ConversacionResumen = Omit<ConversacionResumenDto, 'ultimaSecuencia' | 'noLeidos'> & {
+export type ConversacionResumen = Omit<
+  ConversacionResumenDto,
+  | 'ultimaSecuencia'
+  | 'noLeidos'
+  | 'ultimaSecuenciaEntregadaContraparte'
+  | 'ultimaSecuenciaLeidaContraparte'
+> & {
   ultimaSecuencia: number;
   noLeidos: number;
+  ultimaSecuenciaEntregadaContraparte?: number;
+  ultimaSecuenciaLeidaContraparte?: number;
 };
 export type PaginaConversaciones = Omit<PaginaConversacionesDto, 'items'> & {
   items: ConversacionResumen[];
 };
-export type Conversacion = Omit<ConversacionDto, 'ultimaSecuencia'> & {
+export type Conversacion = Omit<
+  ConversacionDto,
+  'ultimaSecuencia' | 'ultimaSecuenciaEntregadaContraparte' | 'ultimaSecuenciaLeidaContraparte'
+> & {
   ultimaSecuencia: number;
+  ultimaSecuenciaEntregadaContraparte: number;
+  ultimaSecuenciaLeidaContraparte: number;
 };
 export type PaginaMensajes = Omit<PaginaMensajesDto, 'items'> & {
   items: MensajeChat[];
 };
 
 function convertirConversacion(conversacion: ConversacionDto): Conversacion {
-  return { ...conversacion, ultimaSecuencia: Number(conversacion.ultimaSecuencia) };
+  return {
+    ...conversacion,
+    ultimaSecuencia: Number(conversacion.ultimaSecuencia),
+    ultimaSecuenciaEntregadaContraparte: Number(conversacion.ultimaSecuenciaEntregadaContraparte),
+    ultimaSecuenciaLeidaContraparte: Number(conversacion.ultimaSecuenciaLeidaContraparte),
+  };
 }
 
 export async function iniciarConversacion(avisoId: string): Promise<Conversacion> {
@@ -46,6 +64,8 @@ export async function listarConversaciones(
       ...conversacion,
       ultimaSecuencia: Number(conversacion.ultimaSecuencia),
       noLeidos: Number(conversacion.noLeidos),
+      ultimaSecuenciaEntregadaContraparte: Number(conversacion.ultimaSecuenciaEntregadaContraparte),
+      ultimaSecuenciaLeidaContraparte: Number(conversacion.ultimaSecuenciaLeidaContraparte),
     })),
   };
 }
@@ -159,14 +179,25 @@ export async function enviarMensaje(
   return { ...mensaje, secuencia: Number(mensaje.secuencia) };
 }
 
-export async function marcarLectura(
-  conversacionId: string,
-  hastaSecuencia: number,
-): Promise<void> {
+export async function marcarLectura(conversacionId: string, hastaSecuencia: number): Promise<void> {
   desempaquetar(
     await api.PUT('/api/chat/conversaciones/{id}/lectura', {
       params: { path: { id: conversacionId } },
       body: { hastaSecuencia },
     }),
   );
+}
+
+export async function marcarEntrega(conversacionId: string, hastaSecuencia: number): Promise<void> {
+  desempaquetar(
+    await api.PUT('/api/chat/conversaciones/{id}/entrega', {
+      params: { path: { id: conversacionId } },
+      body: { hastaSecuencia },
+    }),
+  );
+}
+
+export async function contarMensajesNoLeidos(): Promise<number> {
+  const resultado = desempaquetar(await api.GET('/api/chat/no-leidos'));
+  return Number(resultado.cantidad);
 }

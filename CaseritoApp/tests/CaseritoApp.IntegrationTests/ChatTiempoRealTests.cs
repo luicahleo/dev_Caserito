@@ -3,11 +3,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
+using CaseritoApp.BuildingBlocks.Contracts.Chat;
 using CaseritoApp.Chat.Domain.Conversaciones;
 using CaseritoApp.Chat.Infrastructure;
 using CaseritoApp.Chat.Infrastructure.Conversaciones;
 using CaseritoApp.Host.Chat;
 using CaseritoApp.IntegrationTests.Infrastructure;
+using MediatR;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -30,6 +32,31 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
         await autenticada.StartAsync();
 
         Assert.Equal(HubConnectionState.Connected, autenticada.State);
+    }
+
+    [Fact]
+    public async Task Conexion_autenticada_recibe_actualizacion_global_de_contador()
+    {
+        var token = await RegistrarYObtenerTokenAsync();
+        var destinatarioId = UsuarioId(token);
+        await using var conexion = CrearConexion(token);
+        var recibido = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        conexion.On("ContadorChatActualizado", () => recibido.TrySetResult());
+        await conexion.StartAsync();
+        using var scope = factory.Services.CreateScope();
+        var publicador = scope.ServiceProvider.GetRequiredService<IPublisher>();
+
+        await publicador.Publish(new ChatMessageSent(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1,
+            Guid.NewGuid(),
+            destinatarioId));
+
+        await recibido.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -235,8 +262,8 @@ public sealed class ChatTiempoRealTests(CaseritoApiFactory factory) : IClassFixt
         var grupo = GruposChat.ParaConversacion(id);
 
         Assert.Equal("chat:conversacion:a48b63cd4d4a44e8a3e2d4f6a9e16051", grupo);
-        Assert.Single(typeof(GruposChat).GetMethods(
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static));
+        Assert.Equal(2, typeof(GruposChat).GetMethods(
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Length);
     }
 
     private HubConnection CrearConexion(string? token) =>
