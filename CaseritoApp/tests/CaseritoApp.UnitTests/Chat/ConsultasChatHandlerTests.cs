@@ -56,6 +56,19 @@ public sealed class ConsultasChatHandlerTests
     }
 
     [Fact]
+    public async Task PuedeRecibirTiempoReal_devuelve_la_decision_de_participacion()
+    {
+        var handler = new PuedeRecibirTiempoRealQueryHandler(
+            new ConversacionesFake { PuedeAcceder = true });
+
+        var resultado = await handler.Handle(
+            new PuedeRecibirTiempoRealQuery(Guid.NewGuid(), Guid.NewGuid()),
+            CancellationToken.None);
+
+        Assert.True(resultado);
+    }
+
+    [Fact]
     public async Task ContarMensajesNoLeidos_devuelve_el_conteo_autoritativo()
     {
         var consulta = new ConversacionesFake { NoLeidos = 7 };
@@ -178,6 +191,16 @@ public sealed class ConsultasChatHandlerTests
         Assert.Contains(conversaciones.Errors, e => e.PropertyName == nameof(ListarConversacionesQuery.Limite));
         Assert.Contains(mensajes.Errors, e => e.PropertyName == nameof(ObtenerMensajesQuery.AntesDeSecuencia));
         Assert.Contains(mensajes.Errors, e => e.PropertyName == nameof(ObtenerMensajesQuery.DespuesDeSecuencia));
+    }
+
+    [Fact]
+    public void ContarMensajesNoLeidos_rechaza_usuario_vacio()
+    {
+        var resultado = new ContarMensajesNoLeidosQueryValidator().Validate(
+            new ContarMensajesNoLeidosQuery(Guid.Empty));
+
+        Assert.False(resultado.IsValid);
+        Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(ContarMensajesNoLeidosQuery.UsuarioId));
     }
 
     [Fact]

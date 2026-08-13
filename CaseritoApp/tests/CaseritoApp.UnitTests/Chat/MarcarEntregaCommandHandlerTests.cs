@@ -61,6 +61,42 @@ public sealed class MarcarEntregaCommandHandlerTests
     }
 
     [Fact]
+    public async Task Vendedor_avanza_su_cursor_y_devuelve_el_comprador()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, vendedorId, _ahora).Valor;
+        conversacion.CrearMensaje(compradorId, Guid.NewGuid(), 2, "Hola", _ahora);
+        conversacion.LimpiarEventos();
+        var handler = new MarcarEntregaCommandHandler(
+            new RepositorioFake(conversacion), new RelojFijo(_ahora.AddMinutes(1)));
+
+        var resultado = await handler.Handle(
+            new MarcarEntregaCommand(conversacion.Id, vendedorId, 2), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(compradorId, resultado.Valor.DestinatarioEstadoId);
+        Assert.Equal(2, resultado.Valor.UltimaSecuenciaEntregada);
+        Assert.Equal(0, resultado.Valor.UltimaSecuenciaLeida);
+    }
+
+    [Fact]
+    public async Task Secuencia_superior_a_la_existente_devuelve_error_de_dominio()
+    {
+        var compradorId = Guid.NewGuid();
+        var conversacion = Conversacion.Crear(
+            Guid.NewGuid(), compradorId, Guid.NewGuid(), _ahora).Valor;
+        var handler = new MarcarEntregaCommandHandler(
+            new RepositorioFake(conversacion), new RelojFijo(_ahora));
+
+        var resultado = await handler.Handle(
+            new MarcarEntregaCommand(conversacion.Id, compradorId, 1), CancellationToken.None);
+
+        Assert.False(resultado.EsExito);
+    }
+
+    [Fact]
     public void Validator_rechaza_ids_vacios_y_secuencia_negativa()
     {
         var resultado = new MarcarEntregaCommandValidator().Validate(
