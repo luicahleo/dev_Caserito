@@ -49,6 +49,10 @@ public sealed class EnviarMensajeCommandHandlerTests
         }
 
         public void Agregar(Mensaje mensaje) => Agregados.Add(mensaje);
+
+        public Task<Mensaje?> ObtenerUltimoDeConversacionAsync(
+            Guid conversacionId, CancellationToken ct) =>
+            Task.FromResult<Mensaje?>(null);
     }
 
     [Fact]

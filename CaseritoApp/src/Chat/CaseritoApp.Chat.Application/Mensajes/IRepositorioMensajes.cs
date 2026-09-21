@@ -15,4 +15,9 @@ public interface IRepositorioMensajes
     public Task<long> ReservarSecuenciaAsync(CancellationToken ct);
 
     public void Agregar(Mensaje mensaje);
+
+    /// <summary>Último mensaje de una conversación por secuencia, o null si no tiene ninguno.</summary>
+    public Task<Mensaje?> ObtenerUltimoDeConversacionAsync(
+        Guid conversacionId,
+        CancellationToken ct);
 }

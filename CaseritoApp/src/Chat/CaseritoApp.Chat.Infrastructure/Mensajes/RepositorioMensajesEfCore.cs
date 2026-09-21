@@ -29,4 +29,13 @@ public sealed class RepositorioMensajesEfCore(ChatDbContext db) : IRepositorioMe
     }
 
     public void Agregar(Mensaje mensaje) => db.Mensajes.Add(mensaje);
+
+    public Task<Mensaje?> ObtenerUltimoDeConversacionAsync(
+        Guid conversacionId,
+        CancellationToken ct) =>
+        db.Mensajes
+            .AsNoTracking()
+            .Where(m => m.ConversacionId == conversacionId)
+            .OrderByDescending(m => m.Secuencia)
+            .FirstOrDefaultAsync(ct);
 }
