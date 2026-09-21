@@ -132,8 +132,11 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         Assert.Equal("Pendiente", dto!.Estado);
     }
 
+    // No es una guarda de regresión del orden de reserva: el segundo envío se rechaza en
+    // PuedeEnviarSolicitud, antes de llegar a reservar, así que este test pasa también con el
+    // orden anterior. Verifica el comportamiento observable de la reserva, no su momento.
     [Fact]
-    public async Task Envio_rechazado_por_el_dominio_no_deja_el_ci_reservado()
+    public async Task Segundo_envio_del_mismo_usuario_se_rechaza_sin_bloquear_a_otros()
     {
         using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
         {

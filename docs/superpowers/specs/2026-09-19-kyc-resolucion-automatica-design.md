@@ -179,6 +179,26 @@ que no atraviesa EF ni el behavior.
 los bounded contexts y excede este bloque. Se corrige el orden en el handler,
 que es donde está el error.
 
+### 6.1 Nota posterior a la implementación (2026-09-21)
+
+La corrección quedó **sin guarda de regresión**, y conviene saber por qué.
+
+El test previsto en el plan (`Segundo_envio_del_mismo_usuario_se_rechaza_sin_bloquear_a_otros`,
+originalmente llamado `Envio_rechazado_por_el_dominio_no_deja_el_ci_reservado`)
+no reproduce el defecto: el segundo envío se rechaza en `PuedeEnviarSolicitud()`,
+al principio del handler, sin llegar nunca a la reserva. Pasa igual con el orden
+anterior. Se conservó por el comportamiento que sí verifica y se renombró para no
+dar falsa seguridad.
+
+Además, tras este bloque **ningún camino puede reproducir el defecto**: el fallo
+de ARGOS —el único que reservaba y después devolvía error— ahora encola en lugar
+de fallar. El bug quedó cerrado por el cambio de comportamiento, y el reorden es
+defensa en profundidad.
+
+Consecuencia práctica: si alguien devolviera la reserva a su posición original,
+ningún test fallaría. Quien toque `EnviarSolicitudKycCommandHandler` debe saber
+que el orden de §5.1 es deliberado y no está protegido por la suite.
+
 ## 7. Componentes
 
 ### Nuevos
