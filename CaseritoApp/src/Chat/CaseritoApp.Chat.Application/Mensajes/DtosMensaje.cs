@@ -22,4 +22,5 @@ public sealed record MensajeDto(
 public sealed record EnviarMensajeResultadoDto(
     MensajeDto Mensaje,
     Guid DestinatarioId,
-    bool FueCreado);
+    bool FueCreado,
+    bool Retenida = false);

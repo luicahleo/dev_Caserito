@@ -242,7 +242,9 @@ public static class ChatEndpoints
                 return DesdeError(resultado.Error);
             }
 
-            if (resultado.Valor.FueCreado)
+            // Conversación retenida: el vendedor no debe percibirla por ninguna vía. No publicar
+            // ChatMessageSent corta a la vez SignalR y la notificación push.
+            if (resultado.Valor.FueCreado && !resultado.Valor.Retenida)
             {
                 var mensaje = resultado.Valor.Mensaje;
                 await publisher.Publish(new ChatMessageSent(
