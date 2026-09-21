@@ -4,7 +4,7 @@ using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Catalog.Application.Avisos;
 using CaseritoApp.Catalog.Application.Fotos;
 using CaseritoApp.Catalog.Domain.Avisos;
-using CaseritoApp.Identity.Domain.Autorizacion;
+using CaseritoApp.Host.Autorizacion;
 using CaseritoApp.Identity.Infrastructure.Auth;
 using FluentValidation;
 using MediatR;
@@ -116,7 +116,7 @@ public static class AvisosEndpoints
         {
             var resultado = await sender.Send(
                 new CrearAvisoCommand(
-                    userId, TieneIdentidadHabilitada(usuario), request.Titulo, request.Descripcion,
+                    userId, usuario.TieneIdentidadHabilitada(), request.Titulo, request.Descripcion,
                     request.Monto, request.Condicion, request.CategoriaId, request.CiudadId), ct);
 
             return resultado.EsExito
@@ -259,12 +259,6 @@ public static class AvisosEndpoints
             ?? usuario.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(valor, out userId);
     }
-
-    private static bool TieneIdentidadHabilitada(ClaimsPrincipal usuario) =>
-        string.Equals(
-            usuario.FindFirstValue(ClaimsApp.IdentidadHabilitada),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
 
     private static IResult ProblemaDeValidacion(ValidationException ex) =>
         Results.ValidationProblem(ex.Errors
