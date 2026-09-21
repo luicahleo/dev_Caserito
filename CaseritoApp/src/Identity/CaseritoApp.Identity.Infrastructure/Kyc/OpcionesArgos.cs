@@ -10,4 +10,10 @@ public sealed class OpcionesArgos
 
     /// <summary>API key para el header X-Service-Key. Opcional.</summary>
     public string? ApiKey { get; set; }
+
+    /// <summary>
+    /// Similitud mínima (0-100) para aprobar una verificación sin revisión humana. ARGOS corta la
+    /// no-coincidencia en 32; este umbral es el corte superior propio de la aplicación.
+    /// </summary>
+    public double UmbralAutoAprobacion { get; set; } = 60;
 }

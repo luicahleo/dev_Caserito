@@ -95,6 +95,8 @@ public static class DependencyInjection
 
         servicios.AddHttpClient<IVerificadorIdentidadArgos, VerificadorIdentidadArgosHttp>();
 
+        servicios.AddSingleton<IOpcionesResolucionKyc, OpcionesResolucionKycDesdeConfig>();
+
         // Cifrado de PII: en Development/Testing se mantiene el Passthrough (sin cifrado, cómodo
         // para depurar y tests). Fuera de esos entornos se cablea el encryptor real sobre
         // ASP.NET Core Data Protection, con el key ring persistido en disco (volumen del host)
