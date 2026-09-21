@@ -57,13 +57,10 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
 
         var protegido = protectorDocumento.Proteger(
             request.NumeroCi, request.ComplementoCi, request.DepartamentoExpedicion);
-        if (!await repositorio.ReservarDocumentoAsync(
-            new DocumentoKycRegistrado(
-                request.UsuarioId, protegido.HuellaCi, protegido.NumeroCiCifrado,
-                protegido.ComplementoCiCifrado, protegido.DepartamentoExpedicion,
-                tiempo.GetUtcNow()),
-            cancellationToken))
+        if (await repositorio.HuellaPerteneceAOtroUsuarioAsync(
+            protegido.HuellaCi, request.UsuarioId, cancellationToken))
         {
+            RegistrarEnvio(logger, request.UsuarioId, "Kyc.DocumentoEnUso");
             return Result.Fallo(new Error("Kyc.DocumentoEnUso", "No se pudo registrar el documento."));
         }
 
@@ -95,6 +92,14 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
         }
 
         var solicitud = resultado.Valor;
+
+        await repositorio.ReservarDocumentoAsync(
+            new DocumentoKycRegistrado(
+                request.UsuarioId, protegido.HuellaCi, protegido.NumeroCiCifrado,
+                protegido.ComplementoCiCifrado, protegido.DepartamentoExpedicion,
+                tiempo.GetUtcNow()),
+            cancellationToken);
+
         solicitud.RegistrarScoreSimilitud(facial.SimilitudPercent);
 
         var ahora = tiempo.GetUtcNow();

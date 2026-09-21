@@ -19,6 +19,13 @@ public interface IRepositorioVerificacionKyc
     public Task<bool> ReservarDocumentoAsync(DocumentoKycRegistrado documento, CancellationToken ct) =>
         Task.FromResult(true);
 
+    /// <summary>
+    /// Indica si la huella del CI ya está registrada a nombre de OTRO usuario. Solo lectura: no
+    /// reserva nada, a diferencia de <see cref="ReservarDocumentoAsync"/>.
+    /// </summary>
+    public Task<bool> HuellaPerteneceAOtroUsuarioAsync(string huella, Guid usuarioId, CancellationToken ct) =>
+        Task.FromResult(false);
+
     public Task<DocumentoKycRegistrado?> ObtenerDocumentoPorSolicitudAsync(Guid solicitudId, CancellationToken ct) =>
         Task.FromResult<DocumentoKycRegistrado?>(null);
 

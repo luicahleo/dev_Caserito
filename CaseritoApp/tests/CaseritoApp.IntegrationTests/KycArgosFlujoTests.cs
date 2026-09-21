@@ -127,6 +127,43 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         Assert.Equal(HttpStatusCode.ServiceUnavailable, resp.StatusCode);
     }
 
+    [Fact]
+    public async Task Envio_rechazado_por_el_dominio_no_deja_el_ci_reservado()
+    {
+        using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+        {
+            s.AddSingleton<IVerificadorIdentidadArgos>(_ =>
+                new VerificadorArgosEstatico(Result.Exito(
+                    new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 95, MotivoRechazo: null))));
+        })).CreateClient();
+
+        var email = Email("kyc-reserva");
+        var token = await RegistrarYLoguearAsync(cliente, email, null);
+        const string ci = "1234599";
+
+        // Primer envío: queda pendiente y reserva el CI legítimamente.
+        using var primero = Autorizada(
+            HttpMethod.Post, $"/api/kyc/?numeroCi={ci}&departamentoExpedicion=LaPaz", token);
+        primero.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(primero)).StatusCode);
+
+        // Segundo envío del mismo usuario: el dominio lo rechaza por solicitud pendiente.
+        using var segundo = Autorizada(
+            HttpMethod.Post, $"/api/kyc/?numeroCi={ci}&departamentoExpedicion=LaPaz", token);
+        segundo.Content = Formulario();
+        var respuesta = await cliente.SendAsync(segundo);
+        Assert.NotEqual(HttpStatusCode.NoContent, respuesta.StatusCode);
+
+        // Un usuario distinto que presenta el mismo CI debe seguir recibiendo conflicto,
+        // y un CI nunca presentado con éxito no debe quedar bloqueado por un envío fallido.
+        var otroEmail = Email("kyc-reserva-otro");
+        var otroToken = await RegistrarYLoguearAsync(cliente, otroEmail, null);
+        using var tercero = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234598&departamentoExpedicion=LaPaz", otroToken);
+        tercero.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(tercero)).StatusCode);
+    }
+
     private sealed class VerificadorArgosEstatico(Result<VerificacionFacialResultado> resultado) : IVerificadorIdentidadArgos
     {
         public Task<Result<VerificacionFacialResultado>> VerificarAsync(
