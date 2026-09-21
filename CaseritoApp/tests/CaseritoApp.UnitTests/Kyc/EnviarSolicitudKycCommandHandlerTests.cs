@@ -5,6 +5,7 @@ using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Application.Autorizacion;
 using CaseritoApp.Identity.Application.Kyc;
 using CaseritoApp.Identity.Domain.Kyc;
+using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -54,9 +55,17 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             Task.FromResult(resultado);
     }
 
-    private sealed class PublicadorFake : IPublicadorEventosIntegracion, IProtectorDocumentoKyc
+    private sealed class OpcionesFake(double umbral) : IOpcionesResolucionKyc
+    {
+        public double UmbralAutoAprobacionSimilitud => umbral;
+    }
+
+    private sealed class PublicadorFake
+        : IPublicadorEventosIntegracion, IProtectorDocumentoKyc, IPublisher
     {
         public List<IIntegrationEvent> Eventos { get; } = [];
+
+        public List<object> Notificaciones { get; } = [];
 
         public Task PublicarAsync(IIntegrationEvent evento, CancellationToken ct)
         {
@@ -71,17 +80,46 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
             new("HUELLA", "CIFRADO", null, departamentoExpedicion);
 
         public string Descifrar(string valorCifrado) => "1234567";
+
+        public Task Publish(object notification, CancellationToken cancellationToken = default)
+        {
+            Notificaciones.Add(notification);
+            return Task.CompletedTask;
+        }
+
+        public Task Publish<TNotification>(
+            TNotification notification, CancellationToken cancellationToken = default)
+            where TNotification : INotification
+        {
+            Notificaciones.Add(notification!);
+            return Task.CompletedTask;
+        }
     }
 
     private static readonly byte[] _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
+    private static EnviarSolicitudKycCommand ComandoValido() =>
+        new(Guid.NewGuid(), [1, 2, 3], "image/png", [4, 5, 6], "image/png");
+
+    private static EnviarSolicitudKycCommandHandler CrearHandler(
+        RepoFake repo,
+        AlmacenFake almacen,
+        VerificadorFake verificador,
+        PublicadorFake publicador,
+        IOpcionesResolucionKyc opciones) =>
+        // PublicadorFake cubre tres puertos: protector de documento, publicador de
+        // integración y IPublisher. Por eso aparece tres veces seguidas.
+        new(repo, almacen, verificador, publicador, publicador, publicador, opciones,
+            TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
 
     [Fact]
     public async Task Envio_nuevo_guarda_dos_blobs_y_agrega_agregado()
     {
         var almacen = new AlmacenFake();
         var repo = new RepoFake(existente: null);
-        var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, new VerificadorFake(Result.Exito(new VerificacionFacialResultado(true, 95.0, null))), new PublicadorFake(), TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+        var publicador = new PublicadorFake();
+        var verificador = new VerificadorFake(Result.Exito(new VerificacionFacialResultado(true, 95.0, null)));
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
 
         var r = await handler.Handle(
             new EnviarSolicitudKycCommand(Guid.NewGuid(), _png, "image/png", _png, "image/png"),
@@ -102,8 +140,9 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
 
         var almacen = new AlmacenFake();
         var repo = new RepoFake(existente);
-        var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, new VerificadorFake(Result.Exito(new VerificacionFacialResultado(true, 95.0, null))), new PublicadorFake(), TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+        var publicador = new PublicadorFake();
+        var verificador = new VerificadorFake(Result.Exito(new VerificacionFacialResultado(true, 95.0, null)));
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
 
         var r = await handler.Handle(
             new EnviarSolicitudKycCommand(usuarioId, _png, "image/png", _png, "image/png"),
@@ -116,63 +155,96 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
     }
 
     [Fact]
-    public async Task Envio_con_coincidencia_deja_pendiente_para_revision_manual()
+    public async Task Score_alto_aprueba_y_publica_los_dos_eventos()
     {
-        var usuarioId = Guid.NewGuid();
         var almacen = new AlmacenFake();
         var repo = new RepoFake(null);
-        var verificador = new VerificadorFake(Result.Exito(new VerificacionFacialResultado(true, 92.5, null)));
         var publicador = new PublicadorFake();
-        var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, verificador, publicador, TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+        var verificador = new VerificadorFake(Result.Exito(
+            new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 90, MotivoRechazo: null)));
 
-        var r = await handler.Handle(new EnviarSolicitudKycCommand(
-            usuarioId, _png, "image/png", _png, "image/png"), CancellationToken.None);
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
 
-        Assert.True(r.EsExito);
-        Assert.Empty(publicador.Eventos);
-        Assert.Equal(EstadoKyc.Pendiente, repo.Agregada!.SolicitudActual!.Estado);
-        Assert.Equal(92.5, repo.Agregada.Solicitudes.Single().ScoreSimilitud);
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoKyc.Aprobada, repo.Agregada!.Solicitudes.Single().Estado);
+        Assert.Equal(SistemaActor.Id, repo.Agregada.Solicitudes.Single().ResueltaPor);
+        Assert.Contains(publicador.Eventos, e => e is UserVerified);
+        Assert.Contains(publicador.Notificaciones, n => n is KycResuelto);
     }
 
     [Fact]
-    public async Task Envio_sin_coincidencia_automatica_rechaza_sin_publicar_evento()
+    public async Task Score_bajo_deja_pendiente_con_motivo_y_no_publica()
     {
-        var usuarioId = Guid.NewGuid();
         var almacen = new AlmacenFake();
         var repo = new RepoFake(null);
-        var verificador = new VerificadorFake(Result.Exito(new VerificacionFacialResultado(false, 32.0, "El rostro no coincide")));
         var publicador = new PublicadorFake();
-        var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, verificador, publicador, TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+        var verificador = new VerificadorFake(Result.Exito(
+            new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 40, MotivoRechazo: null)));
 
-        var r = await handler.Handle(new EnviarSolicitudKycCommand(
-            usuarioId, _png, "image/png", _png, "image/png"), CancellationToken.None);
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
 
-        Assert.True(r.EsExito);
-        Assert.Empty(publicador.Eventos);
-        Assert.Equal(EstadoKyc.Rechazada, repo.Agregada!.Solicitudes.Single().Estado);
+        Assert.True(resultado.EsExito);
+        var solicitud = repo.Agregada!.Solicitudes.Single();
+        Assert.Equal(EstadoKyc.Pendiente, solicitud.Estado);
+        Assert.Equal(MotivoRevisionKyc.ScoreInsuficiente, solicitud.MotivoRevision);
+        Assert.DoesNotContain(publicador.Eventos, e => e is UserVerified);
     }
 
     [Fact]
-    public async Task Envio_con_argos_caido_compensa_blobs_y_devuelve_ServicioVerificacionNoDisponible()
+    public async Task Argos_caido_deja_pendiente_conserva_blobs_y_devuelve_exito()
     {
-        var usuarioId = Guid.NewGuid();
         var almacen = new AlmacenFake();
         var repo = new RepoFake(null);
+        var publicador = new PublicadorFake();
         var verificador = new VerificadorFake(Result.Fallo<VerificacionFacialResultado>(
             new Error(ErroresKyc.ServicioVerificacionNoDisponible, "No disponible")));
+
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
+
+        Assert.True(resultado.EsExito);
+        var solicitud = repo.Agregada!.Solicitudes.Single();
+        Assert.Equal(EstadoKyc.Pendiente, solicitud.Estado);
+        Assert.Equal(MotivoRevisionKyc.ServicioNoDisponible, solicitud.MotivoRevision);
+        Assert.Null(solicitud.ScoreSimilitud);
+        Assert.Equal(0, almacen.Eliminados);
+    }
+
+    [Fact]
+    public async Task Rostro_no_detectado_deja_pendiente_con_su_motivo()
+    {
+        var almacen = new AlmacenFake();
+        var repo = new RepoFake(null);
         var publicador = new PublicadorFake();
-        var handler = new EnviarSolicitudKycCommandHandler(
-            repo, almacen, verificador, publicador, TimeProvider.System, NullLogger<EnviarSolicitudKycCommandHandler>.Instance);
+        var verificador = new VerificadorFake(Result.Fallo<VerificacionFacialResultado>(
+            new Error(ErroresKyc.RostroNoDetectado, "No se detecto rostro")));
 
-        var r = await handler.Handle(new EnviarSolicitudKycCommand(
-            usuarioId, _png, "image/png", _png, "image/png"), CancellationToken.None);
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
 
-        Assert.False(r.EsExito);
-        Assert.Equal(ErroresKyc.ServicioVerificacionNoDisponible, r.Error.Code);
-        Assert.Equal(2, almacen.Guardados);
-        Assert.Equal(2, almacen.Eliminados);
-        Assert.Null(repo.Agregada);
+        Assert.True(resultado.EsExito);
+        Assert.Equal(
+            MotivoRevisionKyc.RostroNoDetectado,
+            repo.Agregada!.Solicitudes.Single().MotivoRevision);
+        Assert.Equal(0, almacen.Eliminados);
+    }
+
+    [Fact]
+    public async Task Sin_coincidencia_rechaza_y_no_publica_verificacion()
+    {
+        var almacen = new AlmacenFake();
+        var repo = new RepoFake(null);
+        var publicador = new PublicadorFake();
+        var verificador = new VerificadorFake(Result.Exito(
+            new VerificacionFacialResultado(Coinciden: false, SimilitudPercent: 10, MotivoRechazo: "no coincide")));
+
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoKyc.Rechazada, repo.Agregada!.Solicitudes.Single().Estado);
+        Assert.DoesNotContain(publicador.Eventos, e => e is UserVerified);
     }
 }

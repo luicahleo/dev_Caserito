@@ -1,8 +1,10 @@
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Application.Messaging;
+using CaseritoApp.BuildingBlocks.Contracts.Identity;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Identity.Domain.Kyc;
 using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace CaseritoApp.Identity.Application.Kyc;
@@ -28,15 +30,19 @@ public sealed record EnviarSolicitudKycCommand(
 }
 
 /// <summary>
-/// Handler: valida invariants, guarda los blobs cifrados, consulta a ARGOS y aplica la decisión
-/// automática (aprobación/rechazo). Si ARGOS falla, compensa eliminando los blobs. Solo publica
-/// <see cref="UserVerified"/> cuando la solicitud es aprobada automáticamente.
+/// Handler: valida invariants, guarda los blobs cifrados, consulta a ARGOS y aplica la política de
+/// resolución. Aprueba o rechaza automáticamente cuando la evidencia es clara y deja la solicitud
+/// pendiente de revisión humana en cualquier otro caso, conservando las imágenes. Solo publica
+/// <see cref="UserVerified"/> y <see cref="KycResuelto"/> en la aprobación automática.
 /// </summary>
 public sealed partial class EnviarSolicitudKycCommandHandler(
     IRepositorioVerificacionKyc repositorio,
     IAlmacenBlobsKyc almacen,
     IVerificadorIdentidadArgos verificador,
     IProtectorDocumentoKyc protectorDocumento,
+    IPublicadorEventosIntegracion publicador,
+    IPublisher publisher,
+    IOpcionesResolucionKyc opcionesResolucion,
     TimeProvider tiempo,
     ILogger<EnviarSolicitudKycCommandHandler> logger)
     : ICommandHandler<EnviarSolicitudKycCommand>
@@ -69,16 +75,17 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
 
         var resultadoArgos = await verificador.VerificarAsync(request.Documento, request.Selfie, cancellationToken);
 
-        if (!resultadoArgos.EsExito)
-        {
-            // Compensación: ARGOS no responde, eliminar blobs y no persistir nada.
-            await almacen.EliminarAsync(claveDoc, cancellationToken);
-            await almacen.EliminarAsync(claveSelfie, cancellationToken);
-            RegistrarEnvio(logger, request.UsuarioId, resultadoArgos.Error.Code);
-            return Result.Fallo(resultadoArgos.Error);
-        }
-
-        var facial = resultadoArgos.Valor;
+        var entrada = resultadoArgos.EsExito
+            ? new EntradaResolucionKyc(
+                ServicioRespondio: true,
+                RostroDetectado: true,
+                Coinciden: resultadoArgos.Valor.Coinciden,
+                Score: resultadoArgos.Valor.SimilitudPercent)
+            : new EntradaResolucionKyc(
+                ServicioRespondio: resultadoArgos.Error.Code == ErroresKyc.RostroNoDetectado,
+                RostroDetectado: false,
+                Coinciden: false,
+                Score: null);
 
         var resultado = verificacion.EnviarSolicitud(
             claveDoc, claveSelfie, TipoDocumento.CedulaIdentidad, tiempo.GetUtcNow());
@@ -100,20 +107,33 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
                 tiempo.GetUtcNow()),
             cancellationToken);
 
-        solicitud.RegistrarScoreSimilitud(facial.SimilitudPercent);
+        var decision = PoliticaResolucionKyc.Decidir(
+            entrada, opcionesResolucion.UmbralAutoAprobacionSimilitud);
+
+        if (entrada.Score is { } score)
+        {
+            solicitud.RegistrarScoreSimilitud(score);
+        }
+
+        if (decision.Motivo is { } motivo)
+        {
+            solicitud.RegistrarMotivoRevision(motivo);
+        }
 
         var ahora = tiempo.GetUtcNow();
-        var resolucion = facial.Coinciden
-            ? Result.Exito()
-            : verificacion.Rechazar(
-                solicitud.Id,
-                SistemaActor.Id,
-                "La validación facial no fue satisfactoria.",
-                ahora);
+        var resolucion = decision.Resolucion switch
+        {
+            ResolucionKyc.AprobarAutomatico =>
+                verificacion.Aprobar(solicitud.Id, SistemaActor.Id, ahora),
+            ResolucionKyc.RechazarAutomatico =>
+                verificacion.Rechazar(
+                    solicitud.Id, SistemaActor.Id, "La validación facial no fue satisfactoria.", ahora),
+            _ => Result.Exito(),
+        };
 
         if (!resolucion.EsExito)
         {
-            // Estado inconsistente: esto no debería ocurrir porque acabamos de crear la solicitud.
+            // Estado inconsistente: la solicitud acaba de crearse y debe ser resoluble.
             await almacen.EliminarAsync(claveDoc, cancellationToken);
             await almacen.EliminarAsync(claveSelfie, cancellationToken);
             RegistrarEnvio(logger, request.UsuarioId, resolucion.Error.Code);
@@ -125,13 +145,34 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
             repositorio.Agregar(verificacion);
         }
 
-        RegistrarEnvio(logger, request.UsuarioId, facial.Coinciden ? "pendiente-revision" : "rechazado-automatico");
+        if (decision.Resolucion == ResolucionKyc.AprobarAutomatico)
+        {
+            await publicador.PublicarAsync(
+                new UserVerified(Guid.NewGuid(), ahora, verificacion.UsuarioId), cancellationToken);
+            await publisher.Publish(
+                new KycResuelto(
+                    Guid.NewGuid(), ahora, verificacion.UsuarioId, solicitud.Id, EstadoKyc.Aprobada, null),
+                cancellationToken);
+        }
+
+        var etiqueta = EtiquetaAuditoria(decision);
+        RegistrarEnvio(logger, request.UsuarioId, etiqueta);
         return Result.Exito();
     }
 
     // Auditoría sin PII: solo id de usuario y resultado; jamás bytes, content-type ni claves de blob.
     [LoggerMessage(Level = LogLevel.Information, Message = "Solicitud KYC enviada: usuario={UsuarioId} resultado={Resultado}")]
     private static partial void RegistrarEnvio(ILogger logger, Guid usuarioId, string resultado);
+
+    // Etiquetas de auditoría. Nunca incluyen el score: es un dato biométrico derivado.
+    private static string EtiquetaAuditoria(DecisionKyc decision) => decision switch
+    {
+        { Resolucion: ResolucionKyc.AprobarAutomatico } => "aprobado-automatico",
+        { Resolucion: ResolucionKyc.RechazarAutomatico } => "rechazado-automatico",
+        { Motivo: MotivoRevisionKyc.RostroNoDetectado } => "pendiente-rostro-no-detectado",
+        { Motivo: MotivoRevisionKyc.ServicioNoDisponible } => "pendiente-servicio",
+        _ => "pendiente-score",
+    };
 }
 
 /// <summary>Valida tamaño, tipo y coherencia (magic bytes) de documento y selfie.</summary>
