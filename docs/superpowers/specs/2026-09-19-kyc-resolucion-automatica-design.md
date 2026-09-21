@@ -257,11 +257,20 @@ Lo que deja de ser error: rostro no detectado y servicio no disponible.
 
 ## 10. Diferidos y riesgos
 
-- **Calibración del umbral.** El valor 60 es estimación. Se solicita al agente
-  VPS la distribución de `ScoreSimilitud` de las solicitudes ya resueltas en
-  producción, agrupada por resolución y sin identidades, para fijarlo con
-  evidencia. Al ser configuración, ajustarlo no requiere recompilar ni
-  redesplegar la imagen.
+- **Calibración del umbral: consultada y sin muestra.** Se pidió al agente VPS
+  la distribución de `ScoreSimilitud` de las solicitudes resueltas en
+  producción (petición `44_peticion_agente_local_distribucion_scores_kyc_2026-09-19.md`,
+  respuesta `45_respuesta_agente_vps_distribucion_scores_kyc.md`, 2026-09-21).
+  Resultado: el total de solicitudes en producción es ≤ 2, por lo que no hay
+  histograma ni estadísticos publicables sin exponer el score individual de una
+  persona identificable. Tampoco hay scores nulos, y ninguna solicitud fue
+  resuelta por el actor de sistema.
+
+  En consecuencia, el valor inicial 60 se adopta **por decisión explícita ante
+  ausencia de evidencia**, no por descuido. Al ser configuración, ajustarlo no
+  requiere recompilar ni redesplegar la imagen. Cuando haya al menos una decena
+  de casos por estado, repetir la misma consulta con idénticos criterios de
+  agregación y enmascarado, y recalibrar.
 - **Propagación del claim `verificado`.** Viaja dentro del JWT y solo se
   actualiza al refrescar el token. En este bloque es inocuo; en el bloque 2, con
   el gate en el contacto, un usuario recién aprobado vería la app diciéndole que
