@@ -13,7 +13,9 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
         CancellationToken ct) =>
         db.Conversaciones.AsNoTracking().AnyAsync(
             c => c.Id == conversacionId
-                && (c.CompradorId == usuarioId || c.VendedorId == usuarioId),
+                && (c.CompradorId == usuarioId || c.VendedorId == usuarioId)
+                && !(c.Estado == EstadoConversacion.RetenidaPorVerificacion
+                    && c.VendedorId == usuarioId),
             ct);
 
     public Task<bool> PuedeRecibirTiempoRealAsync(
@@ -36,7 +38,9 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
         CancellationToken ct)
     {
         var consulta = db.Conversaciones.AsNoTracking()
-            .Where(c => c.CompradorId == usuarioId || c.VendedorId == usuarioId);
+            .Where(c => (c.CompradorId == usuarioId || c.VendedorId == usuarioId)
+                && !(c.Estado == EstadoConversacion.RetenidaPorVerificacion
+                    && c.VendedorId == usuarioId));
 
         if (frontera is { } f)
         {
@@ -97,6 +101,8 @@ public sealed class ConsultaConversacionesEfCore(ChatDbContext db) : IConsultaCo
                 && db.Conversaciones.Any(c =>
                     c.Id == m.ConversacionId
                     && (c.CompradorId == usuarioId || c.VendedorId == usuarioId)
+                    && !(c.Estado == EstadoConversacion.RetenidaPorVerificacion
+                        && c.VendedorId == usuarioId)
                     && m.Secuencia > (c.CompradorId == usuarioId
                         ? c.UltimaSecuenciaLeidaComprador
                         : c.UltimaSecuenciaLeidaVendedor)),
