@@ -6708,7 +6708,8 @@
           "enviadaEn",
           "resueltaEn",
           "scoreSimilitud",
-          "resueltaPor"
+          "resueltaPor",
+          "motivoRevision"
         ],
         "type": "object",
         "properties": {
@@ -6752,6 +6753,12 @@
               "string"
             ],
             "format": "uuid"
+          },
+          "motivoRevision": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

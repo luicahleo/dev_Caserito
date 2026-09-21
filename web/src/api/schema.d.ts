@@ -5471,6 +5471,7 @@ export interface components {
             scoreSimilitud: null | number | string;
             /** Format: uuid */
             resueltaPor: null | string;
+            motivoRevision: null | string;
         };
         SuscripcionPushRequest: {
             dispositivoId: string;

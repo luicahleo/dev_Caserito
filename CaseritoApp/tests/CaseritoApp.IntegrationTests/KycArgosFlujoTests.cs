@@ -164,6 +164,32 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(tercero)).StatusCode);
     }
 
+    [Fact]
+    public async Task Listado_de_administracion_expone_el_motivo_de_revision()
+    {
+        using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+        {
+            s.AddSingleton<IVerificadorIdentidadArgos>(_ =>
+                new VerificadorArgosEstatico(Result.Fallo<VerificacionFacialResultado>(
+                    new Error(ErroresKyc.RostroNoDetectado, "No se detecto rostro"))));
+        })).CreateClient();
+
+        var email = Email("kyc-motivo");
+        var token = await RegistrarYLoguearAsync(cliente, email, RolesApp.AdminKyc);
+
+        using var subir = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234597&departamentoExpedicion=LaPaz", token);
+        subir.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
+
+        using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc?estado=Pendiente", token);
+        var pagina = await (await cliente.SendAsync(listar))
+            .Content.ReadFromJsonAsync<
+                CaseritoApp.Identity.Application.Autorizacion.ResultadoPaginado<SolicitudKycResumenDto>>();
+
+        Assert.Contains(pagina!.Items, s => s.MotivoRevision == "RostroNoDetectado");
+    }
+
     private sealed class VerificadorArgosEstatico(Result<VerificacionFacialResultado> resultado) : IVerificadorIdentidadArgos
     {
         public Task<Result<VerificacionFacialResultado>> VerificarAsync(

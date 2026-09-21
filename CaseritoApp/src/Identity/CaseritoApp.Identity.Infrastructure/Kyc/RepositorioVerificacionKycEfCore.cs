@@ -113,7 +113,8 @@ public sealed class RepositorioVerificacionKycEfCore(
                 s.EnviadaEn,
                 s.ResueltaEn,
                 s.ScoreSimilitud,
-                s.ResueltaPor))
+                s.ResueltaPor,
+                s.MotivoRevision == null ? null : s.MotivoRevision.ToString()))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<SolicitudKycResumenDto>(items, pagina, tamano, total);
