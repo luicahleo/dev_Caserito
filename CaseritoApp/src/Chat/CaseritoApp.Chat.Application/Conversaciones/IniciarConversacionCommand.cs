@@ -14,7 +14,8 @@ public sealed class IniciarConversacionCommandHandler(
     IRepositorioConversaciones repositorio,
     IConsultaAvisoContactable consultaAviso,
     TimeProvider reloj,
-    IRepositorioBloqueosUsuario bloqueos)
+    IRepositorioBloqueosUsuario bloqueos,
+    IConsultaVerificacionComprador verificacion)
     : ICommandHandler<IniciarConversacionCommand, IniciarConversacionResultadoDto>
 {
     public async Task<Result<IniciarConversacionResultadoDto>> Handle(
@@ -35,6 +36,12 @@ public sealed class IniciarConversacionCommandHandler(
                 return Result.Fallo<IniciarConversacionResultadoDto>(new Error(
                     ErroresConversacion.NoDisponibleParaEnvio,
                     "La conversación no está disponible para enviar mensajes."));
+            }
+
+            if (existente.Estado == EstadoConversacion.RetenidaPorVerificacion
+                && await verificacion.EstaHabilitadoAsync(request.CompradorId, cancellationToken))
+            {
+                existente.LiberarPorVerificacion(reloj.GetUtcNow());
             }
 
             return Result.Exito(new IniciarConversacionResultadoDto(
@@ -63,11 +70,14 @@ public sealed class IniciarConversacionCommandHandler(
                 "La conversación no está disponible para enviar mensajes."));
         }
 
+        var habilitado = await verificacion.EstaHabilitadoAsync(
+            request.CompradorId, cancellationToken);
         var resultadoCreacion = Conversacion.Crear(
             aviso.AvisoId,
             request.CompradorId,
             aviso.VendedorId,
-            reloj.GetUtcNow());
+            reloj.GetUtcNow(),
+            retenida: !habilitado);
         if (!resultadoCreacion.EsExito)
         {
             return Result.Fallo<IniciarConversacionResultadoDto>(resultadoCreacion.Error);

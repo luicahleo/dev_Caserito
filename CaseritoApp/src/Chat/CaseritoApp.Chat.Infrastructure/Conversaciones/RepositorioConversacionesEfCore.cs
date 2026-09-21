@@ -17,4 +17,12 @@ public sealed class RepositorioConversacionesEfCore(ChatDbContext db) : IReposit
         db.Conversaciones.FirstOrDefaultAsync(c => c.Id == id, ct);
 
     public void Agregar(Conversacion conversacion) => db.Conversaciones.Add(conversacion);
+
+    public async Task<IReadOnlyList<Conversacion>> ListarRetenidasDeCompradorAsync(
+        Guid compradorId,
+        CancellationToken ct) =>
+        await db.Conversaciones
+            .Where(c => c.CompradorId == compradorId
+                && c.Estado == EstadoConversacion.RetenidaPorVerificacion)
+            .ToListAsync(ct);
 }

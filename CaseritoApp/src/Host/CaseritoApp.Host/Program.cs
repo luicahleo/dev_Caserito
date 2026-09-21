@@ -84,6 +84,7 @@ builder.Services.AddScoped<IConsultaEmailUsuario, ConsultaEmailUsuarioAdapter>()
 builder.Services.AddScoped<IConsultaProductoParaAlerta, ConsultaProductoParaAlertaAdapter>();
 builder.Services.AddScoped<IConsultaParticipantesOrden, ConsultaParticipantesOrdenAdapter>();
 builder.Services.AddScoped<IConsultaVerificacionParticipante, ConsultaVerificacionParticipanteAdapter>();
+builder.Services.AddScoped<IConsultaVerificacionComprador, ConsultaVerificacionCompradorAdapter>();
 builder.Services.AddScoped<IConsultaCiudadesPerfil, ConsultaCiudadesPerfilAdapter>();
 builder.Services.AddScoped<IOrquestadorCierreOrden, OrquestadorCierreOrden>();
 builder.Services.AddScoped<IConsultaOrdenCalificable, ConsultaOrdenCalificableAdapter>();

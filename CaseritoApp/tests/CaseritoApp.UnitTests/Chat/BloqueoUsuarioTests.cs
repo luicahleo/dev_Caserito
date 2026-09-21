@@ -91,6 +91,10 @@ public sealed class BloqueoUsuarioTests
         public void Agregar(Conversacion conversacion)
         {
         }
+
+        public Task<IReadOnlyList<Conversacion>> ListarRetenidasDeCompradorAsync(
+            Guid compradorId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Conversacion>>([]);
     }
 
     private sealed class BloqueosFake : IRepositorioBloqueosUsuario

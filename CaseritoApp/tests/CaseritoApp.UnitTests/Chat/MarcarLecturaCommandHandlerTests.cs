@@ -18,6 +18,10 @@ public sealed class MarcarLecturaCommandHandlerTests
         public void Agregar(Conversacion conversacion)
         {
         }
+
+        public Task<IReadOnlyList<Conversacion>> ListarRetenidasDeCompradorAsync(
+            Guid compradorId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Conversacion>>([]);
     }
 
     [Fact]
