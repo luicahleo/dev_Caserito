@@ -129,8 +129,21 @@ referido al **último** mensaje de la conversación liberada, reutilizando el
 camino de notificación ya probado en lugar de inventar uno.
 
 Red de seguridad: la liberación perezosa se aplica en
-`PuedeAccederConversacionQuery`, que es por donde pasa el acceso del comprador a
-la conversación. Si el estado real ya es habilitado, se libera ahí mismo.
+`IniciarConversacionCommand`, que es por donde el comprador vuelve al chat desde
+el aviso y que ya consulta el puerto de verificación. Si el comprador ya está
+habilitado y su conversación sigue retenida, se libera ahí mismo.
+
+**Por qué ahí y no en el acceso a la conversación** (corrección posterior al
+diseño inicial): `PuedeAccederConversacionQuery` es un *query*, y hacerlo
+escribir rompería la separación CQRS del proyecto. `IniciarConversacionCommand`
+ya es un command, ya tiene el puerto inyectado y cubre el camino natural de
+retorno: el comprador que acaba de verificarse vuelve al aviso y pulsa
+contactar, que reutiliza la conversación existente.
+
+Queda documentado el límite: si el comprador entra por su listado de
+conversaciones en lugar de por el aviso, la liberación depende del evento. Es un
+compromiso aceptable porque el evento es el mecanismo principal y la red solo
+cubre su fallo.
 
 `LiberarPorVerificacion` es idempotente sobre una conversación ya `Activa` y
 falla sobre una cerrada: una conversación cerrada por moderación no debe
@@ -157,8 +170,13 @@ reabrirse por un efecto secundario del KYC.
 - Handler `INotificationHandler<UserVerified>` que libera las conversaciones
   retenidas del comprador.
 - Liberación perezosa en el acceso del comprador a la conversación.
-- Consultas que deben excluir lo retenido para el vendedor: listado, contador de
-  no leídos y `PuedeRecibirTiempoRealQuery`.
+- Consultas que deben excluir lo retenido **cuando el usuario es el vendedor**:
+  `ListarAsync`, `ContarNoLeidosAsync` y `PuedeAccederAsync`. El filtro es el
+  mismo en las tres: `!(c.Estado == RetenidaPorVerificacion && c.VendedorId == usuarioId)`.
+  `PuedeRecibirTiempoRealAsync` **no necesita cambios**: ya exige
+  `Estado == EstadoConversacion.Activa`, de modo que una conversación retenida
+  queda excluida por construcción —también para el comprador, lo que es
+  aceptable porque nadie le está escribiendo mientras espera.
 
 ### Chat.Infrastructure
 
