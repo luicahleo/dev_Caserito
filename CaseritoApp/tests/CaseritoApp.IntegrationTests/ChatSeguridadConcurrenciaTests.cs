@@ -23,6 +23,7 @@ public sealed class ChatSeguridadConcurrenciaTests(CaseritoApiFactory factory)
     {
         using var cliente = factory.CreateClient();
         var comprador = await RegistrarAsync(cliente, "chat-bloqueo-global-comprador");
+        await factory.AprobarKycAsync(comprador.UsuarioId);
         var vendedor = await RegistrarAsync(cliente, "chat-bloqueo-global-vendedor");
         var avisos = await CrearAvisosAsync(vendedor.UsuarioId, 3);
         var primera = await IniciarAsync(cliente, comprador.Token, avisos[0].Id);
