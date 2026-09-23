@@ -280,3 +280,51 @@ conjunto de valores posibles de `Estado`.
 8. Ningún log incluye texto de mensajes.
 9. El contrato OpenAPI y el cliente TypeScript quedan regenerados sin deriva.
 10. `./verify.ps1 -Changed` en verde.
+
+## 11. Notas posteriores a la implementación (2026-09-23)
+
+Implementado en `912a559..a553e8c`. Lo que difiere de lo escrito arriba:
+
+### 11.1 Desviaciones aplicadas
+
+- **Código de error de la transición.** `ErroresConversacion.TransicionInvalida`
+  no existe. `LiberarPorVerificacion` devuelve
+  `ErroresConversacion.NoDisponibleParaEnvio`, el mismo código que ya usa
+  `CerrarPorParticipante` ante una transición no permitida.
+- **Plantilla de log.** El gate anti-PII (`ArchitectureTests/Chat/ChatPiiTests.cs`)
+  prohíbe el fragmento literal `Id` en plantillas de log, así que la del handler
+  de liberación es `usuario={Usuario} total={Total}`. Sigue registrando solo un
+  id técnico y un conteo. El gate no se modificó.
+- **Tests de integración preexistentes.** `ChatFlujoTests` y
+  `ChatSeguridadConcurrenciaTests` usaban un comprador sin verificar, de modo que
+  su conversación pasó a nacer retenida y el vendedor ya no podía escribir en
+  ella (§4.2). Se restauró la precondición con un helper de test,
+  `CaseritoApiFactoryExtensions.AprobarKycAsync`, que aprueba un KYC por el
+  dominio real. Una línea añadida en cada test, sin eliminar aserciones y sin
+  tocar código de producción.
+
+### 11.2 El contrato expone el estado como número
+
+`EstadoConversacion` se serializa como `int`: el cliente TypeScript lo declara
+`EstadoConversacion: number` (`web/src/api/schema.d.ts`). Por eso añadir el valor
+nuevo **no produjo ningún cambio en el contrato** y la regeneración fue no-op.
+
+Consecuencia para el bloque de UI: el frontend recibirá `3` para una conversación
+retenida y deberá mapear el número a mano. **Si alguien reordena el enum, la UI
+mostrará el estado equivocado sin que falle ningún test ni el job `contract`**,
+porque el contrato no cambia. El comentario en `EstadoConversacion.cs` protege el
+lado del backend, no al consumidor.
+
+Opciones cuando esto moleste, en orden de coste: documentar el mapeo en un único
+sitio del frontend; o serializar el enum como cadena, que sí cambia el contrato y
+obliga a revisar todos los consumidores.
+
+### 11.3 Criterio 5 sin cobertura
+
+El criterio 5 —un rechazo de KYC deja la conversación retenida intacta— quedó
+**sin test**; fue una omisión del plan, no de la ejecución.
+
+Se cumple por diseño: Chat solo reacciona a `UserVerified`, que no se publica al
+rechazar, y la red perezosa exige `EstaHabilitadoAsync == true`. El riesgo es
+futuro: nada impide que alguien añada un handler de `KycResuelto` que libere en
+cualquier resolución, incluida la negativa, y ningún test lo detectaría.

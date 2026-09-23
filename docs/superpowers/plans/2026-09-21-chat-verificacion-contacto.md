@@ -1460,3 +1460,45 @@ Confirmado en el spec: la UI web (bloque siguiente), la purga de conversaciones
 retenidas de usuarios que nunca se verifican, el outbox para el guardado
 multi-contexto, y cualquier cambio en los gates de publicar aviso o solicitar
 acuerdo.
+
+---
+
+## Cierre (2026-09-23)
+
+Ejecutado en `912a559..a553e8c`, un commit por tarea. Suite completa en verde y
+`./verify.ps1 -Changed` verde en cada commit. Sin migraciones: `dotnet ef
+migrations has-pending-model-changes` confirma que el modelo no deriva del
+snapshot, como se esperaba de añadir un valor al final de un enum mapeado como
+`int`.
+
+Cuatro puntos donde **este plan estaba equivocado** y hubo que apartarse de él.
+Quedan aquí para que un lector futuro no los repita:
+
+1. **`ErroresConversacion.TransicionInvalida` no existe.** El plan lo usaba en el
+   código de `LiberarPorVerificacion` y solo mencionaba el fallback en una nota
+   al pie del test. Se usó `NoDisponibleParaEnvio`, que es el código real para
+   una transición no permitida.
+2. **La plantilla de log rompía el gate anti-PII.** El `usuario={UsuarioId}` que
+   proponía el plan choca con `ChatPiiTests`, que prohíbe el fragmento literal
+   `Id` en plantillas. Quedó `usuario={Usuario}`.
+3. **El helper de la tarea 6 no era el que decía el plan.** El snippet usaba
+   `bool.TryParse`; el cuerpo real de `AvisosEndpoints.cs` usa
+   `string.Equals(..., "true", OrdinalIgnoreCase)`. Se copió el real.
+4. **Dos shapes erróneos en el test extremo a extremo.** `POST /api/chat/conversaciones`
+   devuelve `201 Created`, no `200 OK`, y serializa `ConversacionDto`, no
+   `IniciarConversacionResultadoDto`.
+
+Y dos efectos que el plan no previó:
+
+- **Dos tests de integración preexistentes se rompieron** (`ChatFlujoTests`,
+  `ChatSeguridadConcurrenciaTests`): usaban un comprador sin verificar, así que
+  su conversación pasó a nacer retenida y el vendedor dejó de poder escribir en
+  ella. Se restauró la precondición con el helper de test
+  `CaseritoApiFactoryExtensions.AprobarKycAsync`. Un plan que cambia una regla
+  de acceso debería enumerar de antemano los tests que dependen de la regla
+  vieja.
+- **La regeneración del contrato fue no-op**, porque el enum viaja como número.
+  Ver §11.2 del spec: tiene consecuencias para el bloque de UI.
+
+Pendiente heredado: el criterio 5 del spec quedó sin test porque este plan no lo
+incluyó. Ver §11.3 del spec.
