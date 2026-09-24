@@ -10,4 +10,6 @@ public interface IPlantillaCorreo
     public string CuerpoKycRechazado(string nombre, string motivo);
     public string AsuntoRestablecimientoPassword(string nombre);
     public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento);
+    public string AsuntoSolicitudKycEnEspera();
+    public string CuerpoSolicitudKycEnEspera(string urlPanel);
 }

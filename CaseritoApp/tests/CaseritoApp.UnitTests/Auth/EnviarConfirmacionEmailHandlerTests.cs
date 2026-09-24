@@ -58,6 +58,10 @@ public sealed class EnviarConfirmacionEmailHandlerTests
         public string AsuntoRestablecimientoPassword(string nombre) => "";
 
         public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento) => "";
+
+        public string AsuntoSolicitudKycEnEspera() => "";
+
+        public string CuerpoSolicitudKycEnEspera(string urlPanel) => "";
     }
 
     private sealed class GeneradorTokenFake : IGeneradorTokenEmail
