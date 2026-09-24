@@ -69,6 +69,7 @@ public static class DependencyInjection
         servicios.AddScoped<IConsultaVerificacionKyc, ConsultaVerificacionKycEfCore>();
         servicios.Configure<OpcionesAlmacenKyc>(config.GetSection(OpcionesAlmacenKyc.Seccion));
         servicios.Configure<OpcionesArgos>(config.GetSection(OpcionesArgos.Seccion));
+        servicios.Configure<OpcionesAvisosKyc>(config.GetSection(OpcionesAvisosKyc.Seccion));
         servicios.Configure<OpcionesCorreo>(config.GetSection(OpcionesCorreo.Seccion));
         servicios.AddSingleton(
             config.GetSection(OpcionesApp.Seccion).Get<OpcionesApp>() ?? new OpcionesApp());
@@ -96,6 +97,7 @@ public static class DependencyInjection
         servicios.AddHttpClient<IVerificadorIdentidadArgos, VerificadorIdentidadArgosHttp>();
 
         servicios.AddSingleton<IOpcionesResolucionKyc, OpcionesResolucionKycDesdeConfig>();
+        servicios.AddSingleton<IOpcionesAvisosKyc, OpcionesAvisosKycDesdeConfig>();
 
         // Cifrado de PII: en Development/Testing se mantiene el Passthrough (sin cifrado, cómodo
         // para depurar y tests). Fuera de esos entornos se cablea el encryptor real sobre
