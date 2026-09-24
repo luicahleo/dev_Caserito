@@ -66,4 +66,42 @@ describe('ConversacionesPage', () => {
     montar();
     expect(await screen.findByText(/no tienes conversaciones/i)).toBeInTheDocument();
   });
+
+  it('muestra el estado de una conversación en espera de verificación', async () => {
+    vi.spyOn(chat, 'listarConversaciones').mockResolvedValue({
+      siguienteCursor: null,
+      items: [
+        {
+          id: 'id-tecnico-conversacion',
+          avisoId: 'id-tecnico-aviso',
+          contraparteId: 'id-tecnico-persona',
+          rol: 'Comprador',
+          creadaEn: '2026-07-23T10:00:00Z',
+          ultimaActividadEn: '2026-07-23T10:01:00Z',
+          ultimaSecuencia: 1,
+          noLeidos: 0,
+          estado: 3,
+          origenCierre: null,
+          puedeEnviar: true,
+        },
+      ],
+    });
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'id-tecnico-aviso',
+      vendedorId: 'id-vendedor',
+      titulo: 'Mesa de madera',
+      descripcion: '',
+      monto: 10,
+      moneda: 'BOB',
+      nombreCategoria: '',
+      nombreCiudad: '',
+      condicion: 'Usado',
+      fechaCreacion: '',
+      fotos: [],
+    });
+
+    montar();
+
+    expect(await screen.findByText('En espera de verificación')).toBeInTheDocument();
+  });
 });
