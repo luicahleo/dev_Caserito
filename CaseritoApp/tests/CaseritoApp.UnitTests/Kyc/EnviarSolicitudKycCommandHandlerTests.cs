@@ -247,4 +247,39 @@ public sealed class EnviarSolicitudKycCommandHandlerTests
         Assert.Equal(EstadoKyc.Rechazada, repo.Agregada!.Solicitudes.Single().Estado);
         Assert.DoesNotContain(publicador.Eventos, e => e is UserVerified);
     }
+
+    [Fact]
+    public async Task Score_bajo_publica_el_aviso_de_solicitud_en_espera()
+    {
+        var almacen = new AlmacenFake();
+        var repo = new RepoFake(null);
+        var publicador = new PublicadorFake();
+        var verificador = new VerificadorFake(Result.Exito(
+            new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 40, MotivoRechazo: null)));
+
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
+
+        Assert.True(resultado.EsExito);
+        var solicitud = repo.Agregada!.Solicitudes.Single();
+        var aviso = Assert.Single(publicador.Notificaciones.OfType<SolicitudKycEnEspera>());
+        Assert.Equal(solicitud.Id, aviso.SolicitudId);
+        Assert.Equal(repo.Agregada!.UsuarioId, aviso.UsuarioId);
+    }
+
+    [Fact]
+    public async Task Score_alto_no_publica_el_aviso_de_solicitud_en_espera()
+    {
+        var almacen = new AlmacenFake();
+        var repo = new RepoFake(null);
+        var publicador = new PublicadorFake();
+        var verificador = new VerificadorFake(Result.Exito(
+            new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 95, MotivoRechazo: null)));
+
+        var handler = CrearHandler(repo, almacen, verificador, publicador, new OpcionesFake(60));
+        var resultado = await handler.Handle(ComandoValido(), default);
+
+        Assert.True(resultado.EsExito);
+        Assert.Empty(publicador.Notificaciones.OfType<SolicitudKycEnEspera>());
+    }
 }

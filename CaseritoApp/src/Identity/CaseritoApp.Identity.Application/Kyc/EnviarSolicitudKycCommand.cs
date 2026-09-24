@@ -154,6 +154,13 @@ public sealed partial class EnviarSolicitudKycCommandHandler(
                     Guid.NewGuid(), ahora, verificacion.UsuarioId, solicitud.Id, EstadoKyc.Aprobada, null),
                 cancellationToken);
         }
+        else if (decision.Resolucion == ResolucionKyc.EnviarARevision)
+        {
+            await publisher.Publish(
+                new SolicitudKycEnEspera(
+                    Guid.NewGuid(), ahora, verificacion.UsuarioId, solicitud.Id),
+                cancellationToken);
+        }
 
         var etiqueta = EtiquetaAuditoria(decision);
         RegistrarEnvio(logger, request.UsuarioId, etiqueta);
