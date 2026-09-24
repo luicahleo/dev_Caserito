@@ -8,7 +8,8 @@ import * as authCtx from '../auth/AuthContext';
 
 vi.mock('../chat/tiempoReal', () => ({
   crearClienteTiempoReal: () => ({
-    alRecibirMensaje: vi.fn(), suscribir: vi.fn().mockResolvedValue(undefined),
+    alRecibirMensaje: vi.fn(), alActualizarEstado: vi.fn(),
+    suscribir: vi.fn().mockResolvedValue(undefined),
     desuscribir: vi.fn().mockResolvedValue(undefined), detener: vi.fn().mockResolvedValue(undefined),
     revocar: vi.fn(),
   }),
@@ -47,5 +48,20 @@ describe('ConversacionPage', () => {
     expect(screen.getByText(/no admite nuevos mensajes/i)).toBeInTheDocument();
     expect(screen.getByLabelText('Mensaje')).toBeDisabled();
     expect(screen.queryByText('otra-persona')).not.toBeInTheDocument();
+  });
+
+  it('avisa de la retención sin bloquear el compositor', async () => {
+    vi.spyOn(chat, 'buscarConversacionPropia').mockResolvedValue({
+      id: 'c1', avisoId: 'a1', contraparteId: 'otra-persona', rol: 'Comprador',
+      creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 1, noLeidos: 0,
+      estado: 3, origenCierre: null, puedeEnviar: true,
+    });
+    vi.spyOn(chat, 'obtenerMensajes').mockResolvedValue({ siguienteCursor: null, items: [] });
+
+    montar();
+
+    expect(await screen.findByText(/todavía no se ha entregado/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Verificar mi identidad' })).toBeInTheDocument();
+    expect(screen.queryByText('Esta conversación no admite nuevos mensajes.')).toBeNull();
   });
 });
