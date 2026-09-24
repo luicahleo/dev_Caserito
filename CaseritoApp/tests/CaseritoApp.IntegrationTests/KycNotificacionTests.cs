@@ -8,6 +8,7 @@ using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -115,5 +116,33 @@ public sealed class KycNotificacionTests(CaseritoApiFactory factory) : IClassFix
 
         Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
         Assert.Contains(capturador.Enviados, m => m.Para == emailUsuario && m.CuerpoTexto.Contains("Documento ilegible"));
+    }
+
+    [Fact]
+    public async Task Solicitud_en_revision_manual_avisa_al_buzon_de_administracion()
+    {
+        var capturador = new ServicioCorreoCapturador();
+        var factoryConBuzon = factory
+            .WithWebHostBuilder(b =>
+            {
+                b.UseSetting("Kyc:EmailAvisos", "avisos@caserito.test");
+                b.ConfigureServices(s => s.AddSingleton<IServicioCorreo>(capturador));
+            });
+        var cliente = factoryConBuzon.CreateClient();
+        var email = $"espera-{Guid.NewGuid():N}@caserito.test";
+        await RegistrarYLoguearAsync(cliente, email, null);
+
+        using var scope = factoryConBuzon.Services.CreateScope();
+        var publisher = scope.ServiceProvider.GetRequiredService<IPublisher>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = await userManager.FindByEmailAsync(email);
+        await publisher.Publish(
+            new SolicitudKycEnEspera(Guid.NewGuid(), DateTimeOffset.UtcNow, usuario!.Id, Guid.NewGuid()),
+            CancellationToken.None);
+
+        Assert.Contains(capturador.Enviados, m => m.Para == "avisos@caserito.test");
+        var mensaje = capturador.Enviados.First(m => m.Para == "avisos@caserito.test");
+        Assert.DoesNotContain(email, mensaje.CuerpoTexto, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("/admin/kyc", mensaje.CuerpoTexto, StringComparison.Ordinal);
     }
 }
