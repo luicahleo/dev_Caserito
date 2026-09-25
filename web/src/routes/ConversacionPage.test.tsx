@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { ConversacionPage } from './ConversacionPage';
 import * as chat from '../api/chat';
+import * as perfiles from '../api/reputation';
 import * as authCtx from '../auth/AuthContext';
 
 vi.mock('../chat/tiempoReal', () => ({
@@ -63,5 +64,27 @@ describe('ConversacionPage', () => {
     expect(await screen.findByText(/todavía no se ha entregado/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Verificar mi identidad' })).toBeInTheDocument();
     expect(screen.queryByText('Esta conversación no admite nuevos mensajes.')).toBeNull();
+  });
+
+  it('muestra el sello de la contraparte verificada', async () => {
+    vi.spyOn(chat, 'buscarConversacionPropia').mockResolvedValue({
+      id: 'c1', avisoId: 'a1', contraparteId: 'otra-persona', rol: 'Comprador',
+      creadaEn: '', ultimaActividadEn: '', ultimaSecuencia: 1, noLeidos: 0,
+      estado: 0, origenCierre: null, puedeEnviar: true,
+    });
+    vi.spyOn(chat, 'obtenerMensajes').mockResolvedValue({ siguienteCursor: null, items: [] });
+    vi.spyOn(perfiles, 'obtenerPerfilPublico').mockResolvedValue({
+      id: 'otra-persona',
+      nombreVisible: 'Contraparte',
+      ciudadId: 'c1',
+      nombreCiudad: 'La Paz',
+      verificado: true,
+      promedio: null,
+      totalResenas: 0,
+    } as never);
+
+    montar();
+
+    expect(await screen.findByText('Usuario verificado')).toBeInTheDocument();
   });
 });

@@ -41,6 +41,8 @@ import { obtenerEstadoMensaje } from '../chat/estadoMensaje';
 import { InvitacionNotificaciones } from '../chat/InvitacionNotificaciones';
 import { AvisoConversacionRetenida } from '../chat/AvisoConversacionRetenida';
 import { EstadoConversacion, esRetenida } from '../chat/estadoConversacion';
+import { obtenerPerfilPublico } from '../api/reputation';
+import { DistintivoVerificado } from '../perfil/DistintivoVerificado';
 
 function combinar(actuales: readonly MensajeChat[], nuevos: readonly MensajeChat[]) {
   const mapa = new Map(actuales.map((mensaje) => [mensaje.id, mensaje]));
@@ -91,6 +93,12 @@ export function ConversacionPage() {
     queryFn: () => buscarConversacionPropia(id),
   });
   const conversacion = consultaConversacion.data;
+  const perfilContraparte = useQuery({
+    queryKey: ['perfil-publico', conversacion?.contraparteId],
+    queryFn: () => obtenerPerfilPublico(conversacion!.contraparteId),
+    enabled: Boolean(conversacion?.contraparteId),
+    retry: false,
+  });
   const historial = useQuery({
     queryKey: ['chat-mensajes', id],
     queryFn: () => obtenerMensajes(id),
@@ -244,11 +252,14 @@ export function ConversacionPage() {
           <Button component={RouterLink} to="/mensajes">
             ← Mensajes
           </Button>
-          <Typography variant="h5" component="h1">
-            {conversacion.rol === 'Comprador'
-              ? 'Conversación con el vendedor'
-              : 'Conversación con el comprador'}
-          </Typography>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography variant="h5" component="h1">
+              {conversacion.rol === 'Comprador'
+                ? 'Conversación con el vendedor'
+                : 'Conversación con el comprador'}
+            </Typography>
+            <DistintivoVerificado verificado={perfilContraparte.data?.verificado ?? false} />
+          </Stack>
         </Box>
         <Chip
           label={puedeEnviar ? 'Activa' : 'Envío no disponible'}

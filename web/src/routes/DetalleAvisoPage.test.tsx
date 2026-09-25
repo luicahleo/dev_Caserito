@@ -6,6 +6,7 @@ import { DetalleAvisoPage } from './DetalleAvisoPage';
 import * as avisos from '../api/avisos';
 import * as chat from '../api/chat';
 import * as orders from '../api/orders';
+import * as perfiles from '../api/reputation';
 import { HttpError } from '../api/http';
 
 const estadoAuth = {
@@ -221,5 +222,56 @@ describe('DetalleAvisoPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Proponer compra' }));
 
     expect(screen.getByText(/no realiza ningún pago ni reserva/i)).toBeInTheDocument();
+  });
+
+  it('muestra el sello cuando el vendedor está verificado', async () => {
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'a1',
+      vendedorId: 'v1',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
+    });
+    vi.spyOn(perfiles, 'obtenerPerfilPublico').mockResolvedValue({
+      id: 'v1',
+      nombreVisible: 'Vendedor',
+      ciudadId: 'c1',
+      nombreCiudad: 'La Paz',
+      verificado: true,
+      promedio: null,
+      totalResenas: 0,
+    } as never);
+
+    montar('a1');
+
+    expect(await screen.findByText('Usuario verificado')).toBeInTheDocument();
+  });
+
+  it('no muestra sello si la consulta del perfil falla', async () => {
+    vi.spyOn(avisos, 'obtenerAvisoPublico').mockResolvedValue({
+      id: 'a1',
+      vendedorId: 'v1',
+      titulo: 'Bicicleta',
+      descripcion: 'Poco uso',
+      monto: 800,
+      moneda: 'BOB',
+      nombreCategoria: 'Deportes',
+      nombreCiudad: 'Cochabamba',
+      condicion: 'Usado',
+      fechaCreacion: '2026-07-18T10:00:00Z',
+      fotos: [],
+    });
+    vi.spyOn(perfiles, 'obtenerPerfilPublico').mockRejectedValue(new Error('caido'));
+
+    montar('a1');
+
+    await screen.findByText('Bicicleta');
+    expect(screen.queryByText('Usuario verificado')).not.toBeInTheDocument();
   });
 });
