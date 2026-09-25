@@ -56,6 +56,16 @@ export function listarSolicitudesKyc(
     .then((r) => desempaquetar(r));
 }
 
+/**
+ * Número de solicitudes esperando revisión. Reutiliza el listado de administración: su
+ * `total` ya es el conteo, así que no hace falta un endpoint propio. Pide una sola fila
+ * porque los items se descartan.
+ */
+export async function contarSolicitudesKycPendientes(): Promise<number> {
+  const pagina = await listarSolicitudesKyc('Pendiente', 1, 1);
+  return Number(pagina.total);
+}
+
 export async function obtenerImagenKyc(
   solicitudId: string,
   tipo: 'documento' | 'selfie',
