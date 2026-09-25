@@ -56,6 +56,9 @@ param(
     [Parameter(HelpMessage = 'No espera el CI de develop al publicar')]
     [switch]$SinEsperarCiDevelop,
 
+    [Parameter(HelpMessage = 'Omite la confirmación interactiva; -Confirmar basta')]
+    [switch]$SinPrompt,
+
     [string]$RamaDesarrollo = 'develop',
     [string]$RamaProduccion = 'master'
 )
@@ -196,7 +199,7 @@ Write-Host "Vas a desplegar $cuantos commit(s) a PRODUCCIÓN." -ForegroundColor 
 if ($cuantos -gt 15) { Write-Host "  ... y $($cuantos - 15) más" }
 Write-Host ''
 
-if ([Environment]::UserInteractive) {
+if (-not $SinPrompt) {
     $respuesta = Read-Host 'Escribe PRODUCCION para continuar'
     if ($respuesta -cne 'PRODUCCION') {
         throw 'Despliegue cancelado.'
