@@ -11,6 +11,7 @@ afterEach(() => vi.restoreAllMocks());
 
 const resumen: avisos.AvisoPublicoResumen = {
   id: 'a1',
+  vendedorId: 'v1',
   titulo: 'Silla de madera',
   monto: 150,
   moneda: 'BOB',
@@ -19,6 +20,7 @@ const resumen: avisos.AvisoPublicoResumen = {
   condicion: 'Usado',
   fechaCreacion: '2026-07-18T10:00:00Z',
   fotos: [],
+  vendedorVerificado: true,
 };
 
 function montar() {
@@ -77,5 +79,21 @@ describe('ExplorarPage', () => {
         expect.any(Number),
       ),
     );
+  });
+
+  it('muestra el sello en la tarjeta de un vendedor verificado y no en otro', async () => {
+    vi.spyOn(avisos, 'buscarAvisos').mockResolvedValue({
+      items: [
+        resumen,
+        { ...resumen, id: 'a2', titulo: 'Mesa sin sello', vendedorVerificado: false },
+      ],
+      pagina: 1,
+      tamano: 20,
+      total: 2,
+    });
+    montar();
+
+    await screen.findByText('Silla de madera');
+    expect(screen.getAllByLabelText('Usuario verificado')).toHaveLength(1);
   });
 });

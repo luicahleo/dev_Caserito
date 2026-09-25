@@ -21,6 +21,7 @@ import {
 import { buscarAvisos, type FiltroBusqueda } from '../api/avisos';
 import { listarCategorias, listarCiudades } from '../api/catalogo';
 import { formatearBob } from '../lib/formato';
+import { DistintivoVerificado } from '../perfil/DistintivoVerificado';
 
 const TAMANO = 20;
 const CONDICIONES = ['Nuevo', 'Usado'];
@@ -199,9 +200,12 @@ export function ExplorarPage() {
                       <Typography variant="h6" noWrap>
                         {a.titulo}
                       </Typography>
-                      <Typography variant="subtitle1" color="primary">
-                        {formatearBob(a.monto)}
-                      </Typography>
+                      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                        <Typography variant="subtitle1" color="primary">
+                          {formatearBob(a.monto)}
+                        </Typography>
+                        <DistintivoVerificado verificado={a.vendedorVerificado} compacto />
+                      </Stack>
                       <Typography variant="body2" color="text.secondary">
                         {a.nombreCategoria} · {a.nombreCiudad} · {a.condicion}
                       </Typography>
