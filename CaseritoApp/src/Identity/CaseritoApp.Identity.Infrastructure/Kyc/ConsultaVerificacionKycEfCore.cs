@@ -39,4 +39,21 @@ public sealed class ConsultaVerificacionKycEfCore(IdentityDbContext db) : IConsu
             .Where(u => u.Id == usuarioId)
             .Select(u => new UsuarioKycDto(u.Email!, u.Nombres))
             .FirstOrDefaultAsync(ct);
+
+    public async Task<IReadOnlySet<Guid>> ObtenerVerificadosAsync(
+        IReadOnlyCollection<Guid> usuarioIds, CancellationToken ct)
+    {
+        if (usuarioIds.Count == 0)
+        {
+            return new HashSet<Guid>();
+        }
+
+        var verificados = await db.VerificacionesKyc
+            .Where(v => usuarioIds.Contains(v.Id))
+            .Where(v => v.Solicitudes.Any(s => s.Estado == EstadoKyc.Aprobada))
+            .Select(v => v.Id)
+            .ToListAsync(ct);
+
+        return verificados.ToHashSet();
+    }
 }

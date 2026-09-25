@@ -16,6 +16,13 @@ public interface IConsultaVerificacionKyc
 
     /// <summary>Datos mínimos del usuario para notificarle el resultado de su KYC.</summary>
     public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct);
+
+    /// <summary>
+    /// Usuarios con KYC aprobado dentro del conjunto dado, resueltos en una sola consulta.
+    /// Lo usa el listado público para marcar vendedores verificados sin incurrir en N+1.
+    /// </summary>
+    public Task<IReadOnlySet<Guid>> ObtenerVerificadosAsync(
+        IReadOnlyCollection<Guid> usuarioIds, CancellationToken ct);
 }
 
 /// <summary>Contacto del usuario al que se le notifica la resolución de su KYC.</summary>
