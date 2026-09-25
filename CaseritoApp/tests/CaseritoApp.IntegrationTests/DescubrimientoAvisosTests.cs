@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CaseritoApp.Host.Endpoints;
+using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
 using CaseritoApp.IntegrationTests.Infrastructure;
@@ -224,6 +225,64 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
                 "El resumen público debe exponer vendedorId.");
             Assert.NotEqual(Guid.Empty, vendedorId.GetGuid());
         }
+    }
+
+    [Fact]
+    public async Task El_listado_marca_verificado_al_vendedor_con_kyc_aprobado()
+    {
+        using var cliente = factory.ConAprobadorArgos().CreateClient();
+        var token = await UsuarioVerificadoAsync(cliente);
+        var marca = Guid.NewGuid().ToString("N");
+        await CrearAvisoAsync(cliente, token, $"Verificado {marca}", "d", 100m, "Usado");
+
+        var respuesta = await cliente.GetFromJsonAsync<JsonElement>("/api/publico/avisos?pagina=1&tamano=20");
+
+        var items = respuesta.GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(items);
+        foreach (var item in items)
+        {
+            Assert.True(
+                item.TryGetProperty("vendedorVerificado", out var verificado),
+                "El item del listado debe exponer vendedorVerificado.");
+            Assert.True(verificado.ValueKind is JsonValueKind.True or JsonValueKind.False);
+        }
+    }
+
+    [Fact]
+    public async Task Un_vendedor_admin_sin_kyc_no_aparece_como_verificado()
+    {
+        // El rol AdminPlataforma exime del gate de publicación
+        // (EstaHabilitadoParaMarketplaceAsync), pero NO es una identidad verificada.
+        // Si alguien cambia la fuente del distintivo por ese método, este test falla.
+        var vendedorAdmin = await SembrarVendedorAdminConAvisoAsync();
+        var cliente = factory.CreateClient();
+
+        var respuesta = await cliente.GetFromJsonAsync<JsonElement>("/api/publico/avisos?pagina=1&tamano=20");
+
+        var item = respuesta.GetProperty("items").EnumerateArray()
+            .Single(i => i.GetProperty("vendedorId").GetGuid() == vendedorAdmin);
+        Assert.False(item.GetProperty("vendedorVerificado").GetBoolean());
+    }
+
+    private async Task<Guid> SembrarVendedorAdminConAvisoAsync()
+    {
+        using var cliente = factory.CreateClient();
+        var email = Email("disc-admin");
+        var reg = await cliente.PostAsJsonAsync("/api/auth/register",
+            new RegistroRequest(email, "Password123!", "Administrador", "La Paz"));
+        Assert.Equal(HttpStatusCode.OK, reg.StatusCode);
+
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var usuario = (await userManager.FindByEmailAsync(email))!;
+        usuario.EmailConfirmed = true;
+        Assert.True((await userManager.UpdateAsync(usuario)).Succeeded);
+        Assert.True((await userManager.AddToRoleAsync(usuario, RolesApp.AdminPlataforma)).Succeeded);
+
+        var token = await LoguearAsync(cliente, email);
+        var marca = Guid.NewGuid().ToString("N");
+        await CrearAvisoAsync(cliente, token, $"Admin {marca}", "d", 100m, "Usado");
+        return usuario.Id;
     }
 }
 

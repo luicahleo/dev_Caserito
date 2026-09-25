@@ -1778,7 +1778,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResultadoPaginadoOfAvisoPublicoResumenDto"
+                  "$ref": "#/components/schemas/ResultadoPaginadoOfAvisoPublicoResumenConVendedorDto"
                 }
               }
             }
@@ -4424,9 +4424,10 @@
           }
         }
       },
-      "AvisoPublicoResumenDto": {
+      "AvisoPublicoResumenConVendedorDto": {
         "required": [
           "id",
+          "vendedorId",
           "titulo",
           "monto",
           "moneda",
@@ -4434,11 +4435,16 @@
           "nombreCiudad",
           "condicion",
           "fechaCreacion",
-          "fotos"
+          "fotos",
+          "vendedorVerificado"
         ],
         "type": "object",
         "properties": {
           "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "vendedorId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4474,6 +4480,9 @@
             "items": {
               "$ref": "#/components/schemas/FotoAvisoDto"
             }
+          },
+          "vendedorVerificado": {
+            "type": "boolean"
           }
         }
       },
@@ -6382,7 +6391,7 @@
           }
         }
       },
-      "ResultadoPaginadoOfAvisoPublicoResumenDto": {
+      "ResultadoPaginadoOfAvisoPublicoResumenConVendedorDto": {
         "required": [
           "items",
           "pagina",
@@ -6394,7 +6403,7 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/AvisoPublicoResumenDto"
+              "$ref": "#/components/schemas/AvisoPublicoResumenConVendedorDto"
             }
           },
           "pagina": {

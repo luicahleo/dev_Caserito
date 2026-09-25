@@ -1956,7 +1956,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ResultadoPaginadoOfAvisoPublicoResumenDto"];
+                        "application/json": components["schemas"]["ResultadoPaginadoOfAvisoPublicoResumenConVendedorDto"];
                     };
                 };
                 /** @description Bad Request */
@@ -4857,9 +4857,11 @@ export interface components {
             fechaCreacion: string;
             fotos: components["schemas"]["FotoAvisoDto"][];
         };
-        AvisoPublicoResumenDto: {
+        AvisoPublicoResumenConVendedorDto: {
             /** Format: uuid */
             id: string;
+            /** Format: uuid */
+            vendedorId: string;
             titulo: string;
             /** Format: double */
             monto: number | string;
@@ -4870,6 +4872,7 @@ export interface components {
             /** Format: date-time */
             fechaCreacion: string;
             fotos: components["schemas"]["FotoAvisoDto"][];
+            vendedorVerificado: boolean;
         };
         AvisoReportadoDto: {
             /** Format: uuid */
@@ -5385,8 +5388,8 @@ export interface components {
             token: string;
             password: string;
         };
-        ResultadoPaginadoOfAvisoPublicoResumenDto: {
-            items: components["schemas"]["AvisoPublicoResumenDto"][];
+        ResultadoPaginadoOfAvisoPublicoResumenConVendedorDto: {
+            items: components["schemas"]["AvisoPublicoResumenConVendedorDto"][];
             /** Format: int32 */
             pagina: number | string;
             /** Format: int32 */
