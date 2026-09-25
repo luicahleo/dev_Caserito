@@ -5,6 +5,7 @@ namespace CaseritoApp.Catalog.Application.Avisos;
 /// <summary>Resumen de un aviso para el descubrimiento p&#xfa;blico (listados/b&#xfa;squeda).</summary>
 public sealed record AvisoPublicoResumenDto(
     Guid Id,
+    Guid VendedorId,
     string Titulo,
     decimal Monto,
     string Moneda,

@@ -62,6 +62,7 @@ public sealed class ConsultaAvisosPublicaEfCore(CatalogDbContext db) : IConsulta
             .Take(tamano)
             .Select(a => new AvisoPublicoResumenDto(
                 a.Id,
+                a.VendedorId,
                 a.Titulo,
                 a.Precio.Monto,
                 a.Precio.Moneda.ToString(),

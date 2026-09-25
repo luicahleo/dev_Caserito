@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using CaseritoApp.Host.Endpoints;
 using CaseritoApp.Identity.Domain.Kyc;
 using CaseritoApp.Identity.Infrastructure;
@@ -202,6 +203,27 @@ public sealed class DescubrimientoAvisosTests(CaseritoApiFactory factory) : ICla
         using var cliente = factory.CreateClient();
         var resp = await cliente.GetAsync("/api/publico/avisos?tamano=500");
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task El_listado_publico_expone_el_vendedor_del_aviso()
+    {
+        using var cliente = factory.ConAprobadorArgos().CreateClient();
+        var token = await UsuarioVerificadoAsync(cliente);
+        var marca = Guid.NewGuid().ToString("N");
+        await CrearAvisoAsync(cliente, token, $"Vendedor {marca}", "d", 100m, "Usado");
+
+        var respuesta = await cliente.GetFromJsonAsync<JsonElement>("/api/publico/avisos?pagina=1&tamano=20");
+
+        var items = respuesta.GetProperty("items").EnumerateArray().ToList();
+        Assert.NotEmpty(items);
+        foreach (var item in items)
+        {
+            Assert.True(
+                item.TryGetProperty("vendedorId", out var vendedorId),
+                "El resumen público debe exponer vendedorId.");
+            Assert.NotEqual(Guid.Empty, vendedorId.GetGuid());
+        }
     }
 }
 
