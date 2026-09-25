@@ -79,13 +79,36 @@ una persona.
 gana `Guid VendedorId`, y la proyección de
 `ConsultaAvisosPublicaEfCore.cs:63-75` lo incluye.
 
-El Host define el DTO de composición y marca cada item:
+El Host define el DTO de composición, **plano**, y marca cada item:
 
 ```csharp
 public sealed record AvisoPublicoResumenConVendedorDto(
-    AvisoPublicoResumenDto Aviso,
-    bool VendedorVerificado);
+    Guid Id,
+    string Titulo,
+    decimal Monto,
+    string Moneda,
+    string NombreCategoria,
+    string NombreCiudad,
+    string Condicion,
+    DateTime FechaCreacion,
+    IReadOnlyList<FotoAvisoDto> Fotos,
+    Guid VendedorId,
+    bool VendedorVerificado)
+{
+    public static AvisoPublicoResumenConVendedorDto Desde(
+        AvisoPublicoResumenDto aviso, bool verificado) =>
+        new(aviso.Id, aviso.Titulo, aviso.Monto, aviso.Moneda, aviso.NombreCategoria,
+            aviso.NombreCiudad, aviso.Condicion, aviso.FechaCreacion, aviso.Fotos,
+            aviso.VendedorId, verificado);
+}
 ```
+
+**Plano y no anidado** (`{ aviso, vendedorVerificado }`) a propósito: anidar
+preserva igual de bien la separación de contextos, pero obliga al frontend a
+desanidar en cada tarjeta y a rehacer todos los fixtures del listado. Con la
+forma plana, para el consumidor el cambio es puramente aditivo: dos campos
+nuevos y ninguno movido. El precio es repetir la lista de campos una vez en el
+Host, dentro de un método de fábrica que el compilador verifica.
 
 El puerto de Identity gana:
 
@@ -120,8 +143,9 @@ pasa a devolver el DTO de composición, y el resumen gana `vendedorId`. Hay que
 regenerar `web/src/api/schema.d.ts` con `npm run generate:api`; el job `contract`
 de CI valida que lo generado coincida con el artefacto del backend.
 
-Los campos previos se conservan: ningún consumidor pierde datos, aunque el
-frontend debe adaptarse a la forma anidada del item del listado.
+El cambio es aditivo para el consumidor: el item del listado conserva todos sus
+campos en el mismo sitio y gana `vendedorId` y `vendedorVerificado`. Solo cambia
+el nombre del esquema, que el cliente generado resuelve solo.
 
 ## 7. Seguridad y PII
 
@@ -142,8 +166,8 @@ mano se romperá al añadir `VendedorId`**. Antes de implementar hay que
 localizarlas con una búsqueda dirigida sobre `AvisoPublicoResumenDto(` en
 `CaseritoApp/tests` y adaptarlas.
 
-En el frontend, los fixtures de `ExplorarPage.test.tsx` necesitarán la forma
-nueva del item tras regenerar el contrato.
+En el frontend, los fixtures de `ExplorarPage.test.tsx` solo necesitan los dos
+campos nuevos: al ser el DTO plano, ninguna propiedad existente se mueve.
 `PerfilPublicoPage.test.tsx` sigue verde si el componente conserva el texto
 exacto «Usuario verificado».
 
