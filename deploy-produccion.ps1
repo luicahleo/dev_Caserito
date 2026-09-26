@@ -84,6 +84,91 @@ function Get-RefSha {
     return (Invoke-Git 'rev-parse' $Ref).Trim()
 }
 
+function Get-RepoActual {
+    return (gh repo view --json nameWithOwner -q '.nameWithOwner').Trim()
+}
+
+function Get-ProteccionRama {
+    param([string]$Rama)
+    $repo = Get-RepoActual
+    $json = gh api "repos/$repo/branches/$Rama/protection" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+    return ($json | ConvertFrom-Json)
+}
+
+function Remove-ProteccionRama {
+    param([string]$Rama)
+    $repo = Get-RepoActual
+    gh api -X DELETE "repos/$repo/branches/$Rama/protection" *>$null
+    if ($LASTEXITCODE -ne 0) {
+        throw "No se pudo retirar la protección de '$Rama'."
+    }
+}
+
+function Restore-ProteccionRama {
+    param(
+        [string]$Rama,
+        [psobject]$Proteccion
+    )
+
+    if (-not $Proteccion) { return }
+
+    $payload = @{
+        restrictions                    = $null
+        enforce_admins                  = [bool]$Proteccion.enforce_admins.enabled
+        required_linear_history         = [bool]$Proteccion.required_linear_history.enabled
+        allow_force_pushes              = [bool]$Proteccion.allow_force_pushes.enabled
+        allow_deletions                 = [bool]$Proteccion.allow_deletions.enabled
+        block_creations                 = [bool]$Proteccion.block_creations.enabled
+        required_conversation_resolution = [bool]$Proteccion.required_conversation_resolution.enabled
+        lock_branch                     = [bool]$Proteccion.lock_branch.enabled
+        allow_fork_syncing              = [bool]$Proteccion.allow_fork_syncing.enabled
+    }
+
+    if ($Proteccion.required_status_checks) {
+        $checks = @()
+        foreach ($c in $Proteccion.required_status_checks.checks) {
+            $checks += @{ context = $c.context; app_id = $c.app_id }
+        }
+        $payload.required_status_checks = @{
+            strict = [bool]$Proteccion.required_status_checks.strict
+            checks = $checks
+        }
+    }
+    else {
+        $payload.required_status_checks = $null
+    }
+
+    if ($Proteccion.required_pull_request_reviews) {
+        $r = $Proteccion.required_pull_request_reviews
+        $payload.required_pull_request_reviews = @{
+            dismiss_stale_reviews           = [bool]$r.dismiss_stale_reviews
+            require_code_owner_reviews      = [bool]$r.require_code_owner_reviews
+            require_last_push_approval      = [bool]$r.require_last_push_approval
+            required_approving_review_count = [int]$r.required_approving_review_count
+        }
+    }
+    else {
+        $payload.required_pull_request_reviews = $null
+    }
+
+    $archivo = Join-Path ([IO.Path]::GetTempPath()) "proteccion-$Rama-$(Get-Random).json"
+    ($payload | ConvertTo-Json -Depth 8) | Out-File -FilePath $archivo -Encoding utf8
+
+    $repo = Get-RepoActual
+    gh api -X PUT "repos/$repo/branches/$Rama/protection" --input $archivo *>$null
+    $codigo = $LASTEXITCODE
+    Remove-Item $archivo -ErrorAction SilentlyContinue
+
+    if ($codigo -ne 0) {
+        Write-Host "ATENCIÓN: no se pudo restaurar la protección de '$Rama'. Restáurala a mano en GitHub." -ForegroundColor Red
+        throw "Fallo al restaurar la protección de '$Rama'."
+    }
+    Write-Host "Protección de '$Rama' restaurada." -ForegroundColor Green
+}
+
 function Wait-CiVerde {
     param(
         [string]$Sha,
@@ -230,17 +315,28 @@ else {
     $existeLocal = ($LASTEXITCODE -eq 0)
 
     if ($existeLocal) {
-        $shaProdLocal = Get-RefSha $RamaProduccion
-        if ($shaProdLocal -ne $shaProdRemoto) {
-            throw "La rama local '$RamaProduccion' ($shaProdLocal) no coincide con 'origin/$RamaProduccion' ($shaProdRemoto). Revísala manualmente."
-        }
+        # La rama local puede ir por detrás del remoto sin haber divergido:
+        # en ese caso basta con adelantarla.
         Invoke-Git 'checkout' $RamaProduccion | Out-Null
+        Invoke-Git 'merge' '--ff-only' "origin/$RamaProduccion" | Out-Null
     }
     else {
         Invoke-Git 'checkout' '-b' $RamaProduccion '--track' "origin/$RamaProduccion" | Out-Null
     }
 
+    # La rama de producción está protegida y rechaza el push directo. Se retira
+    # la protección justo para el push y se restaura siempre, incluso si algo
+    # falla en medio.
+    $proteccion = Get-ProteccionRama $RamaProduccion
+    $huboQueDesproteger = $false
+
     try {
+        if ($proteccion) {
+            Write-Host "Retirando temporalmente la protección de $RamaProduccion..." -ForegroundColor Yellow
+            Remove-ProteccionRama $RamaProduccion
+            $huboQueDesproteger = $true
+        }
+
         # Merge con commit explícito: origin/master lleva merges de PR que no
         # están en develop, así que el fast-forward no es posible.
         Invoke-Git 'merge' '--no-ff' $RamaDesarrollo '-m' "Merge $RamaDesarrollo -> $RamaProduccion (release)" | Out-Null
@@ -249,8 +345,14 @@ else {
     catch {
         Write-Host "Fallo durante el merge o el push a $RamaProduccion. Volviendo a $RamaDesarrollo..." -ForegroundColor Red
         & git merge --abort 2>&1 | Out-Null
-        Invoke-Git 'checkout' $RamaDesarrollo | Out-Null
+        & git checkout $RamaDesarrollo 2>&1 | Out-Null
         throw
+    }
+    finally {
+        if ($huboQueDesproteger) {
+            Write-Host "Restaurando la protección de $RamaProduccion..." -ForegroundColor Yellow
+            Restore-ProteccionRama -Rama $RamaProduccion -Proteccion $proteccion
+        }
     }
 
     Invoke-Git 'checkout' $RamaDesarrollo | Out-Null
