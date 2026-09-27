@@ -188,18 +188,26 @@ function Restore-ProteccionRama {
         $payload.required_pull_request_reviews = $null
     }
 
+    # Sin BOM: Out-File -Encoding utf8 lo añade en PowerShell 5.1 y la API de
+    # GitHub responde 400 "Problems parsing JSON" al recibirlo.
     $archivo = Join-Path ([IO.Path]::GetTempPath()) "proteccion-$Rama-$(Get-Random).json"
-    ($payload | ConvertTo-Json -Depth 8) | Out-File -FilePath $archivo -Encoding utf8
+    [IO.File]::WriteAllText($archivo, ($payload | ConvertTo-Json -Depth 8), (New-Object Text.UTF8Encoding $false))
 
     $repo = Get-RepoActual
     $r = Invoke-Nativo { gh api -X PUT "repos/$repo/branches/$Rama/protection" --input $archivo }
-    Remove-Item $archivo -ErrorAction SilentlyContinue
 
     if ($r.Codigo -ne 0) {
-        Write-Host "ATENCIÓN: no se pudo restaurar la protección de '$Rama'. Restáurala a mano en GitHub." -ForegroundColor Red
+        # No se borra el archivo: es lo que permite restaurar a mano.
+        Write-Host ''
+        Write-Host "ATENCIÓN: '$Rama' quedó SIN PROTECCIÓN y no se pudo restaurar." -ForegroundColor Red
         Write-Host $r.Salida -ForegroundColor Red
+        Write-Host 'Restáurala ejecutando:' -ForegroundColor Yellow
+        Write-Host "  gh api -X PUT repos/$repo/branches/$Rama/protection --input `"$archivo`"" -ForegroundColor Yellow
+        Write-Host ''
         throw "Fallo al restaurar la protección de '$Rama'."
     }
+
+    Remove-Item $archivo -ErrorAction SilentlyContinue
     Write-Host "Protección de '$Rama' restaurada." -ForegroundColor Green
 }
 
