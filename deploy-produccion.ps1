@@ -222,9 +222,14 @@ function Wait-CiVerde {
     Write-Host "Esperando CI verde de $Rama para $Sha (timeout ${TimeoutMinutos}m)..."
 
     while ([DateTime]::UtcNow -lt $limite) {
-        $json = gh run list --workflow=ci.yml --branch=$Rama --limit=5 `
-            --json conclusion,headSha,status,url | ConvertFrom-Json
-        $run = $json | Where-Object { $_.headSha -eq $Sha } | Select-Object -First 1
+        $r = Invoke-Nativo {
+            gh run list --workflow=ci.yml --branch=$Rama --limit=5 --json conclusion,headSha,status,url
+        }
+        if ($r.Codigo -ne 0) {
+            throw "No se pudo consultar el estado de CI: $($r.Salida)"
+        }
+        $run = ($r.Salida | ConvertFrom-Json) |
+            Where-Object { $_.headSha -eq $Sha } | Select-Object -First 1
 
         if ($run) {
             Write-Host "  CI estado=$($run.status) conclusion=$($run.conclusion)"
@@ -427,9 +432,14 @@ if (-not $Watch) {
 }
 
 Start-Sleep -Seconds 5
-$runs = gh run list --workflow=deploy.yml --branch=$RamaProduccion --limit=5 `
-    --json databaseId,headSha,status | ConvertFrom-Json
-$run = $runs | Where-Object { $_.headSha -eq $shaRelease } | Select-Object -First 1
+$r = Invoke-Nativo {
+    gh run list --workflow=deploy.yml --branch=$RamaProduccion --limit=5 --json databaseId,headSha,status
+}
+$run = $null
+if ($r.Codigo -eq 0) {
+    $run = ($r.Salida | ConvertFrom-Json) |
+        Where-Object { $_.headSha -eq $shaRelease } | Select-Object -First 1
+}
 
 if (-not $run) {
     Write-Warning 'No se encontró el run de despliegue recién disparado para monitorear.'
