@@ -22,6 +22,16 @@ public sealed class IniciarConversacionCommandHandlerTests
             Task.FromResult<Conversacion?>(null);
 
         public void Agregar(Conversacion conversacion) => Agregadas.Add(conversacion);
+
+        public Task<IReadOnlyList<Conversacion>> ListarRetenidasDeCompradorAsync(
+            Guid compradorId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Conversacion>>([]);
+    }
+
+    private sealed class VerificacionFake(bool habilitado) : IConsultaVerificacionComprador
+    {
+        public Task<bool> EstaHabilitadoAsync(Guid usuarioId, CancellationToken ct) =>
+            Task.FromResult(habilitado);
     }
 
     private sealed class ConsultaAvisoFake(ReferenciaAvisoContactable? referencia) : IConsultaAvisoContactable
@@ -44,7 +54,8 @@ public sealed class IniciarConversacionCommandHandlerTests
         var repositorio = new RepositorioFake { Existente = existente };
         var consulta = new ConsultaAvisoFake(null);
         var handler = new IniciarConversacionCommandHandler(
-            repositorio, consulta, TimeProvider.System, new BloqueosFake());
+            repositorio, consulta, TimeProvider.System, new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -70,7 +81,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             new RepositorioFake { Existente = existente },
             new ConsultaAvisoFake(null),
             TimeProvider.System,
-            new BloqueosFake());
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -84,7 +96,8 @@ public sealed class IniciarConversacionCommandHandlerTests
     public async Task Aviso_no_contactable_devuelve_no_encontrado()
     {
         var handler = new IniciarConversacionCommandHandler(
-            new RepositorioFake(), new ConsultaAvisoFake(null), TimeProvider.System, new BloqueosFake());
+            new RepositorioFake(), new ConsultaAvisoFake(null), TimeProvider.System, new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None);
@@ -100,7 +113,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             new RepositorioFake(),
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(Guid.NewGuid(), Guid.NewGuid())),
             TimeProvider.System,
-            new BloqueosFake());
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(Guid.NewGuid(), Guid.NewGuid()), CancellationToken.None);
@@ -118,7 +132,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             new RepositorioFake(),
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, usuarioId)),
             TimeProvider.System,
-            new BloqueosFake());
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(usuarioId, avisoId), CancellationToken.None);
@@ -139,7 +154,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             repositorio,
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
             reloj,
-            new BloqueosFake());
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -162,7 +178,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             new RepositorioFake(),
             new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
             TimeProvider.System,
-            bloqueos);
+            bloqueos,
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -184,7 +201,8 @@ public sealed class IniciarConversacionCommandHandlerTests
             new RepositorioFake { Existente = existente },
             new ConsultaAvisoFake(null),
             TimeProvider.System,
-            bloqueos);
+            bloqueos,
+            new VerificacionFake(habilitado: true));
 
         var resultado = await handler.Handle(
             new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
@@ -207,6 +225,95 @@ public sealed class IniciarConversacionCommandHandlerTests
         Assert.False(resultado.IsValid);
         Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(IniciarConversacionCommand.CompradorId));
         Assert.Contains(resultado.Errors, e => e.PropertyName == nameof(IniciarConversacionCommand.AvisoId));
+    }
+
+    [Fact]
+    public async Task Comprador_no_habilitado_obtiene_conversacion_retenida()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var repositorio = new RepositorioFake();
+        var handler = new IniciarConversacionCommandHandler(
+            repositorio,
+            new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
+            TimeProvider.System,
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: false));
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(
+            EstadoConversacion.RetenidaPorVerificacion,
+            Assert.Single(repositorio.Agregadas).Estado);
+    }
+
+    [Fact]
+    public async Task Comprador_habilitado_obtiene_conversacion_activa()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var repositorio = new RepositorioFake();
+        var handler = new IniciarConversacionCommandHandler(
+            repositorio,
+            new ConsultaAvisoFake(new ReferenciaAvisoContactable(avisoId, vendedorId)),
+            TimeProvider.System,
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoConversacion.Activa, Assert.Single(repositorio.Agregadas).Estado);
+    }
+
+    [Fact]
+    public async Task Volver_ya_habilitado_libera_la_conversacion_retenida()
+    {
+        // Red de seguridad: cubre el caso de que el evento UserVerified se haya perdido.
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var retenida = Conversacion.Crear(
+            avisoId, compradorId, vendedorId, _ahora, retenida: true).Valor;
+        var handler = new IniciarConversacionCommandHandler(
+            new RepositorioFake { Existente = retenida },
+            new ConsultaAvisoFake(null),
+            TimeProvider.System,
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: true));
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoConversacion.Activa, retenida.Estado);
+    }
+
+    [Fact]
+    public async Task Volver_sin_estar_habilitado_la_deja_retenida()
+    {
+        var compradorId = Guid.NewGuid();
+        var vendedorId = Guid.NewGuid();
+        var avisoId = Guid.NewGuid();
+        var retenida = Conversacion.Crear(
+            avisoId, compradorId, vendedorId, _ahora, retenida: true).Valor;
+        var handler = new IniciarConversacionCommandHandler(
+            new RepositorioFake { Existente = retenida },
+            new ConsultaAvisoFake(null),
+            TimeProvider.System,
+            new BloqueosFake(),
+            new VerificacionFake(habilitado: false));
+
+        var resultado = await handler.Handle(
+            new IniciarConversacionCommand(compradorId, avisoId), CancellationToken.None);
+
+        Assert.True(resultado.EsExito);
+        Assert.Equal(EstadoConversacion.RetenidaPorVerificacion, retenida.Estado);
     }
 
     private sealed class RelojFijo(DateTimeOffset ahora) : TimeProvider

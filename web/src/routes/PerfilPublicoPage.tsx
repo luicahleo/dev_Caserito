@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { listarResenasPublicas, obtenerPerfilPublico } from '../api/reputation';
+import { DistintivoVerificado } from '../perfil/DistintivoVerificado';
 
 export function PerfilPublicoPage() {
   const { id = '' } = useParams();
@@ -52,7 +53,7 @@ export function PerfilPublicoPage() {
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
         <Chip label={perfil.data.nombreCiudad} />
-        {perfil.data.verificado && <Chip color="success" label="Usuario verificado" />}
+        <DistintivoVerificado verificado={perfil.data.verificado} />
       </Stack>
       <Typography variant="h6">
         {perfil.data.promedio === null

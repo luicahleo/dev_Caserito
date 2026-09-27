@@ -63,11 +63,15 @@ public sealed class FotosAvisoIntegrationTests(CaseritoApiFactory factory)
         var verificacion = await db.VerificacionesKyc
             .Include(v => v.Solicitudes)
             .SingleAsync(v => v.Id == usuario.Id);
-        Assert.True(verificacion.Aprobar(
-            verificacion.SolicitudActual!.Id,
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow).EsExito);
-        await db.SaveChangesAsync();
+        // Con ARGOS aprobador la solicitud ya queda aprobada; solo se aprueba si sigue pendiente.
+        if (verificacion.SolicitudActual!.Estado == EstadoKyc.Pendiente)
+        {
+            Assert.True(verificacion.Aprobar(
+                verificacion.SolicitudActual.Id,
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow).EsExito);
+            await db.SaveChangesAsync();
+        }
 
         // Re-login para que el JWT traiga el claim verificado=true.
         return await LoguearAsync(cliente, email);

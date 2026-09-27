@@ -27,3 +27,7 @@ public sealed record ConversacionEstadoCambiado(
     Guid ConversacionId,
     EstadoConversacion Estado,
     DateTimeOffset OcurridoEn) : IDomainEvent;
+
+public sealed record ConversacionLiberada(
+    Guid ConversacionId,
+    DateTimeOffset OcurridoEn) : IDomainEvent;

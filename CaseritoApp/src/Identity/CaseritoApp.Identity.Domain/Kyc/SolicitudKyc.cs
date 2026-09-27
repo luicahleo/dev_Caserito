@@ -37,9 +37,18 @@ public sealed class SolicitudKyc : Entity
     /// <summary>Score de similitud facial devuelto por ARGOS, para auditoría. Sin PII.</summary>
     public double? ScoreSimilitud { get; private set; }
 
+    /// <summary>Por qué la solicitud quedó esperando revisión humana. Null si no aplica.</summary>
+    public MotivoRevisionKyc? MotivoRevision { get; private set; }
+
     public void RegistrarScoreSimilitud(double score)
     {
         ScoreSimilitud = score;
+    }
+
+    /// <summary>Registra el motivo del encolado. No se limpia al resolver: es traza histórica.</summary>
+    public void RegistrarMotivoRevision(MotivoRevisionKyc motivo)
+    {
+        MotivoRevision = motivo;
     }
 
     internal void MarcarAprobada(Guid revisorId, DateTimeOffset cuando)

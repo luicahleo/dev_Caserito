@@ -32,6 +32,15 @@ public sealed class RepositorioVerificacionKycEfCore(
         return true;
     }
 
+    public async Task<bool> HuellaPerteneceAOtroUsuarioAsync(
+        string huella, Guid usuarioId, CancellationToken ct)
+    {
+        var existente = await db.DocumentosKycRegistrados
+            .AsNoTracking()
+            .SingleOrDefaultAsync(d => d.HuellaCi == huella, ct);
+        return existente is not null && existente.UsuarioId != usuarioId;
+    }
+
     public async Task<DocumentoKycRegistrado?> ObtenerDocumentoPorSolicitudAsync(
         Guid solicitudId,
         CancellationToken ct)
@@ -104,7 +113,8 @@ public sealed class RepositorioVerificacionKycEfCore(
                 s.EnviadaEn,
                 s.ResueltaEn,
                 s.ScoreSimilitud,
-                s.ResueltaPor))
+                s.ResueltaPor,
+                s.MotivoRevision == null ? null : s.MotivoRevision.ToString()))
             .ToListAsync(ct);
 
         return new ResultadoPaginado<SolicitudKycResumenDto>(items, pagina, tamano, total);

@@ -26,6 +26,8 @@ import { useAuth } from '../auth/AuthContext';
 import { formatearBob } from '../lib/formato';
 import { HttpError } from '../api/http';
 import { solicitarOrden } from '../api/orders';
+import { obtenerPerfilPublico } from '../api/reputation';
+import { DistintivoVerificado } from '../perfil/DistintivoVerificado';
 import { PuntosEncuentroLista } from '../notificaciones/PuntosEncuentroLista';
 
 export function DetalleAvisoPage() {
@@ -58,6 +60,12 @@ export function DetalleAvisoPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['aviso-publico', id],
     queryFn: () => obtenerAvisoPublico(id),
+  });
+  const perfilVendedor = useQuery({
+    queryKey: ['perfil-publico', data?.vendedorId],
+    queryFn: () => obtenerPerfilPublico(data!.vendedorId),
+    enabled: Boolean(data?.vendedorId),
+    retry: false,
   });
   const esAvisoAjeno =
     estaAutenticado && propiedad.error instanceof HttpError && propiedad.error.status === 403;
@@ -200,6 +208,7 @@ export function DetalleAvisoPage() {
       <Button component={RouterLink} to={`/usuarios/${data.vendedorId}`} sx={{ mt: 2 }}>
         Ver perfil del vendedor
       </Button>
+      <DistintivoVerificado verificado={perfilVendedor.data?.verificado ?? false} />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 3 }}>
         {esAvisoAjeno && (
           <>

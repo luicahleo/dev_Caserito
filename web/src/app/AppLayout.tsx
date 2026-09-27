@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 import BookmarkBorderRoundedIcon from '@mui/icons-material/BookmarkBorderRounded';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
@@ -28,6 +29,7 @@ import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ContadorChat } from '../chat/ContadorChat';
 import { useContadorChat } from '../chat/useContadorChat';
+import { useContadorKyc } from '../kyc/useContadorKyc';
 import { NotificacionesBadge } from '../notificaciones/NotificacionesBadge';
 import { NotificacionesDropdown } from '../notificaciones/NotificacionesDropdown';
 import { MarcaCaserito } from './MarcaCaserito';
@@ -62,6 +64,7 @@ export function AppLayout() {
   const [anchorNotificaciones, setAnchorNotificaciones] = useState<HTMLElement | null>(null);
   const [anchorCuenta, setAnchorCuenta] = useState<HTMLElement | null>(null);
   const mensajesNoLeidos = useContadorChat(estaAutenticado);
+  const kycPendientes = useContadorKyc(estaAutenticado && tienePermiso('kyc.revisar'));
 
   const cerrarMenuCuenta = () => setAnchorCuenta(null);
 
@@ -247,7 +250,9 @@ export function AppLayout() {
               )}
             </MenuItem>
 
-            {(tienePermiso('publicaciones.moderar') || tienePermiso('chat.moderar')) && <Divider />}
+            {(tienePermiso('publicaciones.moderar') ||
+              tienePermiso('chat.moderar') ||
+              tienePermiso('kyc.revisar')) && <Divider />}
 
             {tienePermiso('publicaciones.moderar') && (
               <MenuItem component={RouterLink} to="/admin/moderacion" onClick={cerrarMenuCuenta}>
@@ -267,6 +272,23 @@ export function AppLayout() {
                   <ForumOutlinedIcon sx={{ color: 'text.secondary' }} />
                 </ListItemIcon>
                 <ListItemText>Moderación de chat</ListItemText>
+              </MenuItem>
+            )}
+            {tienePermiso('kyc.revisar') && (
+              <MenuItem component={RouterLink} to="/admin/kyc" onClick={cerrarMenuCuenta}>
+                <ListItemIcon>
+                  <BadgeOutlinedIcon sx={{ color: 'text.secondary' }} />
+                </ListItemIcon>
+                <ListItemText>Verificaciones</ListItemText>
+                {kycPendientes > 0 && (
+                  <Badge
+                    badgeContent={kycPendientes}
+                    color="error"
+                    max={99}
+                    sx={{ ml: 2 }}
+                    aria-label={`${kycPendientes} solicitudes en espera`}
+                  />
+                )}
               </MenuItem>
             )}
 

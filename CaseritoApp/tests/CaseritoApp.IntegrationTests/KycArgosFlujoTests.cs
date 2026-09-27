@@ -64,25 +64,26 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
     }
 
     [Fact]
-    public async Task Subir_con_coincidencia_deja_pendiente_revision_manual()
+    public async Task Score_alto_verifica_al_usuario_sin_intervencion_humana()
     {
         using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
         {
             s.AddSingleton<IVerificadorIdentidadArgos>(_ =>
-                new VerificadorArgosEstatico(Result.Exito(new VerificacionFacialResultado(true, 91.2, null))));
+                new VerificadorArgosEstatico(Result.Exito(
+                    new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 95, MotivoRechazo: null))));
         })).CreateClient();
 
-        var email = Email("kyc-ok");
+        var email = Email("kyc-auto");
         var token = await RegistrarYLoguearAsync(cliente, email, null);
 
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234561&departamentoExpedicion=LaPaz", token);
+        using var subir = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234596&departamentoExpedicion=LaPaz", token);
         subir.Content = Formulario();
-        var resp = await cliente.SendAsync(subir);
-        Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
 
         using var estado = Autorizada(HttpMethod.Get, "/api/kyc/estado", token);
         var dto = await (await cliente.SendAsync(estado)).Content.ReadFromJsonAsync<EstadoKycDto>();
-        Assert.Equal("Pendiente", dto!.Estado);
+        Assert.Equal("Aprobada", dto!.Estado);
     }
 
     [Fact]
@@ -109,7 +110,7 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
     }
 
     [Fact]
-    public async Task Subir_con_argos_caido_devuelve_503()
+    public async Task Subir_con_argos_caido_deja_la_solicitud_pendiente()
     {
         using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
         {
@@ -121,10 +122,80 @@ public sealed class KycArgosFlujoTests(CaseritoApiFactory factory) : IClassFixtu
         var email = Email("kyc-down");
         var token = await RegistrarYLoguearAsync(cliente, email, null);
 
-        using var subir = Autorizada(HttpMethod.Post, "/api/kyc/?numeroCi=1234563&departamentoExpedicion=LaPaz", token);
+        using var subir = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234563&departamentoExpedicion=LaPaz", token);
         subir.Content = Formulario();
-        var resp = await cliente.SendAsync(subir);
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
+
+        using var estado = Autorizada(HttpMethod.Get, "/api/kyc/estado", token);
+        var dto = await (await cliente.SendAsync(estado)).Content.ReadFromJsonAsync<EstadoKycDto>();
+        Assert.Equal("Pendiente", dto!.Estado);
+    }
+
+    // No es una guarda de regresión del orden de reserva: el segundo envío se rechaza en
+    // PuedeEnviarSolicitud, antes de llegar a reservar, así que este test pasa también con el
+    // orden anterior. Verifica el comportamiento observable de la reserva, no su momento.
+    [Fact]
+    public async Task Segundo_envio_del_mismo_usuario_se_rechaza_sin_bloquear_a_otros()
+    {
+        using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+        {
+            s.AddSingleton<IVerificadorIdentidadArgos>(_ =>
+                new VerificadorArgosEstatico(Result.Exito(
+                    new VerificacionFacialResultado(Coinciden: true, SimilitudPercent: 95, MotivoRechazo: null))));
+        })).CreateClient();
+
+        var email = Email("kyc-reserva");
+        var token = await RegistrarYLoguearAsync(cliente, email, null);
+        const string ci = "1234599";
+
+        // Primer envío: queda pendiente y reserva el CI legítimamente.
+        using var primero = Autorizada(
+            HttpMethod.Post, $"/api/kyc/?numeroCi={ci}&departamentoExpedicion=LaPaz", token);
+        primero.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(primero)).StatusCode);
+
+        // Segundo envío del mismo usuario: el dominio lo rechaza por solicitud pendiente.
+        using var segundo = Autorizada(
+            HttpMethod.Post, $"/api/kyc/?numeroCi={ci}&departamentoExpedicion=LaPaz", token);
+        segundo.Content = Formulario();
+        var respuesta = await cliente.SendAsync(segundo);
+        Assert.NotEqual(HttpStatusCode.NoContent, respuesta.StatusCode);
+
+        // Un usuario distinto que presenta el mismo CI debe seguir recibiendo conflicto,
+        // y un CI nunca presentado con éxito no debe quedar bloqueado por un envío fallido.
+        var otroEmail = Email("kyc-reserva-otro");
+        var otroToken = await RegistrarYLoguearAsync(cliente, otroEmail, null);
+        using var tercero = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234598&departamentoExpedicion=LaPaz", otroToken);
+        tercero.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(tercero)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Listado_de_administracion_expone_el_motivo_de_revision()
+    {
+        using var cliente = factory.WithWebHostBuilder(b => b.ConfigureServices(s =>
+        {
+            s.AddSingleton<IVerificadorIdentidadArgos>(_ =>
+                new VerificadorArgosEstatico(Result.Fallo<VerificacionFacialResultado>(
+                    new Error(ErroresKyc.RostroNoDetectado, "No se detecto rostro"))));
+        })).CreateClient();
+
+        var email = Email("kyc-motivo");
+        var token = await RegistrarYLoguearAsync(cliente, email, RolesApp.AdminKyc);
+
+        using var subir = Autorizada(
+            HttpMethod.Post, "/api/kyc/?numeroCi=1234597&departamentoExpedicion=LaPaz", token);
+        subir.Content = Formulario();
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.SendAsync(subir)).StatusCode);
+
+        using var listar = Autorizada(HttpMethod.Get, "/api/admin/kyc?estado=Pendiente", token);
+        var pagina = await (await cliente.SendAsync(listar))
+            .Content.ReadFromJsonAsync<
+                CaseritoApp.Identity.Application.Autorizacion.ResultadoPaginado<SolicitudKycResumenDto>>();
+
+        Assert.Contains(pagina!.Items, s => s.MotivoRevision == "RostroNoDetectado");
     }
 
     private sealed class VerificadorArgosEstatico(Result<VerificacionFacialResultado> resultado) : IVerificadorIdentidadArgos

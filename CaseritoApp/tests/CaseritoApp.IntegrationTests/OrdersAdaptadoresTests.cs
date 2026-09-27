@@ -66,5 +66,10 @@ public sealed class OrdersAdaptadoresTests
 
         public Task<UsuarioKycDto?> ObtenerUsuarioAsync(Guid usuarioId, CancellationToken ct) =>
             Task.FromResult<UsuarioKycDto?>(null);
+
+        public Task<IReadOnlySet<Guid>> ObtenerVerificadosAsync(
+            IReadOnlyCollection<Guid> usuarioIds, CancellationToken ct) =>
+            Task.FromResult<IReadOnlySet<Guid>>(
+                verificado ? usuarioIds.ToHashSet() : new HashSet<Guid>());
     }
 }

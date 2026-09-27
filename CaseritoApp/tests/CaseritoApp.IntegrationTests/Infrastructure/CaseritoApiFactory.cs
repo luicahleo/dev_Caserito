@@ -21,9 +21,8 @@ namespace CaseritoApp.IntegrationTests.Infrastructure;
 /// </summary>
 public sealed class CaseritoApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly MsSqlContainer _sql = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-        .Build();
+    private readonly MsSqlContainer _sql =
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
 
     /// <summary>
     /// Clave HS256 fija (mínimo 32 bytes) usada en Testing para que la firma del access JWT (en

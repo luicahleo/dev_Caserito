@@ -49,6 +49,8 @@ public sealed class SolicitarRestablecimientoPasswordHandlerTests
         public string AsuntoRestablecimientoPassword(string nombre) => "Recuperación";
         public string CuerpoRestablecimientoPassword(string nombre, string urlRestablecimiento) =>
             urlRestablecimiento;
+        public string AsuntoSolicitudKycEnEspera() => string.Empty;
+        public string CuerpoSolicitudKycEnEspera(string urlPanel) => string.Empty;
     }
 
     private sealed class LoggerCapturador<T> : ILogger<T>

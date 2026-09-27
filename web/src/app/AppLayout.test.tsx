@@ -7,6 +7,7 @@ import * as authCtx from '../auth/AuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as chat from '../api/chat';
 import * as notificaciones from '../api/notificaciones';
+import * as kyc from '../api/kyc';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -155,5 +156,25 @@ describe('AppLayout', () => {
 
     expect(await screen.findByRole('button', { name: 'Notificaciones' })).toBeInTheDocument();
     expect(await screen.findByText('5')).toBeInTheDocument();
+  });
+
+  it('muestra Verificaciones con el número de pendientes solo con kyc.revisar', async () => {
+    mockAuth(true, ['kyc.revisar']);
+    vi.spyOn(kyc, 'contarSolicitudesKycPendientes').mockResolvedValue(4);
+    montar();
+
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
+    const entrada = await screen.findByRole('menuitem', { name: /^verificaciones/i });
+    expect(entrada).toHaveAttribute('href', '/admin/kyc');
+    expect(entrada).toHaveTextContent('4');
+
+    cleanup();
+    vi.restoreAllMocks();
+    mockAuth(true);
+    montar();
+    await userEvent.click(screen.getByRole('button', { name: /mi cuenta/i }));
+    expect(
+      screen.queryByRole('menuitem', { name: /^verificaciones/i }),
+    ).not.toBeInTheDocument();
   });
 });

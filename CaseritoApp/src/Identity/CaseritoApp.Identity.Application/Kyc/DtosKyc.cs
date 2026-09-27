@@ -15,4 +15,5 @@ public sealed record SolicitudKycResumenDto(
     DateTimeOffset EnviadaEn,
     DateTimeOffset? ResueltaEn,
     double? ScoreSimilitud,
-    Guid? ResueltaPor);
+    Guid? ResueltaPor,
+    string? MotivoRevision);

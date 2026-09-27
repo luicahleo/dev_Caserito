@@ -21,6 +21,10 @@ public sealed class EnviarMensajeCommandHandlerTests
         public void Agregar(Conversacion conversacion)
         {
         }
+
+        public Task<IReadOnlyList<Conversacion>> ListarRetenidasDeCompradorAsync(
+            Guid compradorId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<Conversacion>>([]);
     }
 
     private sealed class MensajesFake : IRepositorioMensajes
@@ -45,6 +49,10 @@ public sealed class EnviarMensajeCommandHandlerTests
         }
 
         public void Agregar(Mensaje mensaje) => Agregados.Add(mensaje);
+
+        public Task<Mensaje?> ObtenerUltimoDeConversacionAsync(
+            Guid conversacionId, CancellationToken ct) =>
+            Task.FromResult<Mensaje?>(null);
     }
 
     [Fact]

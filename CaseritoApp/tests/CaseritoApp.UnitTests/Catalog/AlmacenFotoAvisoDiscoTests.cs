@@ -41,6 +41,35 @@ public sealed class AlmacenFotoAvisoDiscoTests : IDisposable
         Assert.Empty(Directory.GetFiles(_ruta));
     }
 
+    [Fact]
+    public async Task ObtenerYEliminar_Jpeg_Normalizado_Cubre_ruta_actual()
+    {
+        var almacen = CrearAlmacen();
+        byte[] contenido = [0xFF, 0xD8, 0xFF, 0x01];
+        var clave = await almacen.GuardarAsync(contenido, "image/jpeg", default);
+
+        var resultado = await almacen.ObtenerAsync(clave, default);
+        await almacen.EliminarAsync(clave, default);
+        await almacen.EliminarAsync(clave, default);
+
+        Assert.Equal(contenido, resultado.Contenido);
+        Assert.Equal("image/jpeg", resultado.ContentType);
+        Assert.Empty(Directory.GetFiles(_ruta, "*", SearchOption.AllDirectories));
+    }
+
+    [Fact]
+    public async Task Rechaza_formato_no_normalizado_y_clave_invalida()
+    {
+        var almacen = CrearAlmacen();
+
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => almacen.GuardarAsync([1], "image/png", default));
+        await Assert.ThrowsAsync<FileNotFoundException>(
+            () => almacen.ObtenerAsync("../foto", default));
+        await Assert.ThrowsAsync<FileNotFoundException>(
+            () => almacen.EliminarAsync("../foto", default));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_ruta))

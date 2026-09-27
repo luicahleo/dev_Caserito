@@ -31,4 +31,13 @@ public sealed class PlantillaCorreoTextoPlano : IPlantillaCorreo
         $"Hola {nombre},\n\nRecibimos una solicitud para restablecer tu contraseña. " +
         $"Este enlace será válido durante 30 minutos:\n{urlRestablecimiento}\n\n" +
         "Si no solicitaste este cambio, ignora este correo.\n\nEquipo Caserito";
+
+    // Aviso interno: no lleva nombre, CI, score, motivo ni identificadores. Solo dice que hay
+    // trabajo pendiente y a dónde ir; los datos se ven en el panel, que audita el acceso.
+    public string AsuntoSolicitudKycEnEspera() =>
+        "Hay una solicitud de verificación esperando revisión";
+
+    public string CuerpoSolicitudKycEnEspera(string urlPanel) =>
+        "Una solicitud de verificación de identidad quedó pendiente de revisión manual.\n\n" +
+        $"Revísala en el panel de administración:\n{urlPanel}\n\nEquipo Caserito";
 }

@@ -16,6 +16,7 @@ const solicitud: api.SolicitudKycResumen = {
   resueltaEn: null,
   scoreSimilitud: null,
   resueltaPor: null,
+  motivoRevision: null,
 };
 
 function montar() {

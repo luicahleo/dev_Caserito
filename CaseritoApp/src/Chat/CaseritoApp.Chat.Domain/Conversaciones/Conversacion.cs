@@ -12,14 +12,15 @@ public sealed class Conversacion : AggregateRoot
         Guid avisoId,
         Guid compradorId,
         Guid vendedorId,
-        DateTimeOffset creadaEn)
+        DateTimeOffset creadaEn,
+        EstadoConversacion estadoInicial)
     {
         AvisoId = avisoId;
         CompradorId = compradorId;
         VendedorId = vendedorId;
         CreadaEn = creadaEn;
         UltimaActividadEn = creadaEn;
-        Estado = EstadoConversacion.Activa;
+        Estado = estadoInicial;
     }
 
     public Guid AvisoId { get; private set; }
@@ -52,7 +53,8 @@ public sealed class Conversacion : AggregateRoot
         Guid avisoId,
         Guid compradorId,
         Guid vendedorId,
-        DateTimeOffset creadaEn)
+        DateTimeOffset creadaEn,
+        bool retenida = false)
     {
         if (avisoId == Guid.Empty || compradorId == Guid.Empty || vendedorId == Guid.Empty)
         {
@@ -69,7 +71,12 @@ public sealed class Conversacion : AggregateRoot
         }
 
         var fechaUtc = creadaEn.ToUniversalTime();
-        var conversacion = new Conversacion(avisoId, compradorId, vendedorId, fechaUtc);
+        var conversacion = new Conversacion(
+            avisoId,
+            compradorId,
+            vendedorId,
+            fechaUtc,
+            retenida ? EstadoConversacion.RetenidaPorVerificacion : EstadoConversacion.Activa);
         conversacion.AgregarEvento(new ConversacionIniciada(conversacion.Id, avisoId, fechaUtc));
         return Result.Exito(conversacion);
     }
@@ -139,6 +146,31 @@ public sealed class Conversacion : AggregateRoot
             : CambiarEstado(EstadoConversacion.Activa, moderadorId, ocurrioEn);
     }
 
+    /// <summary>
+    /// Libera una conversación retenida por verificación pendiente. Idempotente si ya está activa;
+    /// una conversación cerrada no se reabre por un efecto secundario del KYC.
+    /// </summary>
+    public Result LiberarPorVerificacion(DateTimeOffset ocurrioEn)
+    {
+        if (Estado == EstadoConversacion.Activa)
+        {
+            return Result.Exito();
+        }
+
+        if (Estado != EstadoConversacion.RetenidaPorVerificacion)
+        {
+            return Result.Fallo(new Error(
+                ErroresConversacion.NoDisponibleParaEnvio,
+                "La conversación no puede liberarse."));
+        }
+
+        var fechaUtc = ocurrioEn.ToUniversalTime();
+        Estado = EstadoConversacion.Activa;
+        UltimaActividadEn = fechaUtc;
+        AgregarEvento(new ConversacionLiberada(Id, fechaUtc));
+        return Result.Exito();
+    }
+
     public Result<Mensaje> CrearMensaje(
         Guid remitenteId,
         Guid claveIdempotencia,
@@ -153,7 +185,18 @@ public sealed class Conversacion : AggregateRoot
                 "La conversación no está disponible."));
         }
 
-        if (Estado != EstadoConversacion.Activa)
+        if (Estado == EstadoConversacion.RetenidaPorVerificacion)
+        {
+            // Retenida: el vendedor no la ve, así que un envío suyo solo puede venir de un
+            // identificador filtrado o de un error.
+            if (remitenteId != CompradorId)
+            {
+                return Result.Fallo<Mensaje>(new Error(
+                    ErroresConversacion.NoDisponibleParaEnvio,
+                    "La conversación no está disponible para enviar mensajes."));
+            }
+        }
+        else if (Estado != EstadoConversacion.Activa)
         {
             return Result.Fallo<Mensaje>(new Error(
                 ErroresConversacion.NoDisponibleParaEnvio,

@@ -3,8 +3,8 @@ using System.Security.Claims;
 using CaseritoApp.BuildingBlocks.Application.Abstractions;
 using CaseritoApp.BuildingBlocks.Domain;
 using CaseritoApp.Catalog.Domain.Avisos;
+using CaseritoApp.Host.Autorizacion;
 using CaseritoApp.Host.Orders;
-using CaseritoApp.Identity.Domain.Autorizacion;
 using CaseritoApp.Orders.Application.Ordenes;
 using CaseritoApp.Orders.Domain.Ordenes;
 using CaseritoApp.Orders.Infrastructure;
@@ -102,7 +102,7 @@ public static class OrdersEndpoints
             var resultado = await sender.Send(new SolicitarOrdenCommand(
                 request.AvisoId,
                 actorId,
-                TieneIdentidadHabilitada(usuario)), ct);
+                usuario.TieneIdentidadHabilitada()), ct);
             return resultado.EsExito
                 ? Results.Created($"/api/orders/{resultado.Valor.Id}", resultado.Valor)
                 : DesdeError(resultado.Error);
@@ -282,12 +282,6 @@ public static class OrdersEndpoints
             ?? usuario.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(valor, out userId) && userId != Guid.Empty;
     }
-
-    private static bool TieneIdentidadHabilitada(ClaimsPrincipal usuario) =>
-        string.Equals(
-            usuario.FindFirstValue(ClaimsApp.IdentidadHabilitada),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
 
     private static bool EsConflictoPersistencia(Exception ex) =>
         ex is ConflictoUnicidadOrdersException or ConflictoConcurrenciaException;

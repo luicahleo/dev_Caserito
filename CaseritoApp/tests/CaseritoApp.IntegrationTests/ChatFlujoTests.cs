@@ -37,6 +37,7 @@ public sealed class ChatFlujoTests(CaseritoApiFactory factory) : IClassFixture<C
     {
         using var cliente = factory.CreateClient();
         var comprador = await RegistrarAsync(cliente, "chat-comprador");
+        await factory.AprobarKycAsync(comprador.UsuarioId);
         var vendedor = await RegistrarAsync(cliente, "chat-vendedor");
         var tercero = await RegistrarAsync(cliente, "chat-tercero");
         var aviso = await CrearAvisoAsync(vendedor.UsuarioId);

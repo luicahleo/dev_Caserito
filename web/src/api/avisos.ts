@@ -3,7 +3,7 @@ import { api, desempaquetar } from './http';
 import { getAccessToken } from '../auth/session';
 
 export type FotoAvisoDto = components['schemas']['FotoAvisoDto'];
-export type AvisoPublicoResumen = components['schemas']['AvisoPublicoResumenDto'];
+export type AvisoPublicoResumen = components['schemas']['AvisoPublicoResumenConVendedorDto'];
 export type AvisoPublico = components['schemas']['AvisoPublicoDto'];
 export type AvisoResumen = components['schemas']['AvisoResumenDto'];
 export type Aviso = components['schemas']['AvisoDto'];
@@ -11,7 +11,7 @@ export type CrearAvisoRequest = components['schemas']['CrearAvisoRequest'];
 export type EditarAvisoRequest = components['schemas']['EditarAvisoRequest'];
 export type ReportarAvisoRequest = components['schemas']['ReportarAvisoRequest'];
 export type PaginaAvisosPublicos =
-  components['schemas']['ResultadoPaginadoOfAvisoPublicoResumenDto'];
+  components['schemas']['ResultadoPaginadoOfAvisoPublicoResumenConVendedorDto'];
 export type PaginaMisAvisos = components['schemas']['ResultadoPaginadoOfAvisoResumenDto'];
 
 // Criterios de búsqueda pública; todos opcionales. Se pasan como query a /api/publico/avisos.

@@ -32,6 +32,8 @@ public sealed class EnviarMensajeCommandHandler(
             return NoEncontrada();
         }
 
+        var retenida = conversacion.Estado == EstadoConversacion.RetenidaPorVerificacion;
+
         var contraparteId = request.RemitenteId == conversacion.CompradorId
             ? conversacion.VendedorId
             : conversacion.CompradorId;
@@ -60,7 +62,7 @@ public sealed class EnviarMensajeCommandHandler(
             }
 
             return Result.Exito(new EnviarMensajeResultadoDto(
-                MensajeDto.Desde(existente), contraparteId, false));
+                MensajeDto.Desde(existente), contraparteId, false, retenida));
         }
 
         var secuencia = await mensajes.ReservarSecuenciaAsync(cancellationToken);
@@ -77,7 +79,7 @@ public sealed class EnviarMensajeCommandHandler(
 
         mensajes.Agregar(creacion.Valor);
         return Result.Exito(new EnviarMensajeResultadoDto(
-            MensajeDto.Desde(creacion.Valor), contraparteId, true));
+            MensajeDto.Desde(creacion.Valor), contraparteId, true, retenida));
     }
 
     private static Result<EnviarMensajeResultadoDto> NoEncontrada() =>

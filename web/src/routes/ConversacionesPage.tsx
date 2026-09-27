@@ -4,8 +4,9 @@ import {
   ListItemText, Stack, Typography,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { listarConversaciones, type ConversacionResumen } from '../api/chat';
+import { listarConversaciones } from '../api/chat';
 import { obtenerAvisoPublico } from '../api/avisos';
+import { etiquetaEstado } from '../chat/estadoConversacion';
 
 function TituloAviso({ avisoId }: { avisoId: string }) {
   const { data, isLoading } = useQuery({
@@ -15,13 +16,6 @@ function TituloAviso({ avisoId }: { avisoId: string }) {
   });
   if (isLoading) return <>Cargando aviso…</>;
   return <>{data?.titulo ?? 'Aviso no disponible'}</>;
-}
-
-function etiquetaEstado(conversacion: ConversacionResumen) {
-  if (conversacion.estado === 2) return 'Cerrada por moderación';
-  if (conversacion.estado === 1) return 'Cerrada';
-  if (!conversacion.puedeEnviar) return 'Envío no disponible';
-  return 'Activa';
 }
 
 export function ConversacionesPage() {
