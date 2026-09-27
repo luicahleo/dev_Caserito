@@ -71,12 +71,46 @@ function Test-Programa {
 }
 
 function Invoke-Git {
+    <#
+        git escribe en stderr mensajes informativos ("Switched to branch...").
+        Con $ErrorActionPreference = 'Stop', PowerShell 5.1 los convierte en
+        NativeCommandError y aborta aunque el comando haya salido con éxito.
+        Por eso se baja la preferencia mientras corre el proceso y la decisión
+        se toma solo con el código de salida.
+    #>
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Argumentos)
-    $salida = & git @Argumentos 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "git $Argumentos falló: $salida"
+
+    $previo = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lineas = & git @Argumentos 2>&1 | ForEach-Object { "$_" }
+        $salida = ($lineas -join [Environment]::NewLine)
+        if ($LASTEXITCODE -ne 0) {
+            throw "git $Argumentos falló:`n$salida"
+        }
+        return $salida
     }
-    return $salida
+    finally {
+        $ErrorActionPreference = $previo
+    }
+}
+
+function Invoke-Nativo {
+    # Mismo problema que Invoke-Git, para gh y cualquier otro ejecutable.
+    param([scriptblock]$Bloque)
+
+    $previo = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $lineas = & $Bloque 2>&1 | ForEach-Object { "$_" }
+        return [pscustomobject]@{
+            Codigo = $LASTEXITCODE
+            Salida = ($lineas -join [Environment]::NewLine)
+        }
+    }
+    finally {
+        $ErrorActionPreference = $previo
+    }
 }
 
 function Get-RefSha {
@@ -91,19 +125,19 @@ function Get-RepoActual {
 function Get-ProteccionRama {
     param([string]$Rama)
     $repo = Get-RepoActual
-    $json = gh api "repos/$repo/branches/$Rama/protection" 2>$null
-    if ($LASTEXITCODE -ne 0) {
+    $r = Invoke-Nativo { gh api "repos/$repo/branches/$Rama/protection" }
+    if ($r.Codigo -ne 0) {
         return $null
     }
-    return ($json | ConvertFrom-Json)
+    return ($r.Salida | ConvertFrom-Json)
 }
 
 function Remove-ProteccionRama {
     param([string]$Rama)
     $repo = Get-RepoActual
-    gh api -X DELETE "repos/$repo/branches/$Rama/protection" *>$null
-    if ($LASTEXITCODE -ne 0) {
-        throw "No se pudo retirar la protección de '$Rama'."
+    $r = Invoke-Nativo { gh api -X DELETE "repos/$repo/branches/$Rama/protection" }
+    if ($r.Codigo -ne 0) {
+        throw "No se pudo retirar la protección de '$Rama': $($r.Salida)"
     }
 }
 
@@ -158,12 +192,12 @@ function Restore-ProteccionRama {
     ($payload | ConvertTo-Json -Depth 8) | Out-File -FilePath $archivo -Encoding utf8
 
     $repo = Get-RepoActual
-    gh api -X PUT "repos/$repo/branches/$Rama/protection" --input $archivo *>$null
-    $codigo = $LASTEXITCODE
+    $r = Invoke-Nativo { gh api -X PUT "repos/$repo/branches/$Rama/protection" --input $archivo }
     Remove-Item $archivo -ErrorAction SilentlyContinue
 
-    if ($codigo -ne 0) {
+    if ($r.Codigo -ne 0) {
         Write-Host "ATENCIÓN: no se pudo restaurar la protección de '$Rama'. Restáurala a mano en GitHub." -ForegroundColor Red
+        Write-Host $r.Salida -ForegroundColor Red
         throw "Fallo al restaurar la protección de '$Rama'."
     }
     Write-Host "Protección de '$Rama' restaurada." -ForegroundColor Green
@@ -344,8 +378,8 @@ else {
     }
     catch {
         Write-Host "Fallo durante el merge o el push a $RamaProduccion. Volviendo a $RamaDesarrollo..." -ForegroundColor Red
-        & git merge --abort 2>&1 | Out-Null
-        & git checkout $RamaDesarrollo 2>&1 | Out-Null
+        Invoke-Nativo { git merge --abort } | Out-Null
+        Invoke-Nativo { git checkout $RamaDesarrollo } | Out-Null
         throw
     }
     finally {
@@ -373,11 +407,11 @@ Write-Host "CI verde: $($runCi.url)" -ForegroundColor Green
 # ---------------------------------------------------------------------------
 
 Write-Host 'Disparando el workflow Deploy con confirmar=PRODUCCION...'
-$salidaDeploy = gh workflow run deploy.yml --ref $RamaProduccion -f confirmar=PRODUCCION 2>&1
-if ($LASTEXITCODE -ne 0) {
-    throw "No se pudo disparar el workflow Deploy: $salidaDeploy"
+$deploy = Invoke-Nativo { gh workflow run deploy.yml --ref $RamaProduccion -f confirmar=PRODUCCION }
+if ($deploy.Codigo -ne 0) {
+    throw "No se pudo disparar el workflow Deploy: $($deploy.Salida)"
 }
-Write-Host $salidaDeploy -ForegroundColor Cyan
+Write-Host $deploy.Salida -ForegroundColor Cyan
 
 if (-not $Watch) {
     Write-Host 'Despliegue disparado. Usa -Watch para monitorearlo o revisa la pestaña Actions.' -ForegroundColor Green
